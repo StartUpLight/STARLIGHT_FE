@@ -3,13 +3,50 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-pretendard: "Pretendard Variable", Pretendard, system-ui, sans-serif;
 }
 
 @theme inline {
+  --color-primary-50:  #F1EEFF;
+  --color-primary-100: #D2CAFF;
+  --color-primary-300: #9F8DFF;
+  --color-primary-400: #8C77FF;
+  --color-primary-500: #6F55FF;
+  --color-primary-700: #4F3CB5;
+  --color-primary-800: #3D2F8C;
+
+  --color-secondary: #5415FF;
+  --color-secondary-500: #5415FF;
+
+  --color-dark: #010824;
+  --color-dark-500: #010824;
+
+  --color-gray-50:  #FBFCFD;
+  --color-gray-100: #F3F5F9;
+  --color-gray-300: #DADFE7;
+  --color-gray-500: #949BA7;
+  --color-gray-600: #6C727E;
+  --color-gray-700: #585F69;
+  --color-gray-800: #3A404A;
+  --color-gray-900: #191F28;
+
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --font-sans:    var(--font-pretendard);
+  --font-heading: var(--font-onest), var(--font-pretendard), system-ui, sans-serif;
+
+  --text-heading-1: 36px;
+  --text-heading-2: 32px;
+  --text-3xl: 28px;
+  --text-2xl: 20px;
+  --text-xl: 18px;
+  --text-md: 16px;
+  --text-sm: 14px;
+  --text-xs: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +59,31 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer base {
+  html, body { font-family: var(--font-sans); }
+}
+
+@utility font-heading { font-family: var(--font-heading); }
+
+@utility text-heading-1 {
+  font-size: var(--text-heading-1);
+  line-height: 130%;
+  letter-spacing: -0.02em;
+}
+@utility text-heading-2 {
+  font-size: var(--text-heading-2);
+  line-height: 130%;
+  letter-spacing: -0.02em;
+}
+@utility text-3xl { font-size: var(--text-3xl); line-height: 150%; letter-spacing: -0.02em; }
+@utility text-2xl { font-size: var(--text-2xl); line-height: 150%; letter-spacing: -0.02em; }
+@utility text-xl  { font-size: var(--text-xl);  line-height: 150%; letter-spacing: -0.02em; }
+@utility text-md  { font-size: var(--text-md);  line-height: 150%; letter-spacing: -0.01em; }
+@utility text-sm  { font-size: var(--text-sm);  line-height: 150%; }
+@utility text-xs  { font-size: var(--text-xs);  line-height: 150%; }
+
+@utility bg-primary-gradient {
+  background-image: linear-gradient(80deg, #D2CAFF 0%, #6235FF 36%, #311F91 72%, #010824 100%);
 }
