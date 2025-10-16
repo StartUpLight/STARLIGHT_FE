@@ -1,9 +1,12 @@
 import WriteForm from "./components/WriteForm";
 
-export default function page() {
+export default function Page() {
     return (
-        <main className="mx-auto max-w-screen-lg px-6 py-8">
-            <WriteForm />
-        </main>
-    )
+        <div className="w-full min-h-[calc(100vh-60px)] bg-gray-100">
+            {/* width는 임의로 고정해두었는데 고정 값 빼면 너비 반응형 동작합니다. */}
+            <main className="w-[762px] py-[25px] mx-auto">
+                <WriteForm number={"0"} />
+            </main>
+        </div>
+    );
 }
