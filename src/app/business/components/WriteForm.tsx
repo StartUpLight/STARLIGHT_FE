@@ -100,22 +100,31 @@ export default function WriteForm({
     const [grammarActive, setGrammarActive] = useState(false);
 
     return (
-        <div className="rounded-[12px] border border-gray-100 bg-white h-[756px] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
+        <div className="rounded-[12px] border border-gray-100 bg-white h-[756px] flex flex-col">
+            {/* 고정 헤더 */}
+            <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center gap-2">
                     <div className="h-[20px] px-[6px] rounded-full flex items-center justify-center bg-gray-800 text-white ds-caption font-semibold">{number}</div>
                     <p className="ds-subtitle font-semibold text-gray-800">{number === '0' ? "개요" : title}</p>
                 </div>
                 {number !== '0' && <p className="ds-subtext font-medium text-gray-600 mt-[10px]">{subtitle}</p>}
             </div>
-            <div className="py-2 px-6 mb-4 flex items-center gap-4 border-b border-gray-100">
+
+            {/* 고정 툴바 */}
+            <div className="py-2 px-6 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
                 <ToolButton
                     label={<img src="/icons/write-icons/bold.svg" alt="Bold" />}
                     active={!!activeEditor?.isActive("bold")}
                     onClick={() => activeEditor?.chain().focus().toggleBold().run()}
                 />
                 <ToolButton
-                    label={<img src="/icons/write-icons/highlight.svg" alt="Highlight" />}
+                    label={
+                        activeEditor?.isActive("highlight", { color: "#FFF59D" }) ? (
+                            <img src="/icons/write-icons/highlight-active.svg" alt="Highlight Active" />
+                        ) : (
+                            <img src="/icons/write-icons/highlight.svg" alt="Highlight" />
+                        )
+                    }
                     active={!!activeEditor?.isActive("highlight", { color: "#FFF59D" })}
                     onClick={() => activeEditor?.chain().focus().toggleHighlight({ color: "#FFF59D" }).run()}
                 />
@@ -137,14 +146,47 @@ export default function WriteForm({
                     label={<img src="/icons/write-icons/table.svg" alt="Table" />}
                     onClick={() => {
                         if (!activeEditor) return;
-                        const isEmpty = activeEditor.getText().trim().length === 0;
-                        const chain = activeEditor.chain().focus();
-                        if (isEmpty) {
-                            chain.clearContent();
+                        const { state } = activeEditor;
+                        const $from = state.selection.$from;
+
+                        // 1) 표 내부에서 클릭: 현재 표 바로 뒤에 표를 추가
+                        let insideTableDepth = -1;
+                        for (let d = $from.depth; d > 0; d--) {
+                            if ($from.node(d).type.name === "table") {
+                                insideTableDepth = d;
+                                break;
+                            }
                         }
-                        // 표 삽입 (커서는 첫 번째 셀에 위치)
-                        chain.insertTable({ rows: 3, cols: 2, withHeaderRow: true }).run();
-                        // 표 아래에 빈 문단 추가 (커서 위치는 변경하지 않음)
+                        if (insideTableDepth !== -1) {
+                            const start = $from.before(insideTableDepth);
+                            const afterTablePos = start + $from.node(insideTableDepth).nodeSize;
+                            activeEditor
+                                .chain()
+                                .focus()
+                                .setTextSelection(afterTablePos)
+                                .insertTable({ rows: 3, cols: 2, withHeaderRow: true })
+                                .run();
+                        } else {
+                            // 2) 빈 문단(예: 표 아래 한 줄)에서 클릭: 그 자리를 표로 대체
+                            const isEmptyParagraph =
+                                $from.parent.type.name === "paragraph" && $from.parent.content.size === 0;
+                            if (isEmptyParagraph) {
+                                activeEditor
+                                    .chain()
+                                    .focus()
+                                    .deleteRange({ from: state.selection.from, to: state.selection.to })
+                                    .insertTable({ rows: 3, cols: 2, withHeaderRow: true })
+                                    .run();
+                            } else {
+                                // 3) 그 외 위치: 현재 커서 위치에 표 추가 (여러 개 삽입 가능)
+                                activeEditor
+                                    .chain()
+                                    .focus()
+                                    .insertTable({ rows: 3, cols: 2, withHeaderRow: true })
+                                    .run();
+                            }
+                        }
+                        // 문서 끝에 빈 문단 유지(커서는 표 첫 셀에 남음)
                         const endPos = activeEditor.state.doc.content.size;
                         activeEditor.commands.insertContentAt(endPos, { type: "paragraph" }, { updateSelection: false });
                     }}
@@ -172,63 +214,67 @@ export default function WriteForm({
                     임시 저장
                 </button>
             </div>
-            <div className="space-y-[24px] px-5 pb-4">
-                {number === '0' ? (
-                    <>
-                        <div>
-                            <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템명</label>
-                            <TextInput placeholder="답변을 입력하세요." />
-                        </div>
 
-                        <div>
-                            <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템 한줄 소개</label>
-                            <TextInput placeholder="답변을 입력하세요." />
-                        </div>
+            {/* 스크롤 가능한 콘텐츠 영역 */}
+            <div className="flex-1 overflow-y-auto">
+                <div className="space-y-[24px] px-5 py-4">
+                    {number === '0' ? (
+                        <>
+                            <div>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템명</label>
+                                <TextInput placeholder="답변을 입력하세요." />
+                            </div>
 
-                        <div>
-                            <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템 / 아이디어 주요 기능</label>
-                            <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
-                                <EditorContent
-                                    editor={editorFeatures}
-                                    onFocus={() => setActiveEditor(editorFeatures)}
-                                    className="prose max-w-none focus:outline-none placeholder:text-gray-400"
-                                    placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
-                                />
+                            <div>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템 한줄 소개</label>
+                                <TextInput placeholder="답변을 입력하세요." />
                             </div>
-                        </div>
 
-                        <div>
-                            <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">관련 보유 기술</label>
-                            <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
-                                <EditorContent
-                                    editor={editorSkills}
-                                    onFocus={() => setActiveEditor(editorSkills)}
-                                    className="prose max-w-none focus:outline-none placeholder:text-gray-400"
-                                    placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
-                                />
+                            <div>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템 / 아이디어 주요 기능</label>
+                                <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                                    <EditorContent
+                                        editor={editorFeatures}
+                                        onFocus={() => setActiveEditor(editorFeatures)}
+                                        className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                                        placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">창업 목표</label>
-                            <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
-                                <EditorContent
-                                    editor={editorGoals}
-                                    onFocus={() => setActiveEditor(editorGoals)}
-                                    className="prose max-w-none focus:outline-none placeholder:text-gray-400"
-                                    placeholder="본 사업을 통해 달성하고 싶은 궁극적인 목표에 대해 설명"
-                                />
+
+                            <div>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">관련 보유 기술</label>
+                                <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                                    <EditorContent
+                                        editor={editorSkills}
+                                        onFocus={() => setActiveEditor(editorSkills)}
+                                        className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                                        placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
+                                    />
+                                </div>
                             </div>
+                            <div>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">창업 목표</label>
+                                <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                                    <EditorContent
+                                        editor={editorGoals}
+                                        onFocus={() => setActiveEditor(editorGoals)}
+                                        className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                                        placeholder="본 사업을 통해 달성하고 싶은 궁극적인 목표에 대해 설명"
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="rounded-[4px] bg-white px-3 py-2 min-h-[252px]">
+                            <EditorContent
+                                editor={editorFeatures}
+                                onFocus={() => setActiveEditor(editorFeatures)}
+                                className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                            />
                         </div>
-                    </>
-                ) : (
-                    <div className="rounded-[4px] bg-white px-3 py-2 min-h-[252px]">
-                        <EditorContent
-                            editor={editorFeatures}
-                            onFocus={() => setActiveEditor(editorFeatures)}
-                            className="prose max-w-none focus:outline-none placeholder:text-gray-400"
-                        />
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
