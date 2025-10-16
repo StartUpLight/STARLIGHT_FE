@@ -6,10 +6,46 @@
 }
 
 @theme inline {
+  /* Colors */
+  --color-primary-50:  #F1EEFF;
+  --color-primary-100: #D2CAFF;
+  --color-primary-300: #9F8DFF;
+  --color-primary-400: #8C77FF;
+  --color-primary-500: #6F55FF;
+  --color-primary-700: #4F3CB5;
+  --color-primary-800: #3D2F8C;
+
+  --color-secondary-500: #5415FF;
+  --color-secondary:     #5415FF;
+
+  --color-dark-500: #010824;
+  --color-dark:     #010824;
+
+  --color-gray-50:  #FBFCFD;
+  --color-gray-100: #F3F5F9;
+  --color-gray-300: #DADFE7;
+  --color-gray-500: #949BA7;
+  --color-gray-600: #6C727E;
+  --color-gray-700: #585F69;
+  --color-gray-800: #3A404A;
+  --color-gray-900: #191F28;
+
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Fonts */
+  --font-sans: var(--font-pretendard); /* 전역 기본 폰트 */
+
+  /* Type scale (px) */
+  --text-3xl: 28px; /* Heading */
+  --text-2xl: 20px; /* Title */
+  --text-xl:  18px; /* Sub Title */
+  --text-md:  16px; /* Text */
+  --text-sm:  14px; /* Sub Text */
+  --text-xs:  12px; /* Caption */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +55,51 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html, body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+  }
+}
+
+
+@utility ds-heading {
+  font-size: var(--text-3xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+}
+
+@utility ds-title {
+  font-size: var(--text-2xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+}
+
+@utility ds-subtitle {
+  font-size: var(--text-xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+}
+
+@utility ds-text { 
+  font-size: var(--text-md);
+  line-height: 150%;
+  letter-spacing: -0.01em;
+}
+
+@utility ds-subtext {
+  font-size: var(--text-sm);
+  line-height: 150%;
+  letter-spacing: 0;
+}
+
+@utility ds-caption {
+  font-size: var(--text-xs);
+  line-height: 150%;
+  letter-spacing: 0;
+}
+
+@utility bg-primary-gradient {
+  background-image: linear-gradient(80deg, #D2CAFF 0%, #6235FF 36%, #311F91 72%, #010824 100%);
 }
