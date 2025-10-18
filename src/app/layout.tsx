@@ -14,7 +14,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" className={pretendard.variable}>
-      <body className="antialiased pt-[60px]">
+      <body className="antialiased">
         <Header />
         {children}
       </body>
