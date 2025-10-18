@@ -114,7 +114,7 @@ const WriteForm = ({
   const [grammarActive, setGrammarActive] = useState(false);
 
   return (
-    <div className="rounded-[12px] border border-gray-100 bg-white h-[756px] flex flex-col">
+    <div className="rounded-[12px] border border-gray-100 bg-white w-full h-[756px] flex flex-col">
       {/* 고정 헤더 */}
       <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2">
