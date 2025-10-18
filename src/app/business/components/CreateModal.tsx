@@ -1,6 +1,6 @@
 import Button from "@/app/_components/common/Button";
 import React from "react";
-import Image from "next/image";
+import Close from "@/assets/icons/close.svg";
 
 interface CreateModalProps {
   title: string;
@@ -17,7 +17,7 @@ const CreateModal = ({ title, subtitle, onClose }: CreateModalProps) => {
           className="absolute top-7 right-7 cursor-pointer"
           aria-label="닫기"
         >
-          <Image src="/icons/close.svg" alt="닫기" width={24} height={24} />
+          <Close />
         </button>
 
         <div className="text-gray-800 ds-heading font-bold">{title}</div>

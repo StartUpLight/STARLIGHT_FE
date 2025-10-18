@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import Image from "next/image";
 import Button from "@/app/_components/common/Button";
+import Arrow from "@/assets/icons/arrow_up.svg";
 
 const SpellCheck = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -70,13 +70,8 @@ const SpellCheck = () => {
         <span className="text-gray-800 font-semibold ds-subtitle">
           맞춤법 검사
         </span>
-        <Image
-          src="/icons/arrow_up.svg"
-          alt="arrow"
-          width={13}
-          height={8}
-          className={`object-contain  ${isOpen ? "rotate-180" : "rotate-0"}`}
-        />
+        <Arrow className={`w-[13px] h-[8px] transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}/>
+
       </div>
 
       {isOpen && (
@@ -98,15 +93,9 @@ const SpellCheck = () => {
                     </span>
                   </div>
 
-                  <Image
-                    src="/icons/arrow_up.svg"
-                    alt="toggle"
-                    width={13}
-                    height={8}
-                    className={`object-contain transition-transform duration-200 ${
-                      item.open ? "rotate-180" : "rotate-90"
-                    }`}
-                  />
+                  <Arrow className={`w-[13px] h-[8px] ${item.open ? "rotate-180" : "rotate-90"}`}/>
+
+            
                 </div>
 
                 {item.open && (

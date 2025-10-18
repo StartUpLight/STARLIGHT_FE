@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/app/_components/common/Button";
-import Image from "next/image";
 import React, { useState } from "react";
+import Check from "@/assets/icons/white_check.svg";
 
 const CheckList = () => {
   const [checklist, setChecklist] = useState([
@@ -36,13 +36,7 @@ const CheckList = () => {
             >
               {item.checked ? (
                 <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-primary-500">
-                  <Image
-                    src="/icons/white_check.svg"
-                    alt="check"
-                    width={10}
-                    height={8}
-                    className="object-contain"
-                  />
+                  <Check />
                 </div>
               ) : (
                 <div className="w-[18px] h-[18px] rounded-full border-2 border-gray-400" />
