@@ -1,14 +1,14 @@
 import React from "react";
-import CreateModal from "./components/CreateModal";
+import WriteForm from "./components/WriteForm";
 
 const page = () => {
   return (
-    //  <CreateModal
-    //     title="사업계획서 쉽게 생성하기"
-    //     subtitle={`사업계획서 초안을 체크리스트로 쉽게 작성해 보세요.
-    //     앞으로 사업계획서의 작성 효율과 퀄리티를 높여주는 자료가 될 거예요.`}
-    //   />
-    <div>텍스트 에디어 들어갈 예정</div>
+    <div className="w-full min-h-[calc(100vh-60px)] bg-gray-100">
+      {/* width는 임의로 고정해두었는데 고정 값 빼면 너비 반응형 동작합니다. */}
+      <main className="w-[762px] mx-auto py-[30px]">
+        <WriteForm number={"0"} />
+      </main>
+    </div>
   );
 };
 
