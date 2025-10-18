@@ -14,6 +14,14 @@ import TableCell from "@tiptap/extension-table-cell";
 import { Extension } from "@tiptap/core";
 import TextInput from "./TextInput";
 import ToolButton from "./ToolButton";
+import BoldIcon from "@/assets/icons/write-icons/bold.svg";
+import HighlightIcon from "@/assets/icons/write-icons/highlight.svg";
+import HighlightActiveIcon from "@/assets/icons/write-icons/highlight-active.svg";
+import ColorIcon from "@/assets/icons/write-icons/color.svg";
+import TableIcon from "@/assets/icons/write-icons/table.svg";
+import ImageIcon from "@/assets/icons/write-icons/image.svg";
+import GrammerIcon from "@/assets/icons/write-icons/grammer.svg";
+import GrammerActiveIcon from "@/assets/icons/write-icons/grammer-active.svg";
 
 const DeleteTableOnDelete = Extension.create({
     name: "delete-table-on-delete",
@@ -113,23 +121,23 @@ export default function WriteForm({
             {/* 고정 툴바 */}
             <div className="py-2 px-6 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
                 <ToolButton
-                    label={<img src="/icons/write-icons/bold.svg" alt="Bold" />}
+                    label={<BoldIcon />}
                     active={!!activeEditor?.isActive("bold")}
                     onClick={() => activeEditor?.chain().focus().toggleBold().run()}
                 />
                 <ToolButton
                     label={
                         activeEditor?.isActive("highlight", { color: "#FFF59D" }) ? (
-                            <img src="/icons/write-icons/highlight-active.svg" alt="Highlight Active" />
+                            <HighlightActiveIcon />
                         ) : (
-                            <img src="/icons/write-icons/highlight.svg" alt="Highlight" />
+                            <HighlightIcon />
                         )
                     }
                     active={!!activeEditor?.isActive("highlight", { color: "#FFF59D" })}
                     onClick={() => activeEditor?.chain().focus().toggleHighlight({ color: "#FFF59D" }).run()}
                 />
                 <ToolButton
-                    label={<img src="/icons/write-icons/color.svg" alt="Color" />}
+                    label={<ColorIcon />}
                     active={!!activeEditor?.isActive("textStyle", { color: "#FF3B57" })}
                     onClick={() => {
                         if (!activeEditor) return;
@@ -143,7 +151,7 @@ export default function WriteForm({
                 />
                 <div className="mx-2 h-5 w-px bg-gray-200" />
                 <ToolButton
-                    label={<img src="/icons/write-icons/table.svg" alt="Table" />}
+                    label={<TableIcon />}
                     onClick={() => {
                         if (!activeEditor) return;
                         const { state } = activeEditor;
@@ -192,22 +200,19 @@ export default function WriteForm({
                     }}
                 />
                 <ToolButton
-                    label={<img src="/icons/write-icons/image.svg" alt="Image" />}
+                    label={<ImageIcon />}
                 //onClick={() => }
                 />
                 <button
                     type="button"
                     onClick={() => setGrammarActive((v) => !v)}
                     aria-pressed={grammarActive}
-                    className={`flex items-center gap-1 rounded-[4px] pl-[2px] pr-[6px] py-[2px] transition-colors font-semibold ${grammarActive
+                    className={`flex items-center cursor-pointer gap-1 rounded-[4px] pl-[2px] pr-[6px] py-[2px] transition-colors font-semibold ${grammarActive
                         ? "bg-primary-50 text-primary-500"
                         : "text-gray-700"
                         }`}
                 >
-                    <img
-                        src={grammarActive ? "/icons/write-icons/grammer-active.svg" : "/icons/write-icons/grammer.svg"}
-                        alt="Grammer"
-                    />
+                    {grammarActive ? <GrammerActiveIcon /> : <GrammerIcon />}
                     <span className="ds-subtext">맞춤법 검사</span>
                 </button>
                 <button className="cursor-pointer ml-auto flex items-center justify-center rounded-[4px] border border-primary-500 text-primary-500 ds-caption font-medium p-2 h-[28px]">

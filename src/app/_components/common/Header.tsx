@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/assets/icons/logo.svg";
 
 export default function Header() {
     const navLink =
@@ -19,7 +20,7 @@ export default function Header() {
             <div className="mx-auto flex h-[60px] items-center px-8">
                 <div className="flex items-center">
                     <Link href="/" className="flex items-center gap-1.5">
-                        <img src="/icons/logo.svg" alt="Starlight" className="h-6 w-auto" />
+                        <Logo />
                         <span className="text-gray-900 font-semibold text-[18.9px]">Starlight</span>
                     </Link>
                     <nav className="ml-[100px] flex items-center gap-12 text-gray-800 text-nowrap">
