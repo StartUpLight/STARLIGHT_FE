@@ -112,8 +112,8 @@ export default function WriteForm({
             {/* 고정 헤더 */}
             <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center gap-2">
-                    <div className="h-[20px] px-[6px] rounded-full flex items-center justify-center bg-gray-800 text-white ds-caption font-semibold">{number}</div>
-                    <p className="ds-subtitle font-semibold text-gray-800">{number === '0' ? "개요" : title}</p>
+                    <div className="h-[20px] px-[6px] rounded-full flex items-center justify-center bg-gray-900 text-white ds-caption font-semibold">{number}</div>
+                    <p className="ds-subtitle font-semibold text-gray-900">{number === '0' ? "개요" : title}</p>
                 </div>
                 {number !== '0' && <p className="ds-subtext font-medium text-gray-600 mt-[10px]">{subtitle}</p>}
             </div>
@@ -226,17 +226,17 @@ export default function WriteForm({
                     {number === '0' ? (
                         <>
                             <div>
-                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템명</label>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">아이템명</label>
                                 <TextInput placeholder="답변을 입력하세요." />
                             </div>
 
                             <div>
-                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템 한줄 소개</label>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">아이템 한줄 소개</label>
                                 <TextInput placeholder="답변을 입력하세요." />
                             </div>
 
                             <div>
-                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">아이템 / 아이디어 주요 기능</label>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">아이템 / 아이디어 주요 기능</label>
                                 <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
                                     <EditorContent
                                         editor={editorFeatures}
@@ -248,7 +248,7 @@ export default function WriteForm({
                             </div>
 
                             <div>
-                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">관련 보유 기술</label>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">관련 보유 기술</label>
                                 <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
                                     <EditorContent
                                         editor={editorSkills}
@@ -259,7 +259,7 @@ export default function WriteForm({
                                 </div>
                             </div>
                             <div>
-                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-800">창업 목표</label>
+                                <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">창업 목표</label>
                                 <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
                                     <EditorContent
                                         editor={editorGoals}
