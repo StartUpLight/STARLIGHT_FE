@@ -41,7 +41,7 @@ const LeftSidebar = () => {
 
       <div className="flex flex-col w-full rounded-[12px] bg-white">
         <div className="flex justify-between items-center px-5 py-4 border-b border-gray-200">
-          <span className="text-gray-800 font-semibold ds-subtitle">문항</span>
+          <span className="text-gray-900 font-semibold ds-subtitle">문항</span>
           <span className="px-2 py-[2px] rounded-full bg-gray-100 text-gray-700 ds-caption font-medium">
             1 / 11
           </span>
