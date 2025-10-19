@@ -5,12 +5,15 @@ import Plus from "@/assets/icons/plus.svg";
 import TossIcon from "@/assets/icons/toss.svg";
 import { useState } from "react";
 import Button from "../_components/common/Button";
+import { useRouter } from "next/navigation";
 
 const page = () => {
+    const router = useRouter();
     const [quantity, setQuantity] = useState(1);
+    const [selectedPayment, setSelectedPayment] = useState('card');
     return (
         <div className="min-h-screen bg-white">
-            <div className="mx-[248px] py-[30px] min-w-[500px]">
+            <div className="mx-auto py-[30px] min-w-[550px] max-w-[944px] px-6">
                 <h1 className="ds-title font-semibold text-gray-900 mb-6">결제</h1>
                 <div className="bg-white rounded-xl p-6 mb-[11px] border border-gray-300">
                     <h2 className="ds-subtitle font-semibold text-gray-900 mb-4">주문내역</h2>
@@ -59,12 +62,24 @@ const page = () => {
                 <div className="bg-white rounded-xl p-6 mb-6 border border-gray-300">
                     <h2 className="ds-subtitle font-semibold text-gray-900 mb-4">결제수단</h2>
                     <div className="flex gap-[15.7px]">
-                        <button className="cursor-pointer flex-1 p-[10px] h-[64px] border border-gray-300 rounded-xl ds-text text-gray-800 font-medium hover:bg-primary-50 transition-colors">
+                        <button
+                            onClick={() => setSelectedPayment('card')}
+                            className={`cursor-pointer flex-1 p-[10px] h-[64px] border rounded-xl ds-text font-medium transition-colors ${selectedPayment === 'card'
+                                ? ' bg-primary-50 border-gray-300'
+                                : 'border-gray-300 text-gray-800 hover:bg-primary-50'
+                                }`}
+                        >
                             신용/체크카드
                         </button>
-                        <button className="cursor-pointer flex-1 flex items-center justify-center gap-[10px] p-[10px] h-[64px] border-gray-300 rounded-xl border hover:bg-primary-50 transition-colors">
+                        <button
+                            onClick={() => setSelectedPayment('toss')}
+                            className={`cursor-pointer flex-1 flex items-center justify-center gap-[10px] p-[10px] h-[64px] border rounded-xl transition-colors ${selectedPayment === 'toss'
+                                ? ' bg-primary-50 border-gray-300'
+                                : 'border-gray-300 text-gray-800 hover:bg-primary-50'
+                                }`}
+                        >
                             <TossIcon />
-                            <span className="ds-text text-gray-800 font-medium">토스페이</span>
+                            <span className="ds-text font-medium">토스페이</span>
                         </button>
                     </div>
                 </div>
@@ -98,7 +113,7 @@ const page = () => {
                         </div>
                     </div>
                 </div>
-                <Button text="결제하기" className="w-full h-[44px]" />
+                <Button text="결제하기" className="w-full h-[44px]" onClick={() => router.push('/pay/complete')} />
             </div>
         </div>
     )
