@@ -7,6 +7,9 @@ import React from 'react';
 const Header = () => {
   const pathname = usePathname();
 
+  const isBusinessActive =
+    pathname.startsWith('/business') || pathname.startsWith('/report');
+
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`);
 
@@ -49,7 +52,7 @@ const Header = () => {
               <button
                 type="button"
                 className={`${menuButton} ${
-                  isActive('/business')
+                  isBusinessActive
                     ? 'text-primary-500 font-semibold'
                     : 'text-gray-900'
                 }`}
