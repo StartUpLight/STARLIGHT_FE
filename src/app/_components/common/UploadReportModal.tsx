@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PdfIcon from "@/assets/icons/pdf_icon.svg";
 import CloseIcon from "@/assets/icons/close.svg";
 import WarningIcon from "@/assets/icons/warning.svg";
+import { useRouter } from 'next/navigation';
 
 type UploadReportModalProps = {
     open: boolean;
@@ -10,6 +11,7 @@ type UploadReportModalProps = {
 };
 
 const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onClose }) => {
+    const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [dragActive, setDragActive] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -73,22 +75,17 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onClose }) 
 
     return (
         <div className="fixed inset-0 z-[60]">
-            {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/40"
+                className="absolute inset-x-0 top-[60px] bottom-0 bg-black/40"
                 onClick={onClose}
                 aria-hidden="true"
             />
-
-            {/* Dialog */}
             <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-full max-w-[586px] rounded-xl bg-white shadow-[0_0_20px_0_rgba(0,0,0,0.15)] p-6">
-                    {/* Header */}
                     <div className="flex flex-col gap-1">
                         <h2 className="ds-title font-semibold text-gray-900">내 사업계획서 업로드</h2>
                         <p className="ds-text font-medium text-gray-600">최대 20MB의 용량 제한이 있어요.</p>
                     </div>
-                    {/* Body - Drop area */}
                     <div className="mt-6">
                         <div
                             className={`relative rounded-xl border border-dashed ${dragActive ? 'border-primary-500 bg-primary-50' : 'border-gray-300'} bg-gray-80`}
@@ -150,6 +147,12 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({ open, onClose }) 
                             type="button"
                             className={`flex-1 h-[44px] cursor-pointer rounded-lg px-[32px] py-[10px] ds-text font-medium ${selectedFile && !validationError ? 'bg-primary-500 text-white hover:bg-primary-600' : 'cursor-not-allowed bg-gray-200 text-gray-500'}`}
                             disabled={!selectedFile || !!validationError}
+                            onClick={() => {
+                                onClose();
+                                setSelectedFile(null);
+                                setValidationError(null);
+                                router.push('/report/loading');
+                            }}
                         >
                             업로드하기
                         </button>
