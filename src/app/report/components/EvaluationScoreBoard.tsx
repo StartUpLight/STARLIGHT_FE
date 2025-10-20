@@ -27,7 +27,7 @@ const EvaluationScoreBoard = () => {
   const totalScore = 74;
 
   return (
-    <div className="flex h-[359px] w-[812px] items-start justify-between rounded-[12px] border border-gray-300 p-6">
+    <div className="flex h-[359px] min-w-[812px] items-start justify-between rounded-[12px] border border-gray-300 p-6">
       <div className="flex w-[280px] flex-col">
         <div className="bg-gray-80 flex flex-col rounded-[12px] p-4">
           <div className="ds-subtitle font-semibold text-gray-900">총점</div>
