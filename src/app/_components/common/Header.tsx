@@ -66,11 +66,7 @@ const Header = () => {
                 <Link href="/business" className={dropdownItem} role="menuitem">
                   작성하기
                 </Link>
-                <Link
-                  href="/business/score"
-                  className={dropdownItem}
-                  role="menuitem"
-                >
+                <Link href="/report" className={dropdownItem} role="menuitem">
                   채점하기
                 </Link>
               </div>
