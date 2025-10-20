@@ -1,12 +1,12 @@
-import localFont from "next/font/local";
-import "./globals.css";
-import Header from "./_components/common/Header";
+import localFont from 'next/font/local';
+import './globals.css';
+import Header from './_components/common/Header';
 
 const pretendard = localFont({
-  src: "../fonts/PretendardVariable.ttf",
-  weight: "100 900",
-  variable: "--font-pretendard",
-  display: "swap",
+  src: '../fonts/PretendardVariable.ttf',
+  weight: '100 900',
+  variable: '--font-pretendard',
+  display: 'swap',
 });
 
 export default function RootLayout({
