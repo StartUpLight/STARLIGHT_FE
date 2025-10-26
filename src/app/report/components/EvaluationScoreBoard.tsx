@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 
 interface Category {
@@ -13,18 +14,53 @@ const categories: Category[] = [
   { title: '팀 역량', score: 10, total: 30 },
 ];
 
-const ScoreCard = ({ title, score, total }: Category) => (
-  <div className="active:bg-primary-500 bg-gray-80 hover:bg-primary-50 flex h-24 cursor-pointer flex-col justify-between rounded-[8px] border border-gray-200 p-3 text-gray-900 active:text-white">
-    <div className="ds-subtext font-medium">{title}</div>
-    <div className="ds-subtext font-medium">
-      {score}/{total}
-      <span className="text-[10px] font-medium">점</span>
-    </div>
-  </div>
-);
+type ScoreCardProps = {
+  category: Category;
+  isActive: boolean;
+  onClick: () => void;
+};
+
+const ScoreCard = ({ category, isActive, onClick }: ScoreCardProps) => {
+  const { title, score, total } = category;
+
+  const base =
+    'flex h-24 cursor-pointer flex-col items-start justify-between rounded-[8px] border p-3';
+  const active = 'bg-primary-500 text-white cursor-pointer';
+  const noactive =
+    'bg-gray-80 border-gray-200 text-gray-900 hover:bg-primary-50 cursor-pointer';
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${base} ${isActive ? active : noactive}`}
+    >
+      <div
+        className={`ds-subtext font-medium ${isActive ? 'text-white' : 'text-gray-900'}`}
+      >
+        {title}
+      </div>
+
+      <div
+        className={`ds-subtext font-medium ${isActive ? 'text-white' : 'text-gray-900'}`}
+      >
+        {score}점
+        <span
+          className={`text-[10px] font-semibold ${isActive ? 'text-primary-200' : 'text-gray-500'}`}
+        >
+          {' '}
+          / {total}점
+        </span>
+      </div>
+    </button>
+  );
+};
 
 const EvaluationScoreBoard = () => {
   const totalScore = 74;
+
+  const [selectedIdx, setSelectedIdx] = React.useState(0);
+  const selected = categories[selectedIdx];
 
   return (
     <div className="flex h-[359px] min-w-[812px] items-start justify-between rounded-[12px] border border-gray-300 p-6">
@@ -37,8 +73,13 @@ const EvaluationScoreBoard = () => {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          {categories.map((c) => (
-            <ScoreCard key={c.title} {...c} />
+          {categories.map((c, i) => (
+            <ScoreCard
+              key={c.title}
+              category={c}
+              isActive={i === selectedIdx}
+              onClick={() => setSelectedIdx(i)}
+            />
           ))}
         </div>
       </div>
@@ -46,9 +87,11 @@ const EvaluationScoreBoard = () => {
       <div className="ml-4 flex-1">
         <div className="flex items-baseline gap-[6px]">
           <div className="ds-subtitle font-semibold text-gray-900">
-            문제정의
+            {selected.title}
           </div>
-          <div className="ds-caption font-medium text-gray-700">10/20점</div>
+          <div className="ds-caption font-medium text-gray-700">
+            {selected.score}/{selected.total}점
+          </div>
         </div>
 
         <div className="mt-2 divide-y divide-gray-100">
@@ -58,7 +101,7 @@ const EvaluationScoreBoard = () => {
               className="flex w-full items-center justify-between gap-3 overflow-hidden py-4"
             >
               <p className="ds-text font-medium overflow-ellipsis text-gray-900">
-                체크리스트입니다. 체크리스트입니다. 체크리스트입니다.
+                {selected.title} 체크리스트
               </p>
               <span className="ds-text font-medium text-gray-700">
                 3점 / 4점
