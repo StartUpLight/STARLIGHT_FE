@@ -12,8 +12,8 @@ import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
 import { Extension } from "@tiptap/core";
-import TextInput from "./TextInput";
-import ToolButton from "./ToolButton";
+import TextInput from "./editor/TextInput";
+import ToolButton from "./editor/ToolButton";
 import BoldIcon from "@/assets/icons/write-icons/bold.svg";
 import HighlightIcon from "@/assets/icons/write-icons/highlight.svg";
 import HighlightActiveIcon from "@/assets/icons/write-icons/highlight-active.svg";
@@ -22,7 +22,7 @@ import TableIcon from "@/assets/icons/write-icons/table.svg";
 import ImageIcon from "@/assets/icons/write-icons/image.svg";
 import GrammerIcon from "@/assets/icons/write-icons/grammer.svg";
 import GrammerActiveIcon from "@/assets/icons/write-icons/grammer-active.svg";
-import TableToolbar from "./TableToolbar";
+import TableToolbar from "./editor/TableToolbar";
 
 const DeleteTableOnDelete = Extension.create({
   name: "delete-table-on-delete",
