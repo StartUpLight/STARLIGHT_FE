@@ -22,6 +22,7 @@ import TableIcon from "@/assets/icons/write-icons/table.svg";
 import ImageIcon from "@/assets/icons/write-icons/image.svg";
 import GrammerIcon from "@/assets/icons/write-icons/grammer.svg";
 import GrammerActiveIcon from "@/assets/icons/write-icons/grammer-active.svg";
+import TableToolbar from "./TableToolbar";
 
 const DeleteTableOnDelete = Extension.create({
   name: "delete-table-on-delete",
@@ -232,15 +233,14 @@ const WriteForm = ({
         />
         <ToolButton
           label={<ImageIcon />}
-          //onClick={() => }
+        //onClick={() => }
         />
         <button
           type="button"
           onClick={() => setGrammarActive((v) => !v)}
           aria-pressed={grammarActive}
-          className={`flex items-center cursor-pointer gap-1 rounded-[4px] pl-[2px] pr-[6px] py-[2px] transition-colors font-semibold ${
-            grammarActive ? "bg-primary-50 text-primary-500" : "text-gray-700"
-          }`}
+          className={`flex items-center cursor-pointer gap-1 rounded-[4px] pl-[2px] pr-[6px] py-[2px] transition-colors font-semibold ${grammarActive ? "bg-primary-50 text-primary-500" : "text-gray-700"
+            }`}
         >
           {grammarActive ? <GrammerActiveIcon /> : <GrammerIcon />}
           <span className="ds-subtext">맞춤법 검사</span>
@@ -274,6 +274,7 @@ const WriteForm = ({
                   아이템 / 아이디어 주요 기능
                 </label>
                 <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                  <TableToolbar editor={editorFeatures} />
                   <EditorContent
                     editor={editorFeatures}
                     onFocus={() => setActiveEditor(editorFeatures)}
@@ -288,6 +289,7 @@ const WriteForm = ({
                   관련 보유 기술
                 </label>
                 <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                  <TableToolbar editor={editorSkills} />
                   <EditorContent
                     editor={editorSkills}
                     onFocus={() => setActiveEditor(editorSkills)}
@@ -301,6 +303,7 @@ const WriteForm = ({
                   창업 목표
                 </label>
                 <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                  <TableToolbar editor={editorGoals} />
                   <EditorContent
                     editor={editorGoals}
                     onFocus={() => setActiveEditor(editorGoals)}
@@ -312,6 +315,7 @@ const WriteForm = ({
             </>
           ) : (
             <div className="rounded-[4px] bg-white px-3 py-2 min-h-[252px]">
+              <TableToolbar editor={editorFeatures} />
               <EditorContent
                 editor={editorFeatures}
                 onFocus={() => setActiveEditor(editorFeatures)}
