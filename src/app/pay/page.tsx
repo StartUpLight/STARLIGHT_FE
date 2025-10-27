@@ -6,7 +6,7 @@ import OrderDetails from "./components/OrderDetails";
 import PaymentMethod from "./components/PaymentMethod";
 import PaymentAmount from "./components/PaymentAmount";
 
-const page = () => {
+const Page = () => {
     const router = useRouter();
     const [quantity, setQuantity] = useState(1);
     const [selectedPayment, setSelectedPayment] = useState('card');
@@ -33,4 +33,4 @@ const page = () => {
     )
 }
 
-export default page
+export default Page
