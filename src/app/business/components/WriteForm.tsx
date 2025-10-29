@@ -273,12 +273,20 @@ const WriteForm = ({
                 <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">
                   아이템 / 아이디어 주요 기능
                 </label>
-                <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                <div
+                  className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px] cursor-text"
+                  onClick={(e) => {
+                    if (editorFeatures && !editorFeatures.isDestroyed) {
+                      editorFeatures.commands.focus();
+                      setActiveEditor(editorFeatures);
+                    }
+                  }}
+                >
                   <TableToolbar editor={editorFeatures} />
                   <EditorContent
                     editor={editorFeatures}
                     onFocus={() => setActiveEditor(editorFeatures)}
-                    className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
                     placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
                   />
                 </div>
@@ -288,12 +296,20 @@ const WriteForm = ({
                 <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">
                   관련 보유 기술
                 </label>
-                <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                <div
+                  className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px] cursor-text"
+                  onClick={(e) => {
+                    if (editorSkills && !editorSkills.isDestroyed) {
+                      editorSkills.commands.focus();
+                      setActiveEditor(editorSkills);
+                    }
+                  }}
+                >
                   <TableToolbar editor={editorSkills} />
                   <EditorContent
                     editor={editorSkills}
                     onFocus={() => setActiveEditor(editorSkills)}
-                    className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
                     placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
                   />
                 </div>
@@ -302,24 +318,40 @@ const WriteForm = ({
                 <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">
                   창업 목표
                 </label>
-                <div className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px]">
+                <div
+                  className="rounded-[4px] bg-gray-100 px-3 py-2 min-h-[252px] cursor-text"
+                  onClick={(e) => {
+                    if (editorGoals && !editorGoals.isDestroyed) {
+                      editorGoals.commands.focus();
+                      setActiveEditor(editorGoals);
+                    }
+                  }}
+                >
                   <TableToolbar editor={editorGoals} />
                   <EditorContent
                     editor={editorGoals}
                     onFocus={() => setActiveEditor(editorGoals)}
-                    className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
                     placeholder="본 사업을 통해 달성하고 싶은 궁극적인 목표에 대해 설명"
                   />
                 </div>
               </div>
             </>
           ) : (
-            <div className="rounded-[4px] bg-white px-3 py-2 min-h-[252px]">
+            <div
+              className="rounded-[4px] bg-white px-3 py-2 min-h-[252px] cursor-text"
+              onClick={(e) => {
+                if (editorFeatures && !editorFeatures.isDestroyed) {
+                  editorFeatures.commands.focus();
+                  setActiveEditor(editorFeatures);
+                }
+              }}
+            >
               <TableToolbar editor={editorFeatures} />
               <EditorContent
                 editor={editorFeatures}
                 onFocus={() => setActiveEditor(editorFeatures)}
-                className="prose max-w-none focus:outline-none placeholder:text-gray-400"
+                className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
               />
             </div>
           )}
