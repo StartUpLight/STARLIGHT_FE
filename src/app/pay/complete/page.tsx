@@ -1,8 +1,7 @@
 'use client';
-import Button from "@/app/_components/common/Button";
 import Check from "@/assets/icons/check.svg";
 
-const page = () => {
+const Page = () => {
     return (
         <div className="min-h-screen bg-white flex justify-center">
             <div className="text-center mt-[220px]">
@@ -30,4 +29,4 @@ const page = () => {
     )
 }
 
-export default page
+export default Page
