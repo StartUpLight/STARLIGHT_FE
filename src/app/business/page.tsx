@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import WriteForm from './components/WriteForm';
 import { useBusinessStore } from '@/store/business.store';
 
-const page = () => {
+const Page = () => {
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
 
@@ -31,4 +31,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

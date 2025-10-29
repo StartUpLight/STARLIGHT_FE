@@ -1,7 +1,7 @@
 "use client";
-import { BubbleMenu } from "@tiptap/react";
+import { BubbleMenu, Editor } from "@tiptap/react";
 
-const TableToolbar = ({ editor }: { editor: any }) => {
+const TableToolbar = ({ editor }: { editor: Editor | null }) => {
     if (!editor) return null;
 
     const shouldShow = () => {
