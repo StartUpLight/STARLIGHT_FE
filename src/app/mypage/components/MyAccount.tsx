@@ -1,12 +1,18 @@
+'use client';
 import Image from 'next/image';
-import React from 'react';
+import React, { useState } from 'react';
+import PayHistoryModal from './PayHistoryModal';
 
 const MyAccount = () => {
+  const [isModal, setIsModal] = useState(false);
   return (
     <div className="bg-gray-80 mt-6 flex w-full flex-col items-start gap-6 rounded-[12px] p-6">
       <div className="flex w-full flex-row items-start justify-between">
         <div className="ds-subtitle font-medium text-black">내 계정 </div>
-        <button className="ds-caption cursor-pointer items-center rounded-[4px] bg-gray-200 p-2 font-medium text-gray-900">
+        <button
+          className="ds-caption cursor-pointer items-center rounded-[4px] bg-gray-200 p-2 font-medium text-gray-900"
+          onClick={() => setIsModal(true)}
+        >
           {' '}
           이용권 구매 내역
         </button>
@@ -32,6 +38,7 @@ const MyAccount = () => {
           </div>
         </div>
       </div>
+      {isModal && <PayHistoryModal />}
     </div>
   );
 };
