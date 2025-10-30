@@ -15,10 +15,16 @@ function Button({
   onClick,
   className = '',
 }: ButtonProps) {
-  const sizeClasses = {
-    S: 'ds-caption px-3 py-[6px]',
-    M: 'ds-text px-4 py-[8px]',
-    L: 'ds-text px-5 py-[10px]',
+  const paddingClasses = {
+    S: 'p-2',
+    M: 'px-3 py-2',
+    L: 'px-8 py-[10px]',
+  };
+
+  const defaultTextClasses = {
+    S: 'ds-caption',
+    M: 'ds-text',
+    L: 'ds-text',
   };
 
   const variantClasses: Record<string, string> = {
@@ -30,10 +36,14 @@ function Button({
 
   const colorClasses = variantClasses[color] || color;
 
+  const hasCustomTextClass =
+    /ds-(caption|subtext|text|subtitle|title|heading)/.test(className);
+  const textClass = hasCustomTextClass ? '' : defaultTextClasses[size];
+
   return (
     <button
       onClick={onClick}
-      className={`w-full cursor-pointer rounded-[8px] font-medium transition ${sizeClasses[size]} ${colorClasses} ${rounded} ${className} `}
+      className={`flex cursor-pointer items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className}`}
     >
       {text}
     </button>
