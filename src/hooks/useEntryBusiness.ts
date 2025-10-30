@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 type Options = {
   storageKey?: string;
@@ -17,12 +16,16 @@ const useEntryBusiness = ({
   storage = 'local',
   ignoreSeenOnQuery = false,
 }: Options = {}) => {
-  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const ranRef = useRef(false);
 
-  const getStore = () =>
-    storage === 'local' ? window.localStorage : window.sessionStorage;
+  const getStore = () => window.localStorage;
+
+  const readHasQuery = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+    const sp = new URLSearchParams(window.location.search);
+    return sp.get(queryKey) === 'true';
+  }, [queryKey]);
 
   const stripQuery = useCallback(() => {
     if (typeof window !== 'undefined') {
@@ -34,15 +37,18 @@ const useEntryBusiness = ({
     if (ranRef.current) return;
     ranRef.current = true;
 
+    if (typeof window === 'undefined') return;
+
     const store = getStore();
     const seen = store.getItem(storageKey) === '1';
-    const hasQuery = searchParams.get(queryKey) === 'true';
+    const hasQuery = readHasQuery();
 
     if (seen && !ignoreSeenOnQuery) {
       if (hasQuery) stripQuery();
       setOpen(false);
       return;
     }
+
     if (hasQuery) {
       setOpen(true);
       stripQuery();
@@ -50,7 +56,7 @@ const useEntryBusiness = ({
     }
 
     if (!seen) setOpen(true);
-  }, [queryKey, searchParams, storageKey, stripQuery, ignoreSeenOnQuery]);
+  }, [storageKey, readHasQuery, stripQuery, ignoreSeenOnQuery]);
 
   const close = () => setOpen(false);
 
