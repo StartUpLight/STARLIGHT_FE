@@ -39,7 +39,7 @@ const CreateModal = ({
 
         <Button
           text={buttonText}
-          className="mt-8 rounded-full"
+          className="mt-8 w-full rounded-full"
           onClick={onClick}
         />
       </div>
