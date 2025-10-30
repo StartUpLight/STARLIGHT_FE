@@ -1,3 +1,4 @@
+'use client';
 import Button from '@/app/_components/common/Button';
 import React from 'react';
 import Close from '@/assets/icons/close.svg';

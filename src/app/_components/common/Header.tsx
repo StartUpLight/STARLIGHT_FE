@@ -42,10 +42,11 @@ const Header = () => {
           <nav className="ml-[100px] flex items-center gap-12 text-nowrap">
             <Link
               href="/"
-              className={`${navLink} ${isActive('/')
-                ? 'text-primary-500 font-semibold'
-                : 'text-gray-900'
-                }`}
+              className={`${navLink} ${
+                isActive('/')
+                  ? 'text-primary-500 font-semibold'
+                  : 'text-gray-900'
+              }`}
             >
               홈
             </Link>
@@ -53,10 +54,11 @@ const Header = () => {
             <div className={menuWrapper}>
               <button
                 type="button"
-                className={`${menuButton} ${isBusinessActive
-                  ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
-                  }`}
+                className={`${menuButton} ${
+                  isBusinessActive
+                    ? 'text-primary-500 font-semibold'
+                    : 'text-gray-900'
+                }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -64,7 +66,11 @@ const Header = () => {
               </button>
 
               <div className={menuList} role="menu">
-                <Link href="/business" className={dropdownItem} role="menuitem">
+                <Link
+                  href="/business?create=true"
+                  className={dropdownItem}
+                  role="menuitem"
+                >
                   작성하기
                 </Link>
                 <button
@@ -80,19 +86,21 @@ const Header = () => {
 
             <Link
               href="/expert"
-              className={`${navLink} ${isActive('/expert')
-                ? 'text-primary-500 font-semibold'
-                : 'text-gray-900'
-                }`}
+              className={`${navLink} ${
+                isActive('/expert')
+                  ? 'text-primary-500 font-semibold'
+                  : 'text-gray-900'
+              }`}
             >
               전문가
             </Link>
             <Link
               href="/pricing"
-              className={`${navLink} ${isActive('/pricing')
-                ? 'text-primary-500 font-semibold'
-                : 'text-gray-900'
-                }`}
+              className={`${navLink} ${
+                isActive('/pricing')
+                  ? 'text-primary-500 font-semibold'
+                  : 'text-gray-900'
+              }`}
             >
               요금제
             </Link>
@@ -108,7 +116,10 @@ const Header = () => {
           </Link>
         </div>
       </div>
-      <UploadReportModal open={openUpload} onClose={() => setOpenUpload(false)} />
+      <UploadReportModal
+        open={openUpload}
+        onClose={() => setOpenUpload(false)}
+      />
     </header>
   );
 };
