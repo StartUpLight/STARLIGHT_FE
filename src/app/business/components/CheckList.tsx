@@ -4,7 +4,7 @@ import Button from '@/app/_components/common/Button';
 import Check from '@/assets/icons/white_check.svg';
 import { useBusinessStore } from '@/store/business.store';
 import sections from '@/data/sidebar.json';
-import { ChecklistProps, Section } from '@/types/business/checkList';
+import { ChecklistProps, Section } from '@/types/business/checklist.type';
 
 const CheckList = () => {
   const selected = useBusinessStore((s) => s.selectedItem);
