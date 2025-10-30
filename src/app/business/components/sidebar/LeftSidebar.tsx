@@ -1,35 +1,31 @@
-"use client";
-import React from "react";
-import { useBusinessStore } from "@/store/business.store";
-import sections from "@/data/sidebar.json";
+'use client';
+import React from 'react';
+import { useBusinessStore } from '@/store/business.store';
+import sections from '@/data/sidebar.json';
 
 const LeftSidebar = () => {
   const { selectedItem, setSelectedItem } = useBusinessStore();
   const allItems = sections.flatMap((section) => section.items);
   const totalItems = allItems.length;
-  const currentIndex = allItems.findIndex((item) => item.number === selectedItem.number);
+  const currentIndex = allItems.findIndex(
+    (item) => item.number === selectedItem.number
+  );
   const currentNumber = currentIndex !== -1 ? currentIndex + 1 : 1;
 
   return (
-    <div className="flex flex-col items-start gap-4 w-full">
-      <input
-        type="text"
-        placeholder="제목을 입력하세요."
-        className="w-full py-[10px] px-5 rounded-[12px] ds-subtitle bg-white placeholder:text-gray-400 placeholder:font-medium"
-      />
-
-      <div className="flex flex-col w-full rounded-[12px] bg-white">
-        <div className="flex justify-between items-center px-5 py-4 border-b border-gray-200">
-          <span className="text-gray-900 font-semibold ds-subtitle">문항</span>
-          <span className="px-2 py-[2px] rounded-full bg-gray-100 text-gray-700 ds-caption font-medium">
+    <div className="flex w-full flex-col items-start gap-4">
+      <div className="flex w-full flex-col rounded-[12px] bg-white">
+        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+          <span className="ds-subtitle font-semibold text-gray-900">문항</span>
+          <span className="ds-caption rounded-full bg-gray-100 px-2 py-[2px] font-medium text-gray-700">
             {currentNumber} / {totalItems}
           </span>
         </div>
 
-        <div className="flex flex-col px-5 py-4 space-y-[10px]">
+        <div className="flex flex-col space-y-[10px] px-5 py-4">
           {sections.map((sec, id) => (
             <div key={id} className="flex flex-col space-y-[10px]">
-              <p className="text-gray-500 ds-caption font-medium">
+              <p className="ds-caption font-medium text-gray-500">
                 {sec.title}
               </p>
 
@@ -39,11 +35,11 @@ const LeftSidebar = () => {
                   <div
                     key={item.number}
                     onClick={() => setSelectedItem(item)}
-                    className={`ds-subtext font-medium px-2 py-[3.5px] rounded-[4px] cursor-pointer transition
-                      ${isActive
-                        ? "text-primary-500 bg-primary-50 font-semibold"
-                        : "text-gray-600 hover:bg-gray-100 font-medium"
-                      }`}
+                    className={`ds-subtext cursor-pointer rounded-[4px] px-2 py-[3.5px] font-medium transition ${
+                      isActive
+                        ? 'text-primary-500 bg-primary-50 font-semibold'
+                        : 'font-medium text-gray-600 hover:bg-gray-100'
+                    }`}
                   >
                     {item.name}
                   </div>
@@ -51,7 +47,7 @@ const LeftSidebar = () => {
               })}
 
               {id < sections.length - 1 && (
-                <div className="w-full h-[1px] bg-gray-100" />
+                <div className="h-[1px] w-full bg-gray-100" />
               )}
             </div>
           ))}
