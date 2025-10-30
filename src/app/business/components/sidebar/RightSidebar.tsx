@@ -8,9 +8,7 @@ const RightSidebar = () => {
     <div className="flex h-full w-full flex-col gap-4">
       <CheckList />
 
-      <div className="min-h-[310px]">
-        <SpellCheck />
-      </div>
+      <SpellCheck />
     </div>
   );
 };
