@@ -19,7 +19,7 @@ const CreateModal = ({
   onClick,
 }: CreateModalProps) => {
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/20">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20">
       <div className="relative flex w-[585px] flex-col items-start rounded-[20px] bg-gray-100 p-10">
         <button
           onClick={onClose}
