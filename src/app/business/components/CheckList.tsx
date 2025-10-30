@@ -1,47 +1,37 @@
 'use client';
+import React, { useEffect, useMemo, useState } from 'react';
 import Button from '@/app/_components/common/Button';
-import React, { useState } from 'react';
 import Check from '@/assets/icons/white_check.svg';
+import { useBusinessStore } from '@/store/business.store';
+import sections from '@/data/sidebar.json';
+import { ChecklistProps, Section } from '@/types/business/checkList';
 
 const CheckList = () => {
-  const [checklist, setChecklist] = useState([
-    {
-      id: 1,
-      title: '시장 분석 객관성:',
-      content: '시장 규모·수요의 데이터 기반 분석',
-      checked: true,
-    },
-    {
-      id: 2,
-      title: '경쟁사 분석 명확성:',
-      content: '유사 서비스 특징 및 한계점 도출',
-      checked: true,
-    },
-    {
-      id: 3,
-      title: '핵심 문제 부각성:',
-      content: '핵심 문제의 명확한 강조 (굵기, 수치 등)',
-      checked: true,
-    },
-    {
-      id: 4,
-      title: '핵심 목적 명확성:',
-      content: '문제/해결방식이 구체적으로 연결되어 제시',
-      checked: false,
-    },
-    {
-      id: 5,
-      title: '경쟁사 분석 명확성:',
-      content: '유사 서비스 특징 및 한계점 도출',
-      checked: false,
-    },
-  ]);
+  const selected = useBusinessStore((s) => s.selectedItem);
+
+  const sectionTemplate = useMemo<ChecklistProps[]>(() => {
+    const data = sections as Section[];
+    for (const sec of data) {
+      const found = sec.items.find((it) => it.number === selected.number);
+      if (found?.checklist) return found.checklist;
+    }
+    return [];
+  }, [selected.number]);
+
+  const [checklist, setChecklist] = useState<ChecklistProps[]>([]);
+  useEffect(() => {
+    setChecklist(
+      sectionTemplate.map((e) => ({
+        title: e.title,
+        content: e.content,
+        checked: !!e.checked,
+      }))
+    );
+  }, [sectionTemplate]);
 
   const toggleCheck = (id: number) => {
     setChecklist((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
+      prev.map((it, i) => (i === id ? { ...it, checked: !it.checked } : it))
     );
   };
 
@@ -55,10 +45,10 @@ const CheckList = () => {
 
       <div className="flex w-full flex-col space-y-[10px] px-6 py-5">
         {checklist.map((item, i) => (
-          <div key={item.id}>
+          <div key={`${item.title}-${i}`}>
             <div
               className="flex cursor-pointer items-center gap-[10px]"
-              onClick={() => toggleCheck(item.id)}
+              onClick={() => toggleCheck(i)}
             >
               {item.checked ? (
                 <div className="bg-primary-500 flex h-[18px] w-[18px] items-center justify-center rounded-full">
@@ -70,9 +60,8 @@ const CheckList = () => {
 
               <div className="flex flex-col">
                 <div className="ds-subtext font-semibold text-gray-900">
-                  {item.title}
+                  {item.title}:
                 </div>
-
                 <div className="ds-subtext font-medium text-gray-600">
                   {item.content}
                 </div>
