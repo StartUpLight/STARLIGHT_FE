@@ -5,6 +5,7 @@ import Back from '@/assets/icons/back_icon.svg';
 import Eye from '@/assets/icons/eye.svg';
 import Button from './Button';
 import CreateModal from '@/app/business/components/CreateModal';
+import Image from 'next/image';
 
 const BusinessHeader = () => {
   const router = useRouter();
@@ -64,8 +65,27 @@ const BusinessHeader = () => {
         </div>
 
         <div className="flex items-center justify-end gap-3">
-          <div className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100">
-            <Eye />
+          <div className="group relative">
+            <button
+              type="button"
+              className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
+            >
+              <Eye />
+            </button>
+            <div className="pointer-events-none absolute top-10 left-1/2 hidden -translate-x-1/2 group-hover:block">
+              <div className="relative h-[44px] w-[73px] select-none">
+                <Image
+                  src="/images/bubble.png"
+                  alt="미리보기 호버 말풍선"
+                  fill
+                  sizes="73px"
+                  className="object-contain"
+                />
+                <span className="ds-subtext absolute inset-0 top-2 flex items-center justify-center font-medium text-white">
+                  미리보기
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="h-8 w-[1.6px] bg-gray-200" />
