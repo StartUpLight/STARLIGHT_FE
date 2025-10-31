@@ -15,7 +15,7 @@ const ExpertTab = ({
   className = '',
 }: TabsProps) => {
   return (
-    <div className={`mt-8 flex gap-3 ${className}`}>
+    <div className={`mt-9 flex gap-2 ${className}`}>
       {tabs.map((tab) => (
         <button
           key={tab}
@@ -23,7 +23,7 @@ const ExpertTab = ({
           className={`ds-subtext cursor-pointer rounded-full px-5 py-2 font-medium ${
             activeTab === tab
               ? 'bg-gray-900 text-white'
-              : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+              : 'border border-gray-300 bg-white text-gray-900 hover:bg-gray-300'
           }`}
         >
           {tab}
