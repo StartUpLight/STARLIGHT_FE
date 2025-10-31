@@ -72,12 +72,13 @@ const BusinessHeader = () => {
             >
               <Eye />
             </button>
-            <div className="pointer-events-none absolute top-[40] left-1/2 hidden -translate-x-1/2 group-hover:block">
+            <div className="pointer-events-none absolute top-10 left-1/2 hidden -translate-x-1/2 group-hover:block">
               <div className="relative h-[44px] w-[73px] select-none">
                 <Image
                   src="/images/bubble.png"
                   alt="미리보기 호버 말풍선"
                   fill
+                  sizes="73px"
                   className="object-contain"
                 />
                 <span className="ds-subtext absolute inset-0 top-2 flex items-center justify-center font-medium text-white">
