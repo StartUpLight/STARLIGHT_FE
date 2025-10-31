@@ -1,58 +1,75 @@
-"use client";
-import Button from "@/app/_components/common/Button";
-import React, { useState } from "react";
-import Check from "@/assets/icons/white_check.svg";
+'use client';
+import React, { useEffect, useMemo, useState } from 'react';
+import Button from '@/app/_components/common/Button';
+import Check from '@/assets/icons/white_check.svg';
+import { useBusinessStore } from '@/store/business.store';
+import sections from '@/data/sidebar.json';
+import { ChecklistProps, Section } from '@/types/business/checklist.type';
 
 const CheckList = () => {
-  const [checklist, setChecklist] = useState([
-    { id: 1, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: true },
-    { id: 2, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: true },
-    { id: 3, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: true },
-    { id: 4, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: false },
-    { id: 5, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: false },
-  ]);
+  const selected = useBusinessStore((s) => s.selectedItem);
+
+  const sectionTemplate = useMemo<ChecklistProps[]>(() => {
+    const data = sections as Section[];
+    for (const sec of data) {
+      const found = sec.items.find((it) => it.number === selected.number);
+      if (found?.checklist) return found.checklist;
+    }
+    return [];
+  }, [selected.number]);
+
+  const [checklist, setChecklist] = useState<ChecklistProps[]>([]);
+  useEffect(() => {
+    setChecklist(
+      sectionTemplate.map((e) => ({
+        title: e.title,
+        content: e.content,
+        checked: !!e.checked,
+      }))
+    );
+  }, [sectionTemplate]);
 
   const toggleCheck = (id: number) => {
     setChecklist((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
+      prev.map((it, i) => (i === id ? { ...it, checked: !it.checked } : it))
     );
   };
+
   return (
-    <div className="flex flex-col w-full rounded-[12px] bg-white">
-      <div className="flex items-center w-full px-6 pt-4 pb-[10px] border-b border-gray-200">
-        <span className="text-gray-900 font-semibold ds-subtitle">
+    <div className="flex h-[439px] w-full flex-col rounded-[12px] bg-white">
+      <div className="flex w-full items-center border-b border-gray-200 px-6 pt-4 pb-[10px]">
+        <span className="ds-subtitle font-semibold text-gray-900">
           체크리스트
         </span>
       </div>
 
-      <div className="flex flex-col px-6 py-5 space-y-[10px] w-full">
+      <div className="flex w-full flex-col space-y-[10px] px-6 py-5">
         {checklist.map((item, i) => (
-          <div key={item.id}>
+          <div key={`${item.title}-${i}`}>
             <div
-              className="flex items-center gap-[10px] cursor-pointer"
-              onClick={() => toggleCheck(item.id)}
+              className="flex cursor-pointer items-center gap-[10px]"
+              onClick={() => toggleCheck(i)}
             >
               {item.checked ? (
-                <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-primary-500">
+                <div className="bg-primary-500 flex h-[18px] w-[18px] items-center justify-center rounded-full">
                   <Check />
                 </div>
               ) : (
-                <div className="w-[18px] h-[18px] rounded-full border-2 border-gray-400" />
+                <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-400" />
               )}
 
-              <div
-                className={`ds-text font-medium ${
-                  item.checked ? "text-gray-800" : "text-gray-600"
-                }`}
-              >
-                {item.text}
+              <div className="flex flex-col">
+                <div className="ds-subtext font-semibold text-gray-900">
+                  {item.title}:
+                </div>
+                <div className="ds-subtext font-medium text-gray-600">
+                  {item.content}
+                </div>
               </div>
             </div>
 
             {i < checklist.length - 1 && (
-              <div className="w-full h-[1px] bg-gray-100 mt-[10px]" />
+              <div className="mt-[10px] h-[1px] w-full bg-gray-100" />
             )}
           </div>
         ))}
