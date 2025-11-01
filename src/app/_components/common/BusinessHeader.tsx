@@ -31,7 +31,7 @@ const BusinessHeader = () => {
   }, [title, focused]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[250] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
+    <header className="fixed inset-x-0 top-0 z-[100] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
       <div className="flex h-[60px] w-full items-center justify-between px-8">
         <div
           onClick={() => router.back()}
