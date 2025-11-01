@@ -3,7 +3,14 @@ import Image from 'next/image';
 import Check from '@/assets/icons/gray_check.svg';
 import Plus from '@/assets/icons/white_plus.svg';
 
-const MentorCard = ({ name, careers, status, tags, image }: MentorProps) => {
+const MentorCard = ({
+  name,
+  careers,
+  status,
+  tags,
+  image,
+  workingperiod,
+}: MentorProps) => {
   const isDone = status === 'done';
   return (
     <div className="bg-gray-80 flex w-full flex-row items-start justify-between gap-6 rounded-[12px] p-9">
@@ -15,13 +22,23 @@ const MentorCard = ({ name, careers, status, tags, image }: MentorProps) => {
           height={80}
           className="h-20 w-20 rounded-full object-cover"
         />
+
         <div className="flex flex-col items-start">
-          <div className="ds-subtitle font-semibold text-gray-900">
-            {name}
-            <span className="ds-subtitle ml-1 font-semibold text-gray-700">
-              멘토
-            </span>
+          <div className="flex flex-row items-center gap-2">
+            <div className="ds-subtitle font-semibold text-gray-900">
+              {name}
+              <span className="ds-subtitle ml-1 font-semibold text-gray-700">
+                멘토
+              </span>
+            </div>
+
+            <div className="h-3 w-px bg-gray-300" />
+
+            <div className="ds-subtext font-medium text-gray-700">
+              {workingperiod}년 경력 개발자
+            </div>
           </div>
+
           <div className="ds-subtext my-3 font-medium text-gray-600">
             {careers.join(' / ')}
           </div>

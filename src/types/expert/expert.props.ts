@@ -7,4 +7,5 @@ export interface MentorProps {
   status: 'active' | 'done';
   tags: string[];
   categories: string[];
+  workingperiod: number;
 }

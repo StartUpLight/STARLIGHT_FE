@@ -15,6 +15,7 @@ const Mentor = (e: getExpertResponse): MentorProps => ({
   status: 'active',
   tags: e.tags ?? [],
   categories: e.categories ?? [],
+  workingperiod: e.id,
 });
 
 const ExpertCard = () => {
