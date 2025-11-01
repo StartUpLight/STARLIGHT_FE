@@ -2,11 +2,19 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/assets/icons/logo.svg';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UploadReportModal from './UploadReportModal';
+import LoginModal from './LoginModal';
+import { useAuthStore } from '@/store/auth.store';
 
 const Header = () => {
   const pathname = usePathname();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { isAuthenticated, checkAuth, logout } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const isBusinessActive =
     pathname.startsWith('/business') || pathname.startsWith('/report');
@@ -27,6 +35,35 @@ const Header = () => {
     'group-hover/nav:visible group-hover/nav:opacity-100 group-hover/nav:scale-100';
 
   const [openUpload, setOpenUpload] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
+
+  const handleAuthClick = () => {
+    if (isAuthenticated) {
+      logout();
+    } else {
+      setOpenLogin(true);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileOpen(false);
+  };
+
+  // 프로필 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!isProfileOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.profile-dropdown')) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [isProfileOpen]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-[80] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
@@ -42,11 +79,10 @@ const Header = () => {
           <nav className="ml-[100px] flex items-center gap-12 text-nowrap">
             <Link
               href="/"
-              className={`${navLink} ${
-                isActive('/')
-                  ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/')
+                ? 'text-primary-500 font-semibold'
+                : 'text-gray-900'
+                }`}
             >
               홈
             </Link>
@@ -54,11 +90,10 @@ const Header = () => {
             <div className={menuWrapper}>
               <button
                 type="button"
-                className={`${menuButton} ${
-                  isBusinessActive
-                    ? 'text-primary-500 font-semibold'
-                    : 'text-gray-900'
-                }`}
+                className={`${menuButton} ${isBusinessActive
+                  ? 'text-primary-500 font-semibold'
+                  : 'text-gray-900'
+                  }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -86,21 +121,19 @@ const Header = () => {
 
             <Link
               href="/expert"
-              className={`${navLink} ${
-                isActive('/expert')
-                  ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/expert')
+                ? 'text-primary-500 font-semibold'
+                : 'text-gray-900'
+                }`}
             >
               전문가
             </Link>
             <Link
               href="/pricing"
-              className={`${navLink} ${
-                isActive('/pricing')
-                  ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/pricing')
+                ? 'text-primary-500 font-semibold'
+                : 'text-gray-900'
+                }`}
             >
               요금제
             </Link>
@@ -108,17 +141,52 @@ const Header = () => {
         </div>
 
         <div className="ml-auto flex items-center">
-          <Link
-            href="/login"
-            className="ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap text-gray-900 transition-colors hover:font-semibold"
-          >
-            로그인
-          </Link>
+          {isAuthenticated ? (
+            <div className="relative profile-dropdown">
+              <div
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="cursor-pointer flex items-center justify-center bg-gray-400 rounded-full w-[36px] h-[36px]"
+              >
+                <span className="ds-text text-white font-medium">홍</span>
+              </div>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-[100px] bg-white rounded-[8px] shadow-[0_0_10px_0_rgba(0,0,0,0.10)] overflow-hidden z-20">
+                  <Link
+                    href="/mypage"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="block px-[12px] py-[8px] ds-subtext font-medium text-gray-900 transition-colors hover:bg-primary-50"
+                  >
+                    마이페이지
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="cursor-pointer w-full text-left px-[12px] py-[8px] ds-subtext font-medium text-gray-900 transition-colors hover:bg-primary-50"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAuthClick}
+              className="cursor-pointer ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap text-gray-900 transition-colors hover:font-semibold"
+            >
+              로그인
+            </button>
+          )}
         </div>
       </div>
       <UploadReportModal
         open={openUpload}
         onClose={() => setOpenUpload(false)}
+      />
+      <LoginModal
+        open={openLogin}
+        onClose={() => setOpenLogin(false)}
       />
     </header>
   );
