@@ -16,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <RightSidebar />
         </aside>
 
-        <main className="mx-auto mr-[calc(326px+2rem)] ml-[calc(240px+2rem)] py-[30px]">
+        <main className="fixed top-[90px] left-0 right-0 mr-[calc(326px+2rem)] ml-[calc(240px+2rem)]">
           {children}
         </main>
       </div>
