@@ -1,9 +1,9 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 
-const OAuthSuccessPage = () => {
+const OAuthSuccessContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuthStore();
@@ -31,6 +31,14 @@ const OAuthSuccessPage = () => {
     }, [searchParams, router, login]);
 
     return null;
+};
+
+const OAuthSuccessPage = () => {
+    return (
+        <Suspense fallback={null}>
+            <OAuthSuccessContent />
+        </Suspense>
+    );
 };
 
 export default OAuthSuccessPage;
