@@ -8,4 +8,5 @@ export interface getExpertResponse {
   careers: string[];
   categories: string[];
   tags: string[];
+  workedPeriod: number;
 }
