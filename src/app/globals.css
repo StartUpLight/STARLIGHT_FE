@@ -35,6 +35,15 @@
   --color-gray-800: #3a404a;
   --color-gray-900: #191f28;
 
+  --color-warning-50: #FFE9EE;
+  --color-warning-100: #FFC9D2;
+  --color-warning-200: #F99298;
+  --color-warning-300: #F3636F;
+  --color-warning-400: #FF334B;
+  --color-warning-500: #FF002D;
+  --color-warning-600: #F6002E;
+  --color-warning-700: #E40028;
+
   --color-black: #000000;
   --color-white: #ffffff;
 
