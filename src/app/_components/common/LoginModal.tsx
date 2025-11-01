@@ -13,7 +13,7 @@ type LoginModalProps = {
     onClose: () => void;
 };
 
-const LoginModal: React.FC<LoginModalProps> = ({ open, onClose }) => {
+const LoginModal = ({ open, onClose }: LoginModalProps) => {
     const [agreeToTerms1, setAgreeToTerms1] = useState(false);
     const [agreeToTerms2, setAgreeToTerms2] = useState(false);
     const isAllAgreed = agreeToTerms1 && agreeToTerms2;
