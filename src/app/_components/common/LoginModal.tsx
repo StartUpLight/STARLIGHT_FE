@@ -40,7 +40,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose }) => {
     };
 
     const handleNaverLogin = () => {
-        console.log('네이버 로그인');
+        const backendUrl = process.env.NEXT_PUBLIC_BASE_URL;
+        const oauthUrl = `${backendUrl}/oauth2/authorization/naver`;
+        window.location.href = oauthUrl;
     };
 
     return (

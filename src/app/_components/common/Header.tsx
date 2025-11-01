@@ -173,7 +173,7 @@ const Header = () => {
             <button
               type="button"
               onClick={handleAuthClick}
-              className="ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap text-gray-900 transition-colors hover:font-semibold"
+              className="cursor-pointer ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap text-gray-900 transition-colors hover:font-semibold"
             >
               로그인
             </button>
