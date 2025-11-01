@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useBusinessStore } from "@/store/business.store";
 import StarterKit from "@tiptap/starter-kit";
@@ -39,6 +39,144 @@ const DeleteTableOnDelete = Extension.create({
   },
 });
 
+// 이미지 잘라내기/복사 Extension
+const ImageCutPaste = Extension.create({
+  name: 'imageCutPaste',
+  addKeyboardShortcuts() {
+    return {
+      'Mod-x': ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        const { $from } = selection;
+
+        // 선택된 노드가 이미지인지 확인
+        let imageNode: any = null;
+        let imagePos = -1;
+
+        if (selection.empty) {
+          // 커서 위치에서 이미지 찾기
+          for (let d = $from.depth; d > 0; d--) {
+            const node = $from.node(d);
+            if (node.type.name === 'image') {
+              imageNode = node;
+              imagePos = $from.before(d);
+              break;
+            }
+          }
+        } else {
+          // 선택 범위에서 이미지 찾기
+          state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+            if (node.type.name === 'image') {
+              imageNode = node;
+              imagePos = pos;
+            }
+          });
+        }
+
+        if (imageNode) {
+          const imageSrc = imageNode.attrs.src;
+
+          // 클립보드에 이미지 복사 (잘라내기용)
+          if (imageSrc && typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.write) {
+            if (imageSrc.startsWith('data:')) {
+              // base64 이미지를 Blob으로 변환
+              const base64Response = fetch(imageSrc);
+              base64Response
+                .then(res => res.blob())
+                .then(blob => {
+                  const clipboardItem = new ClipboardItem({ [blob.type || 'image/png']: blob });
+                  return navigator.clipboard.write([clipboardItem]);
+                })
+                .catch(() => {
+                  // 복사 실패 시에도 잘라내기 진행
+                });
+            } else {
+              // URL 이미지
+              fetch(imageSrc)
+                .then(res => res.blob())
+                .then(blob => {
+                  const clipboardItem = new ClipboardItem({ [blob.type || 'image/png']: blob });
+                  return navigator.clipboard.write([clipboardItem]);
+                })
+                .catch(() => {
+                  // 복사 실패 시에도 잘라내기 진행
+                });
+            }
+          }
+
+          // 이미지 삭제 (잘라내기)
+          setTimeout(() => {
+            editor.chain()
+              .focus()
+              .setTextSelection({ from: imagePos, to: imagePos + imageNode.nodeSize })
+              .deleteSelection()
+              .run();
+          }, 10);
+
+          return true;
+        }
+
+        return false;
+      },
+      'Mod-c': ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        const { $from } = selection;
+
+        // 선택된 노드가 이미지인지 확인
+        let imageNode: any = null;
+
+        if (selection.empty) {
+          // 커서 위치에서 이미지 찾기
+          for (let d = $from.depth; d > 0; d--) {
+            const node = $from.node(d);
+            if (node.type.name === 'image') {
+              imageNode = node;
+              break;
+            }
+          }
+        } else {
+          // 선택 범위에서 이미지 찾기
+          state.doc.nodesBetween(selection.from, selection.to, (node) => {
+            if (node.type.name === 'image') {
+              imageNode = node;
+            }
+          });
+        }
+
+        if (imageNode && imageNode.attrs.src) {
+          const imageSrc = imageNode.attrs.src;
+
+          // 클립보드에 이미지 복사
+          if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.write) {
+            if (imageSrc.startsWith('data:')) {
+              fetch(imageSrc)
+                .then(res => res.blob())
+                .then(blob => {
+                  const clipboardItem = new ClipboardItem({ [blob.type || 'image/png']: blob });
+                  return navigator.clipboard.write([clipboardItem]);
+                })
+                .catch(() => { });
+            } else {
+              fetch(imageSrc)
+                .then(res => res.blob())
+                .then(blob => {
+                  const clipboardItem = new ClipboardItem({ [blob.type || 'image/png']: blob });
+                  return navigator.clipboard.write([clipboardItem]);
+                })
+                .catch(() => { });
+            }
+          }
+
+          return true;
+        }
+
+        return false;
+      },
+    };
+  },
+});
+
 const WriteForm = ({
   number = "0",
   title = "개요",
@@ -52,6 +190,7 @@ const WriteForm = ({
     extensions: [
       StarterKit,
       DeleteTableOnDelete,
+      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -68,11 +207,45 @@ const WriteForm = ({
       }),
     ],
     content: "<p></p>",
+    editorProps: {
+      handlePaste: (view, event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find((item) => item.type.indexOf('image') !== -1);
+
+        if (imageItem) {
+          event.preventDefault();
+          const file = imageItem.getAsFile();
+          if (file) {
+            // 파일 크기 제한 (5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+              alert('이미지 크기는 5MB 이하여야 합니다.');
+              return true;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const imageUrl = e.target?.result as string;
+              if (imageUrl && editorFeatures) {
+                editorFeatures.chain().focus().setImage({ src: imageUrl }).run();
+              }
+            };
+            reader.onerror = () => {
+              alert('이미지 읽기에 실패했습니다.');
+            };
+            reader.readAsDataURL(file);
+            return true;
+          }
+        }
+        return false;
+      },
+    },
   });
   const editorSkills = useEditor({
     extensions: [
       StarterKit,
       DeleteTableOnDelete,
+      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -89,11 +262,44 @@ const WriteForm = ({
       }),
     ],
     content: "<p></p>",
+    editorProps: {
+      handlePaste: (view, event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find((item) => item.type.indexOf('image') !== -1);
+
+        if (imageItem) {
+          event.preventDefault();
+          const file = imageItem.getAsFile();
+          if (file) {
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+              alert('이미지 크기는 5MB 이하여야 합니다.');
+              return true;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const imageUrl = e.target?.result as string;
+              if (imageUrl && editorSkills) {
+                editorSkills.chain().focus().setImage({ src: imageUrl }).run();
+              }
+            };
+            reader.onerror = () => {
+              alert('이미지 읽기에 실패했습니다.');
+            };
+            reader.readAsDataURL(file);
+            return true;
+          }
+        }
+        return false;
+      },
+    },
   });
   const editorGoals = useEditor({
     extensions: [
       StarterKit,
       DeleteTableOnDelete,
+      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -109,12 +315,45 @@ const WriteForm = ({
       }),
     ],
     content: "<p></p>",
+    editorProps: {
+      handlePaste: (view, event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find((item) => item.type.indexOf('image') !== -1);
+
+        if (imageItem) {
+          event.preventDefault();
+          const file = imageItem.getAsFile();
+          if (file) {
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+              alert('이미지 크기는 5MB 이하여야 합니다.');
+              return true;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const imageUrl = e.target?.result as string;
+              if (imageUrl && editorGoals) {
+                editorGoals.chain().focus().setImage({ src: imageUrl }).run();
+              }
+            };
+            reader.onerror = () => {
+              alert('이미지 읽기에 실패했습니다.');
+            };
+            reader.readAsDataURL(file);
+            return true;
+          }
+        }
+        return false;
+      },
+    },
   });
   const { updateItemContent, getItemContent } = useBusinessStore();
   const [activeEditor, setActiveEditor] = useState<
     typeof editorFeatures | null
   >(null);
   const [grammarActive, setGrammarActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // store에서 저장된 내용 불러오기
   const savedContent = getItemContent(number);
@@ -243,6 +482,54 @@ const WriteForm = ({
     updateItemContent(number, { oneLineIntro: value });
   };
 
+  // 이미지 파일 선택 핸들러
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !activeEditor) return;
+
+    // 이미지 파일만 허용
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드 가능합니다.');
+      return;
+    }
+
+    // 파일 크기 제한 (예: 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert('이미지 크기는 5MB 이하여야 합니다.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageUrl = e.target?.result as string;
+      if (imageUrl && activeEditor) {
+        activeEditor.chain().focus().setImage({ src: imageUrl }).run();
+      }
+    };
+    reader.onerror = () => {
+      alert('이미지 읽기에 실패했습니다.');
+    };
+    reader.readAsDataURL(file);
+
+    // 같은 파일을 다시 선택할 수 있도록 input 값 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // 이미지 버튼 클릭 핸들러
+  const handleImageButtonClick = () => {
+    if (!activeEditor) {
+      // activeEditor가 없으면 기본 에디터에 포커스
+      if (editorFeatures && !editorFeatures.isDestroyed) {
+        editorFeatures.commands.focus();
+        setActiveEditor(editorFeatures);
+      }
+    }
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="rounded-[12px] border border-gray-100 bg-white w-full h-[756px] flex flex-col">
       {/* 고정 헤더 */}
@@ -362,7 +649,14 @@ const WriteForm = ({
         />
         <ToolButton
           label={<ImageIcon />}
-        //onClick={() => }
+          onClick={handleImageButtonClick}
+        />
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
         />
         <button
           type="button"
@@ -421,7 +715,7 @@ const WriteForm = ({
                   <EditorContent
                     editor={editorFeatures}
                     onFocus={() => setActiveEditor(editorFeatures)}
-                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
+                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text [&_img]:max-w-full [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:object-contain"
                     placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
                   />
                 </div>
@@ -444,7 +738,7 @@ const WriteForm = ({
                   <EditorContent
                     editor={editorSkills}
                     onFocus={() => setActiveEditor(editorSkills)}
-                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
+                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text [&_img]:max-w-full [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:object-contain"
                     placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
                   />
                 </div>
@@ -466,7 +760,7 @@ const WriteForm = ({
                   <EditorContent
                     editor={editorGoals}
                     onFocus={() => setActiveEditor(editorGoals)}
-                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
+                    className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text [&_img]:max-w-full [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:object-contain"
                     placeholder="본 사업을 통해 달성하고 싶은 궁극적인 목표에 대해 설명"
                   />
                 </div>
@@ -486,7 +780,7 @@ const WriteForm = ({
               <EditorContent
                 editor={editorFeatures}
                 onFocus={() => setActiveEditor(editorFeatures)}
-                className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text"
+                className="prose max-w-none focus:outline-none placeholder:text-gray-400 cursor-text [&_img]:max-w-full [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:object-contain"
               />
             </div>
           )}
