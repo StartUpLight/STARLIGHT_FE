@@ -133,22 +133,27 @@ const ExpertCard = () => {
     '성장 전략',
   ];
 
-  const [activeTab, setActiveTab] = useState<string>(categories[0]);
+  const tabs = useMemo(() => {
+    const tabName = Array.from(new Set(categories.filter(Boolean)));
+    return ['전체', ...tabName];
+  }, [categories]);
 
-  const filtered = useMemo(
-    () => mentors.filter((m) => m.categories?.includes(activeTab)),
-    [activeTab]
-  );
+  const [activeTab, setActiveTab] = useState<string>(tabs[0]);
+
+  const filtered = useMemo(() => {
+    return activeTab === '전체'
+      ? mentors
+      : mentors.filter((m) => m.categories?.includes(activeTab));
+  }, [activeTab]);
 
   return (
     <div className="flex w-full flex-col items-start">
       <ExpertTab
-        tabs={categories}
+        tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         className="mb-8"
       />
-
       <div className="flex w-full flex-col gap-6 pb-6">
         {filtered.length === 0 ? (
           <div className="ds-subtext text-gray-600">
