@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Logo from '@/assets/icons/logo.svg';
 import React, { useState } from 'react';
 import UploadReportModal from './UploadReportModal';
+import LoginModal from './LoginModal';
 
 const Header = () => {
   const pathname = usePathname();
@@ -27,6 +28,7 @@ const Header = () => {
     'group-hover/nav:visible group-hover/nav:opacity-100 group-hover/nav:scale-100';
 
   const [openUpload, setOpenUpload] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
 
   return (
     <header className="fixed inset-x-0 top-0 z-[80] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
@@ -42,11 +44,10 @@ const Header = () => {
           <nav className="ml-[100px] flex items-center gap-12 text-nowrap">
             <Link
               href="/"
-              className={`${navLink} ${
-                isActive('/')
-                  ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/')
+                ? 'text-primary-500 font-semibold'
+                : 'text-gray-900'
+                }`}
             >
               홈
             </Link>
@@ -54,11 +55,10 @@ const Header = () => {
             <div className={menuWrapper}>
               <button
                 type="button"
-                className={`${menuButton} ${
-                  isBusinessActive
-                    ? 'text-primary-500 font-semibold'
-                    : 'text-gray-900'
-                }`}
+                className={`${menuButton} ${isBusinessActive
+                  ? 'text-primary-500 font-semibold'
+                  : 'text-gray-900'
+                  }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -86,21 +86,19 @@ const Header = () => {
 
             <Link
               href="/expert"
-              className={`${navLink} ${
-                isActive('/expert')
-                  ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/expert')
+                ? 'text-primary-500 font-semibold'
+                : 'text-gray-900'
+                }`}
             >
               전문가
             </Link>
             <Link
               href="/pricing"
-              className={`${navLink} ${
-                isActive('/pricing')
-                  ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/pricing')
+                ? 'text-primary-500 font-semibold'
+                : 'text-gray-900'
+                }`}
             >
               요금제
             </Link>
@@ -108,17 +106,22 @@ const Header = () => {
         </div>
 
         <div className="ml-auto flex items-center">
-          <Link
-            href="/login"
+          <button
+            type="button"
+            onClick={() => setOpenLogin(true)}
             className="ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap text-gray-900 transition-colors hover:font-semibold"
           >
             로그인
-          </Link>
+          </button>
         </div>
       </div>
       <UploadReportModal
         open={openUpload}
         onClose={() => setOpenUpload(false)}
+      />
+      <LoginModal
+        open={openLogin}
+        onClose={() => setOpenLogin(false)}
       />
     </header>
   );
