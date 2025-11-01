@@ -6,17 +6,35 @@ import Eye from '@/assets/icons/eye.svg';
 import Button from './Button';
 import CreateModal from '@/app/business/components/CreateModal';
 import Image from 'next/image';
+import { useBusinessStore } from '@/store/business.store';
 
 const BusinessHeader = () => {
   const router = useRouter();
+  const { saveAllItems } = useBusinessStore();
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const [inputWidth, setInputWidth] = useState(179);
   const spanRef = useRef<HTMLSpanElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      // TODO: 실제 planId는 동적으로 가져와야 함 (예: URL 파라미터, 스토어 등)
+      const planId = 3;
+      await saveAllItems(planId);
+      alert('모든 항목이 임시 저장되었습니다.');
+    } catch (error) {
+      console.error('저장 중 오류 발생:', error);
+      alert('저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (spanRef.current) {
@@ -91,12 +109,14 @@ const BusinessHeader = () => {
           <div className="h-8 w-[1.6px] bg-gray-200" />
 
           <div className="flex items-center gap-2">
-            <Button
-              text="임시 저장"
-              size="M"
-              color="secondary"
-              className="text-primary-500 border-primary-500 ds-subtext h-[33px] border-[1.2px]"
-            />
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving}
+              className={`text-primary-500 border-primary-500 ds-subtext h-[33px] border-[1.2px] rounded-[8px] px-3 py-2 flex items-center justify-center font-medium transition ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-primary-50'}`}
+            >
+              {isSaving ? "저장 중..." : "임시 저장"}
+            </button>
             <Button
               text="채점하기"
               size="M"

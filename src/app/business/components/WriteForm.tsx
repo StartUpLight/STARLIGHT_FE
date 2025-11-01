@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { useBusinessStore } from "@/store/business.store";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import TextStyle from "@tiptap/extension-text-style";
@@ -109,10 +110,138 @@ const WriteForm = ({
     ],
     content: "<p></p>",
   });
+  const { updateItemContent, getItemContent } = useBusinessStore();
   const [activeEditor, setActiveEditor] = useState<
     typeof editorFeatures | null
   >(null);
   const [grammarActive, setGrammarActive] = useState(false);
+
+  // store에서 저장된 내용 불러오기
+  const savedContent = getItemContent(number);
+  const [itemName, setItemName] = useState(savedContent.itemName || "");
+  const [oneLineIntro, setOneLineIntro] = useState(savedContent.oneLineIntro || "");
+
+  // number가 변경될 때 store에서 내용 불러오기
+  useEffect(() => {
+    if (!editorFeatures) return;
+
+    const content = getItemContent(number);
+    setItemName(content.itemName || "");
+    setOneLineIntro(content.oneLineIntro || "");
+
+    // 에디터 내용 복원
+    if (number === "0") {
+      if (content.editorFeatures && editorFeatures && !editorFeatures.isDestroyed) {
+        try {
+          editorFeatures.commands.setContent(content.editorFeatures);
+        } catch (e) {
+          console.error('에디터 내용 복원 실패:', e);
+        }
+      }
+      if (content.editorSkills && editorSkills && !editorSkills.isDestroyed) {
+        try {
+          editorSkills.commands.setContent(content.editorSkills);
+        } catch (e) {
+          console.error('에디터 내용 복원 실패:', e);
+        }
+      }
+      if (content.editorGoals && editorGoals && !editorGoals.isDestroyed) {
+        try {
+          editorGoals.commands.setContent(content.editorGoals);
+        } catch (e) {
+          console.error('에디터 내용 복원 실패:', e);
+        }
+      }
+    } else {
+      if (content.editorContent && editorFeatures && !editorFeatures.isDestroyed) {
+        try {
+          editorFeatures.commands.setContent(content.editorContent);
+        } catch (e) {
+          console.error('에디터 내용 복원 실패:', e);
+        }
+      }
+    }
+  }, [number, editorFeatures, editorSkills, editorGoals, getItemContent]);
+
+  // 에디터에 onChange 이벤트 리스너 추가 (디바운스 적용)
+  useEffect(() => {
+    if (!editorFeatures) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const handleUpdate = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (number === "0") {
+          updateItemContent(number, {
+            itemName,
+            oneLineIntro,
+            editorFeatures: editorFeatures.getJSON(),
+            editorSkills: editorSkills?.getJSON() || null,
+            editorGoals: editorGoals?.getJSON() || null,
+          });
+        } else {
+          updateItemContent(number, {
+            editorContent: editorFeatures.getJSON(),
+          });
+        }
+      }, 300);
+    };
+
+    editorFeatures.on('update', handleUpdate);
+
+    if (number === "0" && editorSkills) {
+      let skillsTimeoutId: NodeJS.Timeout;
+      const handleSkillsUpdate = () => {
+        clearTimeout(skillsTimeoutId);
+        skillsTimeoutId = setTimeout(() => {
+          updateItemContent(number, {
+            itemName,
+            oneLineIntro,
+            editorSkills: editorSkills.getJSON(),
+          });
+        }, 300);
+      };
+      editorSkills.on('update', handleSkillsUpdate);
+    }
+
+    if (number === "0" && editorGoals) {
+      let goalsTimeoutId: NodeJS.Timeout;
+      const handleGoalsUpdate = () => {
+        clearTimeout(goalsTimeoutId);
+        goalsTimeoutId = setTimeout(() => {
+          updateItemContent(number, {
+            itemName,
+            oneLineIntro,
+            editorGoals: editorGoals.getJSON(),
+          });
+        }, 300);
+      };
+      editorGoals.on('update', handleGoalsUpdate);
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+      editorFeatures.off('update', handleUpdate);
+      if (number === "0" && editorSkills) {
+        editorSkills.off('update');
+      }
+      if (number === "0" && editorGoals) {
+        editorGoals.off('update');
+      }
+    };
+  }, [editorFeatures, editorSkills, editorGoals, number, updateItemContent, itemName, oneLineIntro]);
+
+  // TextInput 값 변경 시 store에 저장
+  const handleItemNameChange = (value: string) => {
+    setItemName(value);
+    updateItemContent(number, { itemName: value });
+  };
+
+  const handleOneLineIntroChange = (value: string) => {
+    setOneLineIntro(value);
+    updateItemContent(number, { oneLineIntro: value });
+  };
 
   return (
     <div className="rounded-[12px] border border-gray-100 bg-white w-full h-[756px] flex flex-col">
@@ -245,9 +374,7 @@ const WriteForm = ({
           {grammarActive ? <GrammerActiveIcon /> : <GrammerIcon />}
           <span className="ds-subtext">맞춤법 검사</span>
         </button>
-        <button className="cursor-pointer ml-auto flex items-center justify-center rounded-[4px] border border-primary-500 text-primary-500 ds-caption font-medium p-2 h-[28px]">
-          임시 저장
-        </button>
+        {/* 임시 저장 버튼은 헤더로 이동됨 - 여기서는 제거 */}
       </div>
 
       {/* 스크롤 가능한 콘텐츠 영역 */}
@@ -259,14 +386,22 @@ const WriteForm = ({
                 <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">
                   아이템명
                 </label>
-                <TextInput placeholder="답변을 입력하세요." />
+                <TextInput
+                  placeholder="답변을 입력하세요."
+                  value={itemName}
+                  onChange={handleItemNameChange}
+                />
               </div>
 
               <div>
                 <label className="ds-subtitle font-semibold mb-[10px] block text-gray-900">
                   아이템 한줄 소개
                 </label>
-                <TextInput placeholder="답변을 입력하세요." />
+                <TextInput
+                  placeholder="답변을 입력하세요."
+                  value={oneLineIntro}
+                  onChange={handleOneLineIntroChange}
+                />
               </div>
 
               <div>

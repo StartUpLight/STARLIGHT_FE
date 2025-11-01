@@ -5,6 +5,7 @@ interface ButtonProps {
   rounded?: string;
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 function Button({
@@ -14,6 +15,7 @@ function Button({
   rounded = '',
   onClick,
   className = '',
+  disabled = false,
 }: ButtonProps) {
   const paddingClasses = {
     S: 'p-2',
@@ -43,7 +45,8 @@ function Button({
   return (
     <button
       onClick={onClick}
-      className={`flex cursor-pointer items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className}`}
+      disabled={disabled}
+      className={`flex items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       {text}
     </button>
