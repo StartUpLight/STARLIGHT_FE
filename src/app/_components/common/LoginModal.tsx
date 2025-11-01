@@ -16,12 +16,10 @@ type LoginModalProps = {
 const LoginModal: React.FC<LoginModalProps> = ({ open, onClose }) => {
     const [agreeToTerms1, setAgreeToTerms1] = useState(false);
     const [agreeToTerms2, setAgreeToTerms2] = useState(false);
-
     const isAllAgreed = agreeToTerms1 && agreeToTerms2;
 
     useEffect(() => {
         if (!open) {
-            // 모달이 닫힐 때 상태 초기화
             setAgreeToTerms1(false);
             setAgreeToTerms2(false);
             return;
@@ -36,34 +34,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ open, onClose }) => {
     if (!open) return null;
 
     const handleKakaoLogin = () => {
-        const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || '';
-        const redirectUri = 'http://localhost:3000/login/oauth2/code/kakao';
-
-        // state 생성 (CSRF 공격 방지)
-        const randomString = Math.random().toString(36).substring(2, 15) +
-            Math.random().toString(36).substring(2, 15) +
-            Date.now().toString();
-        const state = btoa(randomString);
-
-        // state를 sessionStorage에 저장 (콜백에서 검증용)
-        if (typeof window !== 'undefined') {
-            sessionStorage.setItem('kakao_oauth_state', state);
-        }
-
-        // 카카오 OAuth 인증 URL 생성
-        const params = new URLSearchParams({
-            response_type: 'code',
-            client_id: clientId,
-            redirect_uri: redirectUri,
-            state: state,
-        });
-
-        const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
-        window.location.href = kakaoAuthUrl;
+        const backendUrl = process.env.NEXT_PUBLIC_BASE_URL;
+        const oauthUrl = `${backendUrl}/oauth2/authorization/kakao`;
+        window.location.href = oauthUrl;
     };
 
     const handleNaverLogin = () => {
-        // TODO: 네이버 로그인 구현
         console.log('네이버 로그인');
     };
 
