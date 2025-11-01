@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useBusinessStore } from "@/store/business.store";
+import { uploadImage } from "@/lib/imageUpload";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import TextStyle from "@tiptap/extension-text-style";
@@ -223,17 +224,17 @@ const WriteForm = ({
               return true;
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const imageUrl = e.target?.result as string;
-              if (imageUrl && editorFeatures) {
-                editorFeatures.chain().focus().setImage({ src: imageUrl }).run();
-              }
-            };
-            reader.onerror = () => {
-              alert('이미지 읽기에 실패했습니다.');
-            };
-            reader.readAsDataURL(file);
+            // 비동기로 업로드 처리
+            uploadImage(file)
+              .then((imageUrl) => {
+                if (imageUrl && editorFeatures) {
+                  editorFeatures.chain().focus().setImage({ src: imageUrl }).run();
+                }
+              })
+              .catch((error) => {
+                console.error('이미지 업로드 실패:', error);
+                alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+              });
             return true;
           }
         }
@@ -277,17 +278,17 @@ const WriteForm = ({
               return true;
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const imageUrl = e.target?.result as string;
-              if (imageUrl && editorSkills) {
-                editorSkills.chain().focus().setImage({ src: imageUrl }).run();
-              }
-            };
-            reader.onerror = () => {
-              alert('이미지 읽기에 실패했습니다.');
-            };
-            reader.readAsDataURL(file);
+            // 비동기로 업로드 처리
+            uploadImage(file)
+              .then((imageUrl) => {
+                if (imageUrl && editorSkills) {
+                  editorSkills.chain().focus().setImage({ src: imageUrl }).run();
+                }
+              })
+              .catch((error) => {
+                console.error('이미지 업로드 실패:', error);
+                alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+              });
             return true;
           }
         }
@@ -330,17 +331,17 @@ const WriteForm = ({
               return true;
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const imageUrl = e.target?.result as string;
-              if (imageUrl && editorGoals) {
-                editorGoals.chain().focus().setImage({ src: imageUrl }).run();
-              }
-            };
-            reader.onerror = () => {
-              alert('이미지 읽기에 실패했습니다.');
-            };
-            reader.readAsDataURL(file);
+            // 비동기로 업로드 처리
+            uploadImage(file)
+              .then((imageUrl) => {
+                if (imageUrl && editorGoals) {
+                  editorGoals.chain().focus().setImage({ src: imageUrl }).run();
+                }
+              })
+              .catch((error) => {
+                console.error('이미지 업로드 실패:', error);
+                alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+              });
             return true;
           }
         }
@@ -483,7 +484,7 @@ const WriteForm = ({
   };
 
   // 이미지 파일 선택 핸들러
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !activeEditor) return;
 
@@ -500,17 +501,17 @@ const WriteForm = ({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageUrl = e.target?.result as string;
+    try {
+      // 서버에 이미지 업로드 및 공개 URL 받기
+      const imageUrl = await uploadImage(file);
+
       if (imageUrl && activeEditor) {
         activeEditor.chain().focus().setImage({ src: imageUrl }).run();
       }
-    };
-    reader.onerror = () => {
-      alert('이미지 읽기에 실패했습니다.');
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+    }
 
     // 같은 파일을 다시 선택할 수 있도록 input 값 초기화
     if (fileInputRef.current) {
