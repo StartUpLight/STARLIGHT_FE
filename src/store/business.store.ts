@@ -1,5 +1,7 @@
 'use client';
 import { create } from 'zustand';
+import { createSaveRequestBodyFromJson } from '@/lib/api/business';
+import sections from '@/data/sidebar.json';
 
 interface SelectedItem {
     number: string;
@@ -34,7 +36,7 @@ interface BusinessStore {
     getItemContent: (number: string) => ItemContent;
 
     // 모든 항목 저장 (전역 저장 함수)
-    saveAllItems: (planId: number) => Promise<void>;
+    saveAllItems: (planId: number) => void;
 }
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
@@ -63,17 +65,14 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         return get().contents[number] || {};
     },
 
-    saveAllItems: async (planId: number) => {
+    saveAllItems: (planId: number) => {
         const { contents } = get();
-        const { createSaveRequestBodyFromJson, saveBusinessPlanSection } = await import('@/lib/api/business');
-        const sectionsData = await import('@/data/sidebar.json');
-        const sections = sectionsData.default || sectionsData;
 
         // 모든 항목 가져오기
         const allItems = sections.flatMap((section: any) => section.items);
 
-        // 각 항목에 대해 저장 요청 (빈 블록은 제외)
-        const savePromises = allItems.map(async (item) => {
+        // 각 항목에 대해 requestBody 생성 (빈 블록은 제외)
+        allItems.forEach((item) => {
             const content = contents[item.number] || {};
 
             const requestBody = createSaveRequestBodyFromJson(
@@ -87,7 +86,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                 content.editorContent || null
             );
 
-            // 빈 blocks인 경우 요청하지 않음
+            // 빈 blocks인 경우 스킵
             if (!requestBody.blocks || requestBody.blocks.length === 0) {
                 console.log(`[${item.number}] 스킵: 빈 블록`);
                 return;
@@ -111,12 +110,9 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                 return;
             }
 
+            // requestBody 콘솔에 출력 (API 요청은 하지 않음)
             console.log(`[${item.number}] 요청 바디:`, JSON.stringify(requestBody, null, 2));
-
-            return saveBusinessPlanSection(planId, requestBody);
         });
-
-        await Promise.all(savePromises);
     },
 }));
 

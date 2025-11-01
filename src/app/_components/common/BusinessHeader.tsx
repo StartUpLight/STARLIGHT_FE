@@ -21,12 +21,12 @@ const BusinessHeader = () => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     try {
       setIsSaving(true);
       // TODO: 실제 planId는 동적으로 가져와야 함 (예: URL 파라미터, 스토어 등)
       const planId = 3;
-      await saveAllItems(planId);
+      saveAllItems(planId);
       alert('모든 항목이 임시 저장되었습니다.');
     } catch (error) {
       console.error('저장 중 오류 발생:', error);

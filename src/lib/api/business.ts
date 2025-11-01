@@ -541,36 +541,3 @@ export const createSaveRequestBodyFromJson = (
     };
 };
 
-// API 호출 함수 (프록시를 통해 호출)
-export const saveBusinessPlanSection = async (
-    planId: number,
-    requestBody: ReturnType<typeof createSaveRequestBody>
-) => {
-    try {
-        const accessToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdGFyTGlnaHRAZ21haWwuY29tIiwiaWF0IjoxNzYxOTQ2OTc1LCJleHAiOjE3NjE5NTA1NzV9.5prdUSv63Ok7uCd5Am2E6xtoOC7TKzw5CcB34M35rZY'
-        // 프록시 API Route를 통해 호출 (CORS 문제 해결)
-        const url = `/api/v1/business-plans/${planId}/section`;
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(
-                errorData.error || `API 요청 실패: ${response.status}`
-            );
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('저장 실패:', error);
-        throw error;
-    }
-};
-
