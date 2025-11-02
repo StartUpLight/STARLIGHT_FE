@@ -3,7 +3,7 @@ import Button from '@/app/_components/common/Button';
 import React, { useState } from 'react';
 import EvaluationCard from './EvaluationCard';
 
-const OPTIONS = ['강점', '약점'];
+const OPTIONS = ['강점', '약점'] as const;
 type Option = (typeof OPTIONS)[number];
 
 const strengths = [
@@ -40,14 +40,21 @@ const weaknesses = [
     description:
       '현장에서 소비자들의 니즈를 직접 탐색하고, 문제 인식을 명확히 파악하였습니다.',
   },
+  {
+    index: 3,
+    title: '강한 문제 인식',
+    description:
+      '현장에서 소비자들의 니즈를 직접 탐색하고, 문제 인식을 명확히 파악하였습니다.',
+  },
 ];
 
 const TotalEvaluation = () => {
   const [selected, setSelected] = useState<Option>('강점');
   const cards = selected === '강점' ? strengths : weaknesses;
+  const variant = selected === '강점' ? 'strength' : 'weakness';
 
   return (
-    <div className="mt-6 flex w-full flex-col items-start gap-4 rounded-[12px] border border-gray-300 p-6">
+    <div className="mt-6 mb-4 flex w-full flex-col items-start gap-4 rounded-[12px] border border-gray-300 p-6">
       <div className="ds-subtitle font-semibold text-gray-900">총평</div>
 
       <div className="flex w-full items-center justify-between">
@@ -77,7 +84,7 @@ const TotalEvaluation = () => {
 
       <div className="grid w-full grid-cols-3 gap-4">
         {cards.map((item) => (
-          <EvaluationCard key={item.index} {...item} />
+          <EvaluationCard key={item.index} {...item} type={variant} />
         ))}
       </div>
     </div>
