@@ -10,27 +10,27 @@
         "checklist": [
           {
             "title": "한줄 소개 명확성",
-            "content": "문제와 해결방향의 일문 요약",
+            "content": "문제와 해결방향을 1문장으로 요약",
             "checked": true
           },
           {
             "title": "타깃군 구체성",
-            "content": "행동·상황·동기·환경 기반의 세분 정의",
+            "content": "행동·상황·연령·환경의 구체적 정의",
             "checked": true
           },
           {
             "title": "아이템명 적합성",
-            "content": "핵심 가치와 해결 방향의 직관적 반영",
+            "content": "핵심 가치·차별 포인트의 직관적 표현",
             "checked": true
           },
           {
             "title": "보유 기술 근거성",
-            "content": "기능 구현 근거 또는 기술 확보 계획 제시",
+            "content": "기능 구현의 기술적 근거 또는 확보 계획",
             "checked": false
           },
           {
             "title": "기능 체계성",
-            "content": "핵심–보조–확장 기능의 계층 및 우선순위 정리",
+            "content": "핵심–보조–확장 기능의 계층적·논리적 정리",
             "checked": false
           }
         ]
@@ -48,22 +48,22 @@
         "checklist": [
           {
             "title": "문제 원인·영향 논리성",
-            "content": "근본 원인과 영향 관계의 논리적 서술",
+            "content": "사회·경제·기술 요인의 인과 구조 제시",
             "checked": true
           },
           {
             "title": "정량 근거 충실성",
-            "content": "데이터·통계·인터뷰·사례 기반의 문제 입증",
+            "content": "데이터·통계·사례 기반의 문제 입증",
             "checked": true
           },
           {
             "title": "외부 요인 반영성",
-            "content": "정책 변화·산업 구조 등 거시적 요인 고려",
+            "content": "정책 변화·산업·트렌드 등 거시 환경 고려",
             "checked": true
           },
           {
             "title": "핵심 문제 부각성",
-            "content": "핵심 문제의 명확한 강조 (굵기, 수치 등)",
+            "content": "본질적 Pain Point의 강조 (굵기, 수치 등)",
             "checked": true
           },
           {
@@ -81,7 +81,7 @@
         "checklist": [
           {
             "title": "핵심 목적 명확성",
-            "content": "문제와 해결방식이 구체적으로 연결되어 제시",
+            "content": "문제와 해결방식 간의 구조적 연결 제시",
             "checked": true
           },
           {
@@ -91,12 +91,12 @@
           },
           {
             "title": "해결 방식 구체성",
-            "content": "무엇을 어떻게 해결할지의 실행 방향 제시",
+            "content": "어떻게 해결할지의 실행 수단·기술 경로 제시",
             "checked": true
           },
           {
             "title": "사회적 연계성",
-            "content": "시장 경쟁력 및 사회적 가치 창출과의 연관성",
+            "content": "산업·지역·정책과의 가치 창출 연관성",
             "checked": true
           },
           {
@@ -114,17 +114,17 @@
         "checklist": [
           {
             "title": "시장 규모 정의성",
-            "content": "TAM·SAM·SOM 단계별 수치 및 근거",
+            "content": "TAM·SAM·SOM 단계별 수치 근거 제시",
             "checked": true
           },
           {
             "title": "아이템 적합성",
-            "content": "플랫폼·제품 구조의 문제 해결 적합 근거 제시",
+            "content": "문제 구조와 서비스·제품의 해결 적합성 검증",
             "checked": true
           },
           {
             "title": "시각화 명확성",
-            "content": "그래프·표를 통한 시장 규모 및 특성 시각화",
+            "content": "그래프·표를 통한 시장 구조 시각화",
             "checked": true
           },
           {
@@ -134,7 +134,7 @@
           },
           {
             "title": "실증 검증성",
-            "content": "데이터 외 현장 조사·인터뷰 기반 문제 검증",
+            "content": "현장 조사·인터뷰 기반 수요 근거 데이터 제시",
             "checked": true
           }
         ]
@@ -152,27 +152,27 @@
         "checklist": [
           {
             "title": "추진 일정 구체성",
-            "content": "개발 기간 및 월 단위 일정 제시",
+            "content": "단계별 목표·월 단위 일정 제시",
             "checked": true
           },
           {
             "title": "로드맵 시각성",
-            "content": "단계별 일정의 시각적 로드맵화",
+            "content": "개발·마케팅·성과의 시각적 로드맵 제시",
             "checked": true
           },
           {
             "title": "구현 체계 명확성",
-            "content": "내부·외주·협력 등 개발 방식 명시",
+            "content": "내부·외부·협력 파트 간 실행 구조 제시",
             "checked": true
           },
           {
             "title": "리스크 대응성",
-            "content": "예상 위험요소 및 대응 방안 제시",
+            "content": "예상 위험요소 및 대응 방안 구체화",
             "checked": true
           },
           {
             "title": "성과관리 체계성",
-            "content": "단계별 목표 및 KPI 설정",
+            "content": "KPI·성과지표의 추적 가능성 확보",
             "checked": true
           }
         ]
@@ -185,27 +185,27 @@
         "checklist": [
           {
             "title": "시장 분석 객관성",
-            "content": "시장 규모·수요의 데이터 기반 분석",
+            "content": "시장 구조의 정량 데이터 기반 해석",
             "checked": true
           },
           {
             "title": "경쟁사 분석 명확성",
-            "content": "유사 서비스 특징 및 한계점 도출",
+            "content": "유사 경쟁 서비스 특징 및 한계점 도출",
             "checked": true
           },
           {
             "title": "차별화 전략 구체성",
-            "content": "경쟁사 한계 보완을 통한 자사 강점 제시",
+            "content": "자사 강점·고유가치 중심의 차별화 제시",
             "checked": true
           },
           {
             "title": "핵심 기능 논리성",
-            "content": "서비스 주요 기능의 구체적·논리적 설명",
+            "content": "주요 기능의 구조·논리·효용 명시",
             "checked": false
           },
           {
             "title": "확장 전략 연계성",
-            "content": "분석 결과의 지역·타깃·서비스 확장 계획",
+            "content": "분석 결과의 지역·대상·기능 확장 연계",
             "checked": false
           }
         ]
@@ -233,17 +233,17 @@
           },
           {
             "title": "매출 추정 근거성",
-            "content": "단가·예상 고객 수 기반의 계산 제시",
+            "content": "단가×고객수 기반의 수익 산출 논리 명시",
             "checked": true
           },
           {
             "title": "비용 구조 현실성",
-            "content": "주요 비용 항목과 수익 구조의 일관성 확보",
+            "content": "인력·운영·마케팅 등 주요 항목의 현실화",
             "checked": true
           },
           {
             "title": "지불 의향 검증성",
-            "content": "고객군의 지불 의향 조사 및 근거 제시",
+            "content": "고객군의 지불 의향 및 검증 데이터 제시",
             "checked": true
           }
         ]
@@ -256,22 +256,22 @@
         "checklist": [
           {
             "title": "조달 구조 명확성",
-            "content": "정부지원금·투자금·매출·자부담 등 항목별 금액·비율 구분",
+            "content": "지원금·투자금·자부담의 비율 및 출처 명시",
             "checked": true
           },
           {
             "title": "자금 사용 구체성",
-            "content": "개발·운영·마케팅 등 단계별 사용 계획 수치화",
+            "content": "개발·운영·마케팅 등 항목별 사용 계획 수치화",
             "checked": true
           },
           {
             "title": "집행 일정 현실성",
-            "content": "분기·연도별 자금 집행 일정 제시",
+            "content": "분기·연도별 자금 집행 일정의 타당성 제시",
             "checked": true
           },
           {
             "title": "성과 연계성",
-            "content": "각 지출과 성과지표 달성 간의 연계 설명",
+            "content": "투자 항목별 성과 목표의 연결 구조 명시",
             "checked": true
           },
           {
@@ -294,22 +294,22 @@
           },
           {
             "title": "단계별 확장성",
-            "content": "초기 진입시장과 확장시장 로드맵 구분 제시",
+            "content": "초기 진입시장과 확장시장 로드맵 구조 제시",
             "checked": true
           },
           {
             "title": "성과지표 구체성",
-            "content": "데이터/네트워크/규모효과",
+            "content": "매출·트래픽·사용자 수 등 정량 목표 명시",
             "checked": true
           },
           {
             "title": "실행 전략 현실성",
-            "content": "시장 진입방식 및 운영전략의 실현가능성 확보",
+            "content": "자원·네트워크 기반 실행 계획 제시",
             "checked": true
           },
           {
             "title": "성장 방향 명확성",
-            "content": "아이템의 중·장기 성장 방향 제시",
+            "content": "중장기 스케일업 및 지속가능 성장 제시",
             "checked": true
           }
         ]
@@ -327,7 +327,7 @@
         "checklist": [
           {
             "title": "전문 경력 연관성",
-            "content": " 자격·경험의 사업 아이템 관련성 확보",
+            "content": "자격·경험의 사업 아이템 관계성 확보",
             "checked": true
           },
           {
@@ -337,17 +337,17 @@
           },
           {
             "title": "도전정신 함양 여부",
-            "content": "고객 문제 이해 및 해결하는 통찰력 보유",
+            "content": "문제 인식·해결 중심의 추진 역량 제시",
             "checked": true
           },
           {
             "title": "리더십·관리 역량",
-            "content": "목표 설정·일정 관리·팀 운영 능력 보유",
+            "content": "일정 관리·의사결정·협업 구조의 운영력",
             "checked": true
           },
           {
             "title": "실행 자원 확보성",
-            "content": "네트워크 및 사업 추진 자원 확보",
+            "content": "외부 네트워크 및 실행 인프라 확보",
             "checked": true
           }
         ]
@@ -365,12 +365,12 @@
           },
           {
             "title": "역할·책임 명확성",
-            "content": "구성원별 R&R의 구체적 정의",
+            "content": "구성원별 R&R의 구체화",
             "checked": true
           },
           {
             "title": "경험 연관성",
-            "content": "팀원 경력과 사업 아이템의 관련성 제시",
+            "content": "팀원 경험과 사업 아이템의 직접적 연계성",
             "checked": true
           },
           {
@@ -380,7 +380,7 @@
           },
           {
             "title": "팀 우선순위 명확성",
-            "content": "팀원별 기여도 및 핵심 역할의 우선순위 구분",
+            "content": "팀원별 기여도 및 의사결정 구조 정리",
             "checked": true
           }
         ]
