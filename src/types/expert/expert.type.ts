@@ -10,3 +10,8 @@ export interface getExpertResponse {
   tags: string[];
   workedPeriod: number;
 }
+
+export interface getFeedBackExpertResponse {
+  result: string;
+  data: number[];
+}
