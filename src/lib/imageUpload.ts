@@ -26,21 +26,32 @@ export const uploadImage = async (file: File): Promise<string> => {
         const { preSignedUrl, objectUrl } = uploadUrlResponse.data.data;
 
         // 2. presigned URL에 이미지 업로드
-        await axios.put(preSignedUrl, file, {
+        const putResponse = await axios.put(preSignedUrl, file, {
             headers: {
                 'Content-Type': file.type,
             },
         });
 
+        console.log(putResponse.data);
+
         // 3. 공개 처리
-        const publicResponse = await axios.post(`${apiUrl}/v1/images/upload-url/public`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-            },
-            params: {
-                objectUrl,
-            },
-        });
+        // curl의 --data-urlencode와 동일하게 application/x-www-form-urlencoded 형식으로 전송
+        const params = new URLSearchParams();
+        params.append('objectUrl', objectUrl);
+
+        const publicResponse = await axios.post(
+            `${apiUrl}/v1/images/upload-url/public`,
+            params.toString(),
+            {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json',
+                },
+            }
+        );
+
+        console.log(publicResponse.data);
 
         if (publicResponse.data.result !== 'SUCCESS') {
             throw new Error('공개 처리에 실패했습니다.');
