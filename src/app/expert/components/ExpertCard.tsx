@@ -5,6 +5,7 @@ import { useGetExpert, useGetFeedBackExpert } from '@/hooks/queries/useExpert';
 import { getExpertResponse } from '@/types/expert/expert.type';
 import { MentorProps } from '@/types/expert/expert.props';
 import MentorCard from './MentorCard';
+import { useBusinessStore } from '@/store/business.store';
 
 const TAB_LABELS = [
   '지표/데이터',
@@ -37,12 +38,14 @@ const adaptMentor = (e: getExpertResponse) => ({
   workingperiod: e.workedPeriod,
 });
 
-const businessPlanId = 1;
-
 const ExpertCard = () => {
+  const businessPlanId = useBusinessStore((s) => s.planId);
+  const id = businessPlanId ?? undefined;
   const { data: experts = [], isLoading: expertsLoading } = useGetExpert();
-  const { data: feedback, isLoading: feedbackLoading } =
-    useGetFeedBackExpert(businessPlanId);
+  const { data: feedback, isLoading: feedbackLoading } = useGetFeedBackExpert(
+    id,
+    { enabled: id !== undefined }
+  );
 
   const expertsApply = useMemo(
     () => new Set<number>((feedback?.data ?? []).map(Number)),

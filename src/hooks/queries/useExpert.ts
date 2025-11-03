@@ -9,9 +9,18 @@ export function useGetExpert() {
   });
 }
 
-export function useGetFeedBackExpert(businessPlanId: number) {
+export function useGetFeedBackExpert(
+  businessPlanId?: number,
+  options?: { enabled?: boolean }
+) {
+  const enabled =
+    typeof businessPlanId === 'number' &&
+    businessPlanId > 0 &&
+    (options?.enabled ?? true);
+
   return useQuery<getFeedBackExpertResponse>({
-    queryKey: ['GetFeedBackExpert', businessPlanId],
-    queryFn: () => GetFeedBackExpert(businessPlanId),
+    queryKey: ['GetFeedBackExpert', enabled ? businessPlanId : 'none'],
+    queryFn: () => GetFeedBackExpert(businessPlanId as number),
+    enabled,
   });
 }
