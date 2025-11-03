@@ -2,45 +2,18 @@
 import React, { useMemo, useState } from 'react';
 import ExpertTab from './ExpertTab';
 import { useGetExpert, useGetFeedBackExpert } from '@/hooks/queries/useExpert';
-import { getExpertResponse } from '@/types/expert/expert.type';
-import { MentorProps } from '@/types/expert/expert.props';
+import { adaptMentor, MentorProps } from '@/types/expert/expert.props';
 import MentorCard from './MentorCard';
 import { useBusinessStore } from '@/store/business.store';
-
-const TAB_LABELS = [
-  '지표/데이터',
-  '시장성/BM',
-  '팀 역량',
-  '문제 정의',
-  '성장 전략',
-] as const;
-
-type TabLabel = (typeof TAB_LABELS)[number];
-
-const CODE_TO_KO: Record<string, TabLabel> = {
-  MARKET_BM: '시장성/BM',
-  TEAM_CAPABILITY: '팀 역량',
-  PROBLEM_DEFINITION: '문제 정의',
-  GROWTH_STRATEGY: '성장 전략',
-  METRIC_DATA: '지표/데이터',
-};
-const mappingKorea = (code: string): TabLabel | undefined => CODE_TO_KO[code];
-
-const adaptMentor = (e: getExpertResponse) => ({
-  id: e.id,
-  image: e.profileImageUrl,
-  name: e.name,
-  careers: e.careers ?? [],
-  tags: e.tags ?? [],
-  categories: (e.categories ?? [])
-    .map(mappingKorea)
-    .filter(Boolean) as TabLabel[],
-  workingperiod: e.workedPeriod,
-});
+import { TAB_LABELS, TabLabel } from '@/types/expert/label';
 
 const ExpertCard = () => {
+  const tabs = ['전체', ...TAB_LABELS];
+  const [activeTab, setActiveTab] = useState('전체');
+
   const businessPlanId = useBusinessStore((s) => s.planId);
   const id = businessPlanId ?? undefined;
+
   const { data: experts = [], isLoading: expertsLoading } = useGetExpert();
   const { data: feedback, isLoading: feedbackLoading } = useGetFeedBackExpert(
     id,
@@ -61,9 +34,6 @@ const ExpertCard = () => {
       return { ...mentor, status };
     });
   }, [experts, expertsApply]);
-
-  const tabs = ['전체', ...TAB_LABELS];
-  const [activeTab, setActiveTab] = useState<string>('전체');
 
   const filtered =
     activeTab === '전체'
