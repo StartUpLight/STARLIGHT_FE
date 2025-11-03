@@ -88,7 +88,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
             }
 
             const req = postBusinessPlanSubsections(targetPlanId as number, requestBody)
-                .then(() => { console.log(`[${item.number}] 저장 성공, planId: ${targetPlanId}`); })
+                .then(() => { console.log(`[${item.number}] 저장 성공, planId: ${targetPlanId},`); })
                 .catch((err) => { console.error(`[${item.number}] 저장 실패`, err); });
             requests.push(req);
         });

@@ -10,7 +10,8 @@ import { useBusinessStore } from '@/store/business.store';
 
 const BusinessHeader = () => {
   const router = useRouter();
-  const { saveAllItems, initializePlan, resetDraft } = useBusinessStore();
+  // const { saveAllItems, initializePlan, resetDraft } = useBusinessStore();
+  const { saveAllItems, initializePlan } = useBusinessStore();
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const [inputWidth, setInputWidth] = useState(179);
@@ -56,9 +57,9 @@ const BusinessHeader = () => {
 
     return () => {
       if (intervalId) clearInterval(intervalId);
-      resetDraft();
+      // resetDraft();
     };
-  }, [initializePlan, saveAllItems, resetDraft]);
+  }, [initializePlan, saveAllItems]);
 
   useEffect(() => {
     if (spanRef.current) {
