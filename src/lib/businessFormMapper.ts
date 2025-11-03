@@ -1,4 +1,5 @@
 import { ItemContent } from '@/types/business/business.store.type';
+import { Block, BlockContentItem, BusinessPlanSubsectionRequest, TextContentItem } from '@/types/business/business.type';
 import sections from '@/data/sidebar.json';
 
 const getSubSectionTypeFromNumber = (number: string): string => {
@@ -39,7 +40,11 @@ const getChecks = (number: string): boolean[] => {
 };
 
 // TipTap JSON을 마크다운 형식으로 변환
-const convertToMarkdown = (node: any): string => {
+type JSONAttrs = { [key: string]: string | number | boolean | null | undefined };
+type JSONMark = { type: string; attrs?: JSONAttrs };
+type JSONNode = { type?: string; text?: string; marks?: JSONMark[]; attrs?: JSONAttrs; content?: JSONNode[] };
+
+const convertToMarkdown = (node: JSONNode | null | undefined): string => {
     if (!node) return '';
 
     // 텍스트 노드 처리 (마크 적용)
@@ -48,7 +53,7 @@ const convertToMarkdown = (node: any): string => {
         const marks = node.marks || [];
 
         // 마크를 역순으로 적용 (마지막이 가장 바깥쪽)
-        marks.forEach((mark: any) => {
+        marks.forEach((mark) => {
             switch (mark.type) {
                 case 'bold':
                     text = `**${text}**`;
@@ -72,27 +77,20 @@ const convertToMarkdown = (node: any): string => {
     }
 
     if (node.type === 'paragraph') {
-        const content = (node.content || [])
-            .map((child: any) => convertToMarkdown(child))
-            .join('');
+        const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
         return content ? `${content}\n\n` : '';
     }
 
     if (node.type === 'heading') {
-        const level = node.attrs?.level || 1;
-        const content = (node.content || [])
-            .map((child: any) => convertToMarkdown(child))
-            .join('');
+        const level = (node.attrs?.level as number) || 1;
+        const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
         return content ? `${'#'.repeat(level)} ${content.trim()}\n\n` : '';
     }
 
     if (node.type === 'bulletList' || node.type === 'orderedList') {
         const items = (node.content || [])
-            .map((item: any, index: number) => {
-                const itemContent = (item.content || [])
-                    .map((child: any) => convertToMarkdown(child))
-                    .join('')
-                    .trim();
+            .map((item, index: number) => {
+                const itemContent = (item.content || []).map((child) => convertToMarkdown(child)).join('').trim();
                 const prefix = node.type === 'orderedList' ? `${index + 1}. ` : '- ';
                 return itemContent ? `${prefix}${itemContent}\n` : '';
             })
@@ -102,25 +100,19 @@ const convertToMarkdown = (node: any): string => {
 
     if (node.type === 'table') {
         const rows: string[] = [];
-        let headerRow: string[] | null = null;
 
-        (node.content || []).forEach((row: any, rowIndex: number) => {
+        (node.content || []).forEach((row, rowIndex: number) => {
             if (row.type === 'tableRow') {
                 const cells: string[] = [];
-                (row.content || []).forEach((cell: any) => {
+                (row.content || []).forEach((cell) => {
                     if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                        const cellContent = (cell.content || [])
-                            .map((child: any) => convertToMarkdown(child))
-                            .join('')
-                            .trim()
-                            .replace(/\n/g, ' ');
+                        const cellContent = (cell.content || []).map((child) => convertToMarkdown(child)).join('').trim().replace(/\n/g, ' ');
                         cells.push(cellContent);
                     }
                 });
 
                 if (cells.length > 0) {
                     if (rowIndex === 0 && row.content?.[0]?.type === 'tableHeader') {
-                        headerRow = cells;
                         rows.push(`| ${cells.join(' | ')} |`);
                         rows.push(`| ${cells.map(() => '---').join(' | ')} |`);
                     } else {
@@ -140,32 +132,30 @@ const convertToMarkdown = (node: any): string => {
     }
 
     if (node.content && Array.isArray(node.content)) {
-        return node.content.map((child: any) => convertToMarkdown(child)).join('');
+        return node.content.map((child) => convertToMarkdown(child)).join('');
     }
 
     return '';
 };
 
-export const convertEditorJsonToContent = (editorJson: any): any[] => {
-    if (!editorJson || !editorJson.content) return [];
+// TipTap JSON을 BlockContentItem 배열로 변환
+const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } | null): BlockContentItem[] => {
+    if (!editorJson || !Array.isArray(editorJson.content)) return [];
 
-    const contents: any[] = [];
+    const contents: BlockContentItem[] = [];
 
-    const extractTableData = (tableNode: any) => {
+    const extractTableData = (tableNode: JSONNode) => {
         const rows: string[][] = [];
         let columns: string[] = [];
 
         if (tableNode.content && Array.isArray(tableNode.content)) {
-            tableNode.content.forEach((row: any, rowIndex: number) => {
+            tableNode.content.forEach((row, rowIndex: number) => {
                 if (row.type === 'tableRow') {
                     const rowData: string[] = [];
                     if (row.content && Array.isArray(row.content)) {
-                        row.content.forEach((cell: any) => {
+                        row.content.forEach((cell) => {
                             if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                                const cellContent = (cell.content || [])
-                                    .map((child: any) => convertToMarkdown(child))
-                                    .join('')
-                                    .trim();
+                                const cellContent = (cell.content || []).map((child) => convertToMarkdown(child)).join('').trim();
                                 rowData.push(cellContent);
 
                                 if (rowIndex === 0 && cell.type === 'tableHeader') {
@@ -188,11 +178,11 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
         return { columns, rows };
     };
 
-    const textNodes: any[] = [];
-    const tables: any[] = [];
-    const images: any[] = [];
+    const textNodes: JSONNode[] = [];
+    const tables: JSONNode[] = [];
+    const images: JSONNode[] = [];
 
-    (editorJson.content || []).forEach((node: any) => {
+    (editorJson.content || []).forEach((node) => {
         if (node.type === 'table') {
             tables.push(node);
         } else if (node.type === 'image') {
@@ -203,10 +193,7 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
     });
 
     if (textNodes.length > 0) {
-        const markdown = textNodes
-            .map((node: any) => convertToMarkdown(node))
-            .join('')
-            .trim();
+        const markdown = textNodes.map((node) => convertToMarkdown(node)).join('').trim();
 
         if (markdown) {
             contents.push({
@@ -216,33 +203,29 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
         }
     }
 
-    tables.forEach((tableNode: any) => {
+    tables.forEach((tableNode) => {
         const tableData = extractTableData(tableNode);
         if (tableData.rows.length > 0) {
-            contents.push({
-                type: 'table',
-                columns: tableData.columns,
-                rows: tableData.rows,
-            });
+            contents.push({ type: 'table', columns: tableData.columns, rows: tableData.rows });
         }
     });
 
-    images.forEach((imageNode: any) => {
+    images.forEach((imageNode) => {
         contents.push({
             type: 'image',
-            src: imageNode.attrs?.src || '',
-            caption: imageNode.attrs?.alt || imageNode.attrs?.title || '',
+            src: (imageNode.attrs?.src as string) || '',
+            caption: (imageNode.attrs?.alt as string) || (imageNode.attrs?.title as string) || '',
         });
     });
 
-    return contents.length > 0 ? contents : [{ type: 'text', value: '' }];
+    return contents.length > 0 ? contents : [{ type: 'text', value: '' } as TextContentItem];
 };
 
 // JSON으로부터 블록 생성 (저장된 데이터용)
 const createBlockForSectionFromJson = (
     title: string,
-    editorJson: any | null
-) => {
+    editorJson: { content?: JSONNode[] } | null
+): Block => {
     if (!editorJson) {
         return {
             meta: {
@@ -252,7 +235,7 @@ const createBlockForSectionFromJson = (
                 {
                     type: 'text',
                     value: '',
-                },
+                } as TextContentItem,
             ],
         };
     }
@@ -263,7 +246,7 @@ const createBlockForSectionFromJson = (
         meta: {
             title,
         },
-        content: content.length > 0 ? content : [{ type: 'text', value: '' }],
+        content: content.length > 0 ? content : [{ type: 'text', value: '' } as TextContentItem],
     };
 };
 
@@ -273,14 +256,14 @@ export const createSaveRequestBodyFromJson = (
     title: string,
     itemName: string,
     oneLineIntro: string,
-    editorFeaturesJson: any | null,
-    editorSkillsJson: any | null,
-    editorGoalsJson: any | null,
-    editorContentJson?: any | null
-) => {
+    editorFeaturesJson: { content?: JSONNode[] } | null,
+    editorSkillsJson: { content?: JSONNode[] } | null,
+    editorGoalsJson: { content?: JSONNode[] } | null,
+    editorContentJson?: { content?: JSONNode[] } | null
+): BusinessPlanSubsectionRequest => {
     const subSectionType = getSubSectionTypeFromNumber(number);
 
-    let blocks: any[];
+    let blocks: Block[];
 
     if (number === '0') {
         // 개요 섹션: 여러 블록 생성
@@ -302,7 +285,8 @@ export const createSaveRequestBodyFromJson = (
 
         if (editorFeaturesJson) {
             const featuresContent = convertEditorJsonToContent(editorFeaturesJson);
-            if (featuresContent.length > 0 && featuresContent[0].value !== '') {
+            const hasText = featuresContent.some((ci) => ci.type !== 'text' || (ci as TextContentItem).value.trim() !== '');
+            if (hasText) {
                 blocks.push({
                     meta: { title: '아이템 / 아이디어 주요 기능' },
                     content: featuresContent,
@@ -312,7 +296,8 @@ export const createSaveRequestBodyFromJson = (
 
         if (editorSkillsJson) {
             const skillsContent = convertEditorJsonToContent(editorSkillsJson);
-            if (skillsContent.length > 0 && skillsContent[0].value !== '') {
+            const hasText = skillsContent.some((ci) => ci.type !== 'text' || (ci as TextContentItem).value.trim() !== '');
+            if (hasText) {
                 blocks.push({
                     meta: { title: '관련 보유 기술' },
                     content: skillsContent,
@@ -322,7 +307,8 @@ export const createSaveRequestBodyFromJson = (
 
         if (editorGoalsJson) {
             const goalsContent = convertEditorJsonToContent(editorGoalsJson);
-            if (goalsContent.length > 0 && goalsContent[0].value !== '') {
+            const hasText = goalsContent.some((ci) => ci.type !== 'text' || (ci as TextContentItem).value.trim() !== '');
+            if (hasText) {
                 blocks.push({
                     meta: { title: '창업 목표' },
                     content: goalsContent,
@@ -335,13 +321,7 @@ export const createSaveRequestBodyFromJson = (
         // 빈 블록이 아니면 추가
         if (block.content && block.content.length > 0) {
             // content에서 빈 value 제거
-            const filteredContent = block.content.filter((item: any) => {
-                if (item.type === 'text') {
-                    return item.value && item.value.trim() !== '';
-                }
-                // 표나 이미지는 항상 포함
-                return true;
-            });
+            const filteredContent = block.content.filter((ci) => ci.type !== 'text' || (ci as TextContentItem).value.trim() !== '');
 
             // 필터링 후에도 내용이 있으면 블록 추가
             if (filteredContent.length > 0) {
@@ -359,15 +339,9 @@ export const createSaveRequestBodyFromJson = (
 
     // blocks에서 빈 content 제거 및 content 내부의 빈 value 제거
     const filteredBlocks = blocks
-        .map((block) => {
+        .map((block): Block | null => {
             // content에서 빈 value 제거
-            const filteredContent = (block.content || []).filter((item: any) => {
-                if (item.type === 'text') {
-                    return item.value && item.value.trim() !== '';
-                }
-                // 표나 이미지는 항상 포함 (빈 경우도 있을 수 있지만 일단 포함)
-                return true;
-            });
+            const filteredContent = (block.content || []).filter((ci) => ci.type !== 'text' || (ci as TextContentItem).value.trim() !== '');
 
             // 필터링 후 내용이 있는 블록만 반환
             if (filteredContent.length > 0) {
@@ -378,7 +352,7 @@ export const createSaveRequestBodyFromJson = (
             }
             return null;
         })
-        .filter((block) => block !== null);
+        .filter((block): block is Block => block !== null);
 
     return {
         subSectionType,
@@ -391,7 +365,7 @@ export const createSaveRequestBodyFromJson = (
 };
 
 // 단순 래퍼: 한 객체로 받아 바로 subsection 요청 바디 생성
-export const buildSubsectionBody = (
+export const buildSubsectionRequest = (
     number: string,
     title: string,
     content: ItemContent
@@ -401,10 +375,10 @@ export const buildSubsectionBody = (
         title,
         content.itemName || '',
         content.oneLineIntro || '',
-        content.editorFeatures || null,
-        content.editorSkills || null,
-        content.editorGoals || null,
-        content.editorContent || null
+        content.editorFeatures as { content?: JSONNode[] } | null,
+        content.editorSkills as { content?: JSONNode[] } | null,
+        content.editorGoals as { content?: JSONNode[] } | null,
+        content.editorContent as { content?: JSONNode[] } | null
     );
 };
 

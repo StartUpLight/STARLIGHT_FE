@@ -3,14 +3,25 @@ export interface SelectedItem {
     title: string;
     subtitle: string;
 }
+
+// TipTap Editor JSON (간단 정의) - mapper의 JSONNode와 구조 호환
+type JSONAttrValue = string | number | boolean | null | undefined;
+export type EditorJSON = {
+    type?: string;
+    text?: string;
+    marks?: Array<{ type: string; attrs?: Record<string, JSONAttrValue> }>;
+    attrs?: Record<string, JSONAttrValue>;
+    content?: EditorJSON[];
+};
+
 export interface ItemContent {
     itemName?: string;
     oneLineIntro?: string;
-    editorFeatures?: any; // TipTap JSON
-    editorSkills?: any;
-    editorGoals?: any;
+    editorFeatures?: EditorJSON | null; // TipTap JSON
+    editorSkills?: EditorJSON | null;
+    editorGoals?: EditorJSON | null;
     // 일반 항목 전용
-    editorContent?: any; // TipTap JSON
+    editorContent?: EditorJSON | null; // TipTap JSON
 }
 
 export interface BusinessStore {

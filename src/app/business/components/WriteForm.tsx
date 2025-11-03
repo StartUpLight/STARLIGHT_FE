@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
+import type { Node as PMNode } from '@tiptap/pm/model';
+import type { EditorView } from '@tiptap/pm/view';
 import { useBusinessStore } from "@/store/business.store";
 import { uploadImage } from "@/lib/imageUpload";
 import StarterKit from "@tiptap/starter-kit";
@@ -51,7 +53,7 @@ const ImageCutPaste = Extension.create({
         const { $from } = selection;
 
         // 선택된 노드가 이미지인지 확인
-        let imageNode: any = null;
+        let imageNode: PMNode | null = null;
         let imagePos = -1;
 
         if (selection.empty) {
@@ -66,7 +68,7 @@ const ImageCutPaste = Extension.create({
           }
         } else {
           // 선택 범위에서 이미지 찾기
-          state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          state.doc.nodesBetween(selection.from, selection.to, (node: PMNode, pos: number) => {
             if (node.type.name === 'image') {
               imageNode = node;
               imagePos = pos;
@@ -106,10 +108,13 @@ const ImageCutPaste = Extension.create({
           }
 
           // 이미지 삭제 (잘라내기)
+          const _imageNode = imageNode; // capture for type-narrowing in async closure
+          const _imagePos = imagePos;
           setTimeout(() => {
+            if (!_imageNode) return;
             editor.chain()
               .focus()
-              .setTextSelection({ from: imagePos, to: imagePos + imageNode.nodeSize })
+              .setTextSelection({ from: _imagePos, to: _imagePos + _imageNode.nodeSize })
               .deleteSelection()
               .run();
           }, 10);
@@ -125,7 +130,7 @@ const ImageCutPaste = Extension.create({
         const { $from } = selection;
 
         // 선택된 노드가 이미지인지 확인
-        let imageNode: any = null;
+        let imageNode: PMNode | null = null;
 
         if (selection.empty) {
           // 커서 위치에서 이미지 찾기
@@ -138,7 +143,7 @@ const ImageCutPaste = Extension.create({
           }
         } else {
           // 선택 범위에서 이미지 찾기
-          state.doc.nodesBetween(selection.from, selection.to, (node) => {
+          state.doc.nodesBetween(selection.from, selection.to, (node: PMNode) => {
             if (node.type.name === 'image') {
               imageNode = node;
             }
@@ -209,7 +214,7 @@ const WriteForm = ({
     ],
     content: "<p></p>",
     editorProps: {
-      handlePaste: (view, event) => {
+      handlePaste: (view: EditorView, event: ClipboardEvent) => {
         const items = Array.from(event.clipboardData?.items || []);
         const imageItem = items.find((item) => item.type.indexOf('image') !== -1);
 
@@ -264,7 +269,7 @@ const WriteForm = ({
     ],
     content: "<p></p>",
     editorProps: {
-      handlePaste: (view, event) => {
+      handlePaste: (view: EditorView, event: ClipboardEvent) => {
         const items = Array.from(event.clipboardData?.items || []);
         const imageItem = items.find((item) => item.type.indexOf('image') !== -1);
 
@@ -317,7 +322,7 @@ const WriteForm = ({
     ],
     content: "<p></p>",
     editorProps: {
-      handlePaste: (view, event) => {
+      handlePaste: (view: EditorView, event: ClipboardEvent) => {
         const items = Array.from(event.clipboardData?.items || []);
         const imageItem = items.find((item) => item.type.indexOf('image') !== -1);
 
