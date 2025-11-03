@@ -10,7 +10,7 @@ import { useBusinessStore } from '@/store/business.store';
 
 const BusinessHeader = () => {
   const router = useRouter();
-  const { saveAllItems } = useBusinessStore();
+  const { saveAllItems, initializePlan } = useBusinessStore();
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const [inputWidth, setInputWidth] = useState(179);
@@ -24,7 +24,7 @@ const BusinessHeader = () => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const planId = 3; //임시 planId
+      const planId = await initializePlan();
       await saveAllItems(planId);
     } catch (error) {
       console.error('저장 중 오류 발생:', error);

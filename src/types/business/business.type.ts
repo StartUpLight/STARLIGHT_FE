@@ -37,4 +37,13 @@ export interface BusinessPlanSubsectionRequest {
     blocks: Block[];
 }
 
+export interface BusinessPlanCreateResponse {
+    result: 'SUCCESS';
+    data: {
+        businessPlanId: number;
+        title: string | null;
+        planStatus: string;
+    };
+    error: null;
+}
 

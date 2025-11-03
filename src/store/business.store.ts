@@ -1,11 +1,22 @@
 "use client";
 import { create } from 'zustand';
 import { buildSubsectionRequest } from '@/lib/businessFormMapper';
-import { postBusinessPlanSubsections } from '@/api/business';
+import { postBusinessPlan, postBusinessPlanSubsections } from '@/api/business';
 import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
+    planId: null,
+    initializePlan: async () => {
+        const current = get().planId;
+        if (typeof current === 'number' && current > 0) return current;
+        const res = await postBusinessPlan();
+        if (res.result === 'SUCCESS' && res.data?.businessPlanId) {
+            set({ planId: res.data.businessPlanId });
+            return res.data.businessPlanId;
+        }
+        throw new Error('Failed to initialize business plan');
+    },
     selectedItem: {
         number: '0',
         title: '개요',
@@ -31,7 +42,11 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         return get().contents[number] || {};
     },
 
-    saveAllItems: async (planId: number) => {
+    saveAllItems: async (planId?: number) => {
+        let targetPlanId = planId;
+        if (!targetPlanId) {
+            targetPlanId = await get().initializePlan();
+        }
         const { contents } = get();
 
         type SidebarChecklist = { title: string; content: string; checked?: boolean };
@@ -49,8 +64,8 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                 return;
             }
 
-            const req = postBusinessPlanSubsections(planId, requestBody)
-                .then(() => { console.log(`[${item.number}] 저장 성공`); })
+            const req = postBusinessPlanSubsections(targetPlanId as number, requestBody)
+                .then(() => { console.log(`[${item.number}] 저장 성공, planId: ${targetPlanId}`); })
                 .catch((err) => { console.error(`[${item.number}] 저장 실패`, err); });
             requests.push(req);
         });

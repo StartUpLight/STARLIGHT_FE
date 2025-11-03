@@ -25,6 +25,8 @@ export interface ItemContent {
 }
 
 export interface BusinessStore {
+    planId: number | null;
+    initializePlan: () => Promise<number>;
     selectedItem: SelectedItem;
     setSelectedItem: (item: SelectedItem) => void;
 
@@ -38,7 +40,7 @@ export interface BusinessStore {
     getItemContent: (number: string) => ItemContent;
 
     // 모든 항목 저장 (전역 저장 함수)
-    saveAllItems: (planId: number) => Promise<void>;
+    saveAllItems: (planId?: number) => Promise<void>;
 }
 
 
