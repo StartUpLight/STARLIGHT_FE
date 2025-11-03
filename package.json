@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.5",
     "@tiptap/core": "^2.26.3",
     "@tiptap/extension-color": "^2.6.6",
     "@tiptap/extension-highlight": "^2.6.6",
