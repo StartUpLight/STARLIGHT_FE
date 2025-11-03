@@ -5,17 +5,40 @@ import { postBusinessPlan, postBusinessPlanSubsections } from '@/api/business';
 import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
 
+let initializingPlanPromise: Promise<number> | null = null;
+
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
     planId: null,
     initializePlan: async () => {
         const current = get().planId;
         if (typeof current === 'number' && current > 0) return current;
-        const res = await postBusinessPlan();
-        if (res.result === 'SUCCESS' && res.data?.businessPlanId) {
-            set({ planId: res.data.businessPlanId });
-            return res.data.businessPlanId;
+        if (initializingPlanPromise) {
+            return initializingPlanPromise;
         }
-        throw new Error('Failed to initialize business plan');
+        initializingPlanPromise = (async () => {
+            try {
+                const res = await postBusinessPlan();
+                if (res.result === 'SUCCESS' && res.data?.businessPlanId) {
+                    set({ planId: res.data.businessPlanId });
+                    return res.data.businessPlanId;
+                }
+                throw new Error('Failed to initialize business plan');
+            } finally {
+                initializingPlanPromise = null;
+            }
+        })();
+        return initializingPlanPromise;
+    },
+    resetDraft: () => {
+        set({
+            planId: null,
+            selectedItem: {
+                number: '0',
+                title: '개요',
+                subtitle: '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
+            },
+            contents: {},
+        });
     },
     selectedItem: {
         number: '0',

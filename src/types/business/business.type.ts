@@ -1,3 +1,4 @@
+//사업계획서 subsection 요청 시 필요한 type들
 export interface TextContentItem {
     type: 'text';
     value: string;
@@ -37,6 +38,7 @@ export interface BusinessPlanSubsectionRequest {
     blocks: Block[];
 }
 
+//사업계획서 생성 응답 type
 export interface BusinessPlanCreateResponse {
     result: 'SUCCESS';
     data: {

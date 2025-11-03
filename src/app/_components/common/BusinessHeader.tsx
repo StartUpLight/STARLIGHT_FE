@@ -10,7 +10,7 @@ import { useBusinessStore } from '@/store/business.store';
 
 const BusinessHeader = () => {
   const router = useRouter();
-  const { saveAllItems, initializePlan } = useBusinessStore();
+  const { saveAllItems, initializePlan, resetDraft } = useBusinessStore();
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const [inputWidth, setInputWidth] = useState(179);
@@ -33,6 +33,32 @@ const BusinessHeader = () => {
     }
     // alert('모든 항목이 임시 저장되었습니다.');
   };
+
+  // 3분마다 자동 임시 저장
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const setup = async () => {
+      try {
+        await initializePlan();
+        intervalId = setInterval(async () => {
+          try {
+            const planId = await initializePlan();
+            await saveAllItems(planId);
+          } catch (e) {
+            console.error('자동 임시 저장 실패:', e);
+          }
+        }, 180000);
+      } catch (e) {
+        console.error('사업계획서 초기화 실패:', e);
+      }
+    };
+    setup();
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      resetDraft();
+    };
+  }, [initializePlan, saveAllItems, resetDraft]);
 
   useEffect(() => {
     if (spanRef.current) {
