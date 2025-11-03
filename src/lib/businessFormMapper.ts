@@ -262,6 +262,7 @@ export const createSaveRequestBodyFromJson = (
     editorContentJson?: { content?: JSONNode[] } | null
 ): BusinessPlanSubsectionRequest => {
     const subSectionType = getSubSectionTypeFromNumber(number);
+    const checks = getChecks(number);
 
     let blocks: Block[];
 
@@ -356,6 +357,7 @@ export const createSaveRequestBodyFromJson = (
 
     return {
         subSectionType,
+        checks,
         meta: {
             author: 'string',
             createdAt: '1362-64-41',

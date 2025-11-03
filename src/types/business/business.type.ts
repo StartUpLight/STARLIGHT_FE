@@ -34,6 +34,7 @@ export interface BusinessPlanSubsectionRequestMeta {
 
 export interface BusinessPlanSubsectionRequest {
     subSectionType: string;
+    checks?: boolean[];
     meta: BusinessPlanSubsectionRequestMeta;
     blocks: Block[];
 }
