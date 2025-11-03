@@ -1,43 +1,9 @@
-'use client';
+"use client";
 import { create } from 'zustand';
-import { createSaveRequestBodyFromJson } from '@/lib/api/business';
+import { buildSubsectionBody } from '@/lib/businessFormMapper';
+import { postBusinessPlanSubsections } from '@/api/business';
 import sections from '@/data/sidebar.json';
-
-interface SelectedItem {
-    number: string;
-    title: string;
-    subtitle: string;
-}
-
-// 각 항목별 에디터 내용 저장
-interface ItemContent {
-    // 개요(number="0") 전용
-    itemName?: string;
-    oneLineIntro?: string;
-    editorFeatures?: any; // TipTap JSON
-    editorSkills?: any;
-    editorGoals?: any;
-
-    // 일반 항목 전용
-    editorContent?: any; // TipTap JSON
-}
-
-interface BusinessStore {
-    selectedItem: SelectedItem;
-    setSelectedItem: (item: SelectedItem) => void;
-
-    // 각 항목별 내용 저장 (number를 키로 사용)
-    contents: Record<string, ItemContent>;
-
-    // 항목 내용 업데이트
-    updateItemContent: (number: string, content: Partial<ItemContent>) => void;
-
-    // 항목 내용 가져오기
-    getItemContent: (number: string) => ItemContent;
-
-    // 모든 항목 저장 (전역 저장 함수)
-    saveAllItems: (planId: number) => void;
-}
+import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
     selectedItem: {
@@ -65,54 +31,33 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         return get().contents[number] || {};
     },
 
-    saveAllItems: (planId: number) => {
+    saveAllItems: async (planId: number) => {
         const { contents } = get();
 
-        // 모든 항목 가져오기
         const allItems = sections.flatMap((section: any) => section.items);
 
-        // 각 항목에 대해 requestBody 생성 (빈 블록은 제외)
+        const requests: Promise<any>[] = [];
         allItems.forEach((item) => {
             const content = contents[item.number] || {};
+            const requestBody = buildSubsectionBody(item.number, item.title, content);
 
-            const requestBody = createSaveRequestBodyFromJson(
-                item.number,
-                item.title,
-                content.itemName || '',
-                content.oneLineIntro || '',
-                content.editorFeatures || null,
-                content.editorSkills || null,
-                content.editorGoals || null,
-                content.editorContent || null
-            );
-
-            // 빈 blocks인 경우 스킵
             if (!requestBody.blocks || requestBody.blocks.length === 0) {
                 console.log(`[${item.number}] 스킵: 빈 블록`);
                 return;
             }
 
-            // 각 블록의 content가 비어있는지 확인
-            const hasValidContent = requestBody.blocks.some((block: any) => {
-                return block.content &&
-                    block.content.length > 0 &&
-                    block.content.some((item: any) => {
-                        if (item.type === 'text') {
-                            return item.value && item.value.trim() !== '';
-                        }
-                        // 표나 이미지는 항상 유효하다고 간주
-                        return true;
-                    });
-            });
-
-            if (!hasValidContent) {
-                console.log(`[${item.number}] 스킵: 유효한 내용 없음`);
-                return;
-            }
-
-            // requestBody 콘솔에 출력 (API 요청은 하지 않음)
-            console.log(`[${item.number}] 요청 바디:`, JSON.stringify(requestBody, null, 2));
+            requests.push(
+                postBusinessPlanSubsections(planId, {
+                    ...requestBody,
+                }).then(() => {
+                    console.log(`[${item.number}] 저장 성공`);
+                }).catch((err) => {
+                    console.error(`[${item.number}] 저장 실패`, err);
+                })
+            );
         });
+
+        await Promise.allSettled(requests);
     },
 }));
 

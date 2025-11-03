@@ -1,14 +1,33 @@
-import { Editor } from '@tiptap/react';
+import { ItemContent } from '@/types/business/business.store.type';
 import sections from '@/data/sidebar.json';
 
-// sectionName 매핑
-const getSectionName = (number: string): string => {
-    if (number === '0') return 'OVERVIEW';
-    if (number.startsWith('1-')) return 'PROBLEM_RECOGNITION';
-    if (number.startsWith('2-')) return 'FEASIBILITY';
-    if (number.startsWith('3-')) return 'GROWTH_STRATEGY';
-    if (number.startsWith('4-')) return 'TEAM_COMPETENCE';
-    return 'OVERVIEW';
+const getSubSectionTypeFromNumber = (number: string): string => {
+    switch (number) {
+        case '0':
+            return 'OVERVIEW_BASIC';
+        case '1-1':
+            return 'PROBLEM_BACKGROUND';
+        case '1-2':
+            return 'PROBLEM_PURPOSE';
+        case '1-3':
+            return 'PROBLEM_MARKET';
+        case '2-1':
+            return 'FEASIBILITY_STRATEGY';
+        case '2-2':
+            return 'FEASIBILITY_MARKET';
+        case '3-1':
+            return 'GROWTH_MODEL';
+        case '3-2':
+            return 'GROWTH_FUNDING';
+        case '3-3':
+            return 'GROWTH_ENTRY';
+        case '4-1':
+            return 'TEAM_FOUNDER';
+        case '4-2':
+            return 'TEAM_MEMBERS';
+        default:
+            return 'OVERVIEW_BASIC';
+    }
 };
 
 // checklist에서 checks 배열 추출
@@ -38,12 +57,9 @@ const convertToMarkdown = (node: any): string => {
                     text = `*${text}*`;
                     break;
                 case 'highlight':
-                    // 마크다운 표준에는 없지만 ==text== 형식 사용 (GFM)
                     text = `==${text}==`;
                     break;
                 case 'textStyle':
-                    // 색상은 마크다운에서 지원 안 함, 텍스트만 유지
-                    // 필요시 HTML 형식으로: <span style="color:${mark.attrs?.color}">${text}</span>
                     break;
                 case 'code':
                     text = `\`${text}\``;
@@ -55,7 +71,6 @@ const convertToMarkdown = (node: any): string => {
         return text;
     }
 
-    // 블록 노드 처리
     if (node.type === 'paragraph') {
         const content = (node.content || [])
             .map((child: any) => convertToMarkdown(child))
@@ -124,7 +139,6 @@ const convertToMarkdown = (node: any): string => {
         return src ? `![${alt}](${src})\n\n` : '';
     }
 
-    // 기타 노드는 재귀적으로 처리
     if (node.content && Array.isArray(node.content)) {
         return node.content.map((child: any) => convertToMarkdown(child)).join('');
     }
@@ -132,13 +146,11 @@ const convertToMarkdown = (node: any): string => {
     return '';
 };
 
-// TipTap JSON을 API content 형식으로 변환 (마크다운 사용)
 export const convertEditorJsonToContent = (editorJson: any): any[] => {
     if (!editorJson || !editorJson.content) return [];
 
     const contents: any[] = [];
 
-    // 표 추출 함수
     const extractTableData = (tableNode: any) => {
         const rows: string[][] = [];
         let columns: string[] = [];
@@ -176,7 +188,6 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
         return { columns, rows };
     };
 
-    // 표와 이미지를 제외한 노드만 마크다운으로 변환
     const textNodes: any[] = [];
     const tables: any[] = [];
     const images: any[] = [];
@@ -191,7 +202,6 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
         }
     });
 
-    // 텍스트 노드를 마크다운으로 변환
     if (textNodes.length > 0) {
         const markdown = textNodes
             .map((node: any) => convertToMarkdown(node))
@@ -206,7 +216,6 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
         }
     }
 
-    // 표는 별도로 추가
     tables.forEach((tableNode: any) => {
         const tableData = extractTableData(tableNode);
         if (tableData.rows.length > 0) {
@@ -218,7 +227,6 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
         }
     });
 
-    // 이미지는 별도로 추가
     images.forEach((imageNode: any) => {
         contents.push({
             type: 'image',
@@ -228,121 +236,6 @@ export const convertEditorJsonToContent = (editorJson: any): any[] => {
     });
 
     return contents.length > 0 ? contents : [{ type: 'text', value: '' }];
-};
-
-// 전체 블록 생성 (개요 섹션의 경우 여러 블록)
-const createBlocksForOverview = (
-    itemName: string,
-    oneLineIntro: string,
-    editorFeatures: Editor | null,
-    editorSkills: Editor | null,
-    editorGoals: Editor | null
-) => {
-    const blocks: any[] = [];
-
-    // 아이템명 블록
-    if (itemName.trim()) {
-        blocks.push({
-            meta: {
-                title: '아이템명',
-            },
-            content: [
-                {
-                    type: 'text',
-                    value: itemName,
-                },
-            ],
-        });
-    }
-
-    // 아이템 한줄 소개 블록
-    if (oneLineIntro.trim()) {
-        blocks.push({
-            meta: {
-                title: '아이템 한줄 소개',
-            },
-            content: [
-                {
-                    type: 'text',
-                    value: oneLineIntro,
-                },
-            ],
-        });
-    }
-
-    // 아이템 / 아이디어 주요 기능 블록
-    if (editorFeatures && !editorFeatures.isDestroyed) {
-        const featuresJson = editorFeatures.getJSON();
-        const featuresContent = convertEditorJsonToContent(featuresJson);
-        if (featuresContent.length > 0 && featuresContent[0].value !== '') {
-            blocks.push({
-                meta: {
-                    title: '아이템 / 아이디어 주요 기능',
-                },
-                content: featuresContent,
-            });
-        }
-    }
-
-    // 관련 보유 기술 블록
-    if (editorSkills && !editorSkills.isDestroyed) {
-        const skillsJson = editorSkills.getJSON();
-        const skillsContent = convertEditorJsonToContent(skillsJson);
-        if (skillsContent.length > 0 && skillsContent[0].value !== '') {
-            blocks.push({
-                meta: {
-                    title: '관련 보유 기술',
-                },
-                content: skillsContent,
-            });
-        }
-    }
-
-    // 창업 목표 블록
-    if (editorGoals && !editorGoals.isDestroyed) {
-        const goalsJson = editorGoals.getJSON();
-        const goalsContent = convertEditorJsonToContent(goalsJson);
-        if (goalsContent.length > 0 && goalsContent[0].value !== '') {
-            blocks.push({
-                meta: {
-                    title: '창업 목표',
-                },
-                content: goalsContent,
-            });
-        }
-    }
-
-    return blocks;
-};
-
-// 일반 섹션의 블록 생성
-const createBlockForSection = (
-    title: string,
-    editor: Editor | null
-) => {
-    if (!editor || editor.isDestroyed) {
-        return {
-            meta: {
-                title,
-            },
-            content: [
-                {
-                    type: 'text',
-                    value: '',
-                },
-            ],
-        };
-    }
-
-    const editorJson = editor.getJSON();
-    const content = convertEditorJsonToContent(editorJson);
-
-    return {
-        meta: {
-            title,
-        },
-        content: content.length > 0 ? content : [{ type: 'text', value: '' }],
-    };
 };
 
 // JSON으로부터 블록 생성 (저장된 데이터용)
@@ -374,48 +267,6 @@ const createBlockForSectionFromJson = (
     };
 };
 
-// API 요청 body 생성
-export const createSaveRequestBody = (
-    number: string,
-    title: string,
-    itemName: string,
-    oneLineIntro: string,
-    editorFeatures: Editor | null,
-    editorSkills: Editor | null,
-    editorGoals: Editor | null
-) => {
-    const sectionName = getSectionName(number);
-    const checks = getChecks(number);
-
-    let blocks: any[];
-
-    if (number === '0') {
-        // 개요 섹션: 여러 블록 생성
-        blocks = createBlocksForOverview(
-            itemName,
-            oneLineIntro,
-            editorFeatures,
-            editorSkills,
-            editorGoals
-        );
-    } else {
-        // 일반 섹션: 단일 블록 생성
-        blocks = [
-            createBlockForSection(title, editorFeatures),
-        ];
-    }
-
-    return {
-        sectionName,
-        checks,
-        meta: {
-            author: 'string',
-            createdAt: '1362-64-41',
-        },
-        blocks,
-    };
-};
-
 // JSON 데이터로부터 API 요청 body 생성 (전역 저장용)
 export const createSaveRequestBodyFromJson = (
     number: string,
@@ -427,8 +278,7 @@ export const createSaveRequestBodyFromJson = (
     editorGoalsJson: any | null,
     editorContentJson?: any | null
 ) => {
-    const sectionName = getSectionName(number);
-    const checks = getChecks(number);
+    const subSectionType = getSubSectionTypeFromNumber(number);
 
     let blocks: any[];
 
@@ -531,14 +381,31 @@ export const createSaveRequestBodyFromJson = (
         .filter((block) => block !== null);
 
     return {
-        sectionName,
-        checks,
+        subSectionType,
         meta: {
             author: 'string',
             createdAt: '1362-64-41',
         },
         blocks: filteredBlocks,
     };
+};
+
+// 단순 래퍼: 한 객체로 받아 바로 subsection 요청 바디 생성
+export const buildSubsectionBody = (
+    number: string,
+    title: string,
+    content: ItemContent
+) => {
+    return createSaveRequestBodyFromJson(
+        number,
+        title,
+        content.itemName || '',
+        content.oneLineIntro || '',
+        content.editorFeatures || null,
+        content.editorSkills || null,
+        content.editorGoals || null,
+        content.editorContent || null
+    );
 };
 
 
