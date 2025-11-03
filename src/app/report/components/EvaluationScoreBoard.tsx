@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+import { useEvaluationStore } from '@/store/report.store';
+import React, { useEffect, useState } from 'react';
 
 interface Category {
   title: string;
@@ -40,7 +41,6 @@ const ScoreCard = ({ category, isActive, onClick }: ScoreCardProps) => {
       >
         {title}
       </div>
-
       <div
         className={`ds-subtext font-medium ${isActive ? 'text-white' : 'text-gray-900'}`}
       >
@@ -57,10 +57,15 @@ const ScoreCard = ({ category, isActive, onClick }: ScoreCardProps) => {
 };
 
 const EvaluationScoreBoard = () => {
-  const totalScore = 74;
+  const totalScore = 50;
+  const setTotalScore = useEvaluationStore((s) => s.setTotalScore);
 
-  const [selectedIdx, setSelectedIdx] = React.useState(0);
+  const [selectedIdx, setSelectedIdx] = useState(0);
   const selected = categories[selectedIdx];
+
+  useEffect(() => {
+    setTotalScore(totalScore);
+  }, [totalScore, setTotalScore]);
 
   return (
     <div className="flex h-[359px] min-w-[812px] items-start justify-between rounded-[12px] border border-gray-300 p-6">
