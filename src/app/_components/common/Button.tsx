@@ -17,6 +17,7 @@ function Button({
   onClick,
   className = '',
   disabled = false,
+  type = 'button',
 }: ButtonProps) {
   const paddingClasses = {
     S: 'p-2',
