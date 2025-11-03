@@ -53,7 +53,7 @@ function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`flex items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       {text}
     </button>
