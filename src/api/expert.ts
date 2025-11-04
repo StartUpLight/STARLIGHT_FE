@@ -1,4 +1,6 @@
 import {
+  applyFeedBackProps,
+  applyFeedBackResponse,
   getExpertResponse,
   getFeedBackExpertResponse,
 } from '@/types/expert/expert.type';
@@ -18,6 +20,26 @@ export async function GetFeedBackExpert(
   const { data } = await api.get<getFeedBackExpertResponse>(
     '/v1/expert-applications',
     { params: { businessPlanId } }
+  );
+  return data;
+}
+
+export async function ApplyFeedback({
+  businessPlanId,
+  expertId,
+  file,
+}: applyFeedBackProps): Promise<applyFeedBackResponse> {
+  const form = new FormData();
+  form.append('businessPlanId', String(businessPlanId));
+  form.append('file', file);
+
+  const { data } = await api.post<applyFeedBackResponse>(
+    `/v1/expert-applications/${expertId}/request`,
+    form,
+    {
+      params: { businessPlanId, expertId },
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }
   );
   return data;
 }
