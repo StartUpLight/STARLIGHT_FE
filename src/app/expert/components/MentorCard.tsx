@@ -1,7 +1,15 @@
-import { MentorProps } from '@/types/expert/expert.props';
+'use client';
+import { useState } from 'react';
+import { MentorCardProps } from '@/types/expert/expert.props';
+import { ApplyFeedback } from '@/api/expert';
 import Image from 'next/image';
 import Check from '@/assets/icons/gray_check.svg';
 import Plus from '@/assets/icons/white_plus.svg';
+import { useBusinessStore } from '@/store/business.store';
+
+type ExtraProps = {
+  onApplied?: () => void;
+};
 
 const MentorCard = ({
   name,
@@ -10,8 +18,42 @@ const MentorCard = ({
   tags,
   image,
   workingperiod,
-}: MentorProps) => {
-  const isDone = status === 'done';
+  id,
+  onApplied,
+}: MentorCardProps & ExtraProps) => {
+  const planId = useBusinessStore((s) => s.planId);
+  const [didApply, setDidApply] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const isDone = status === 'done' || didApply;
+  const disabled = isDone || uploading || planId == null;
+
+  const handleClick = async () => {
+    if (disabled) return;
+
+    //수정예정
+    const tempPdf = new File(
+      [new Blob(['temp pdf content'], { type: 'application/pdf' })],
+      'business-plan.pdf',
+      { type: 'application/pdf' }
+    );
+
+    try {
+      setUploading(true);
+      await ApplyFeedback({
+        expertId: id,
+        businessPlanId: planId!,
+        file: tempPdf,
+      });
+      setDidApply(true);
+      onApplied?.();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="bg-gray-80 flex w-full flex-row items-start justify-between gap-6 rounded-[12px] p-9">
       <div className="flex flex-row gap-6">
@@ -22,7 +64,6 @@ const MentorCard = ({
           height={80}
           className="h-20 w-20 rounded-full object-cover"
         />
-
         <div className="flex flex-col items-start">
           <div className="flex flex-row items-center gap-2">
             <div className="ds-subtitle font-semibold text-gray-900">
@@ -31,14 +72,11 @@ const MentorCard = ({
                 멘토
               </span>
             </div>
-
             <div className="h-3 w-px bg-gray-300" />
-
             <div className="ds-subtext font-medium text-gray-700">
               {workingperiod}년 경력 개발자
             </div>
           </div>
-
           <div className="ds-subtext my-3 font-medium text-gray-600">
             {careers.join(' / ')}
           </div>
@@ -56,17 +94,24 @@ const MentorCard = ({
           </div>
         </div>
       </div>
+
       <button
-        disabled={isDone}
+        disabled={disabled}
+        onClick={handleClick}
         className={[
           'ds-text flex w-[156px] items-center justify-center gap-1 rounded-[8px] px-3 py-2 font-medium',
-          isDone
+          disabled
             ? 'bg-gray-200 text-gray-500'
             : 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white',
         ].join(' ')}
+        title={
+          planId == null
+            ? '피드백을 요청할 수 있는 사업계획서가 없습니다.'
+            : undefined
+        }
       >
         {isDone ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-        {isDone ? '신청 완료' : '비대면 평가'}
+        {isDone ? '신청 완료' : uploading ? '신청 중' : '비대면 평가'}
       </button>
     </div>
   );
