@@ -1,4 +1,5 @@
 import Landing from './_components/landing/Landing';
+import LandingChecklist from './_components/landing/LandingChecklist';
 
 const page = () => {
   return (
@@ -6,7 +7,7 @@ const page = () => {
       <section className="relative h-[684px] w-full">
         <video
           className="absolute inset-0 h-full w-full object-cover"
-          src="/images/home.mp4"
+          src="/images/landing/home.mp4"
           autoPlay
           muted
           playsInline
@@ -20,9 +21,8 @@ const page = () => {
       </section>
 
       <section className="h-[526px] bg-gradient-to-b from-black to-[#6F55FF] pt-[240px]" />
-      <div className="h-[897px] px-[132px] py-[120px]">
-        <div className="ds-heading font-semibold">항목별 체크리스트 </div>
-      </div>
+
+      <LandingChecklist />
     </div>
   );
 };

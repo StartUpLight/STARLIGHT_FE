@@ -26,7 +26,7 @@ const Landing = () => {
 
         <div className="pointer-events-none absolute top-full left-1/2 mt-20 -translate-x-1/2">
           <Image
-            src="/images/homeimage.png"
+            src="/images/landing/homeimage.png"
             alt="홈화면 이미지"
             width={912}
             height={560}
