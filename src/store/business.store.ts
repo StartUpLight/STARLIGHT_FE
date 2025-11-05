@@ -5,6 +5,29 @@ import { postBusinessPlan, postBusinessPlanSubsections } from '@/api/business';
 import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
 
+const STORAGE_KEY = 'businessPlanContents';
+
+// localStorage에서 contents 복원
+const loadContentsFromStorage = (): Record<string, ItemContent> => {
+    if (typeof window === 'undefined') return {};
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch {
+        return {};
+    }
+};
+
+// localStorage에 contents 저장
+const saveContentsToStorage = (contents: Record<string, ItemContent>) => {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(contents));
+    } catch (error) {
+        console.error('localStorage 저장 실패:', error);
+    }
+};
+
 let initializingPlanPromise: Promise<number> | null = null;
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
@@ -29,7 +52,22 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         })();
         return initializingPlanPromise;
     },
+    // localStorage에서 contents 복원
+    restoreContentsFromStorage: () => {
+        const contents = loadContentsFromStorage();
+        set({ contents });
+        return contents;
+    },
+    // localStorage 초기화
+    clearStorage: () => {
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+    },
     resetDraft: () => {
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(STORAGE_KEY);
+        }
         set({
             planId: null,
             selectedItem: {
@@ -47,18 +85,21 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     },
     setSelectedItem: (item) => set({ selectedItem: item }),
 
-    contents: {},
+    contents: loadContentsFromStorage(),
 
     updateItemContent: (number: string, content: Partial<ItemContent>) => {
-        set((state) => ({
-            contents: {
+        set((state) => {
+            const newContents = {
                 ...state.contents,
                 [number]: {
                     ...state.contents[number],
                     ...content,
                 },
-            },
-        }));
+            };
+            // localStorage에 자동 저장
+            saveContentsToStorage(newContents);
+            return { contents: newContents };
+        });
     },
 
     getItemContent: (number: string) => {

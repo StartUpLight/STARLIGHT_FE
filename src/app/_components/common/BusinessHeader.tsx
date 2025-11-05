@@ -10,8 +10,7 @@ import { useBusinessStore } from '@/store/business.store';
 
 const BusinessHeader = () => {
   const router = useRouter();
-  // const { saveAllItems, initializePlan, resetDraft } = useBusinessStore();
-  const { saveAllItems, initializePlan } = useBusinessStore();
+  const { saveAllItems, initializePlan, planId } = useBusinessStore();
   const [title, setTitle] = useState('');
   const [focused, setFocused] = useState(false);
   const [inputWidth, setInputWidth] = useState(179);
@@ -25,41 +24,39 @@ const BusinessHeader = () => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const planId = await initializePlan();
-      await saveAllItems(planId);
+      const currentPlanId = planId || await initializePlan();
+      await saveAllItems(currentPlanId);
     } catch (error) {
       console.error('저장 중 오류 발생:', error);
     } finally {
       setIsSaving(false);
     }
-    // alert('모든 항목이 임시 저장되었습니다.');
   };
 
-  // 3분마다 자동 임시 저장
+  // 3분마다 자동 임시 저장 (planId가 있을 때만)
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval> | null = null;
-    const setup = async () => {
-      try {
-        await initializePlan();
+
+    // planId가 있을 때만 자동 저장 시작
+    const checkAndStartAutoSave = async () => {
+      const currentPlanId = planId;
+      if (currentPlanId) {
         intervalId = setInterval(async () => {
           try {
-            const planId = await initializePlan();
-            await saveAllItems(planId);
+            await saveAllItems(currentPlanId);
           } catch (e) {
             console.error('자동 임시 저장 실패:', e);
           }
         }, 180000);
-      } catch (e) {
-        console.error('사업계획서 초기화 실패:', e);
       }
     };
-    setup();
+
+    checkAndStartAutoSave();
 
     return () => {
       if (intervalId) clearInterval(intervalId);
-      // resetDraft();
     };
-  }, [initializePlan, saveAllItems]);
+  }, [planId, saveAllItems]);
 
   useEffect(() => {
     if (spanRef.current) {

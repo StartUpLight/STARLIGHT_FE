@@ -1,20 +1,46 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import WriteForm from './components/WriteForm';
 import { useBusinessStore } from '@/store/business.store';
 import CreateModal from './components/CreateModal';
-import useEntryBusiness from '@/hooks/useEntryBusiness';
+
+const MODAL_CLOSED_KEY = 'businessPlanModalClosed';
 
 const Page = () => {
-  const { open, close, confirm } = useEntryBusiness({
-    storageKey: 'businessCreateModal',
-    queryKey: 'create',
-    pathname: '/business',
-    storage: 'local',
-  });
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
+  const { initializePlan, restoreContentsFromStorage } = useBusinessStore();
+
+  // 페이지 진입 시 모달 표시 여부 확인
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // localStorage에서 작성 중인 내용 복원
+    restoreContentsFromStorage();
+
+    // 모달이 닫혔는지 확인
+    const modalClosed = localStorage.getItem(MODAL_CLOSED_KEY) === 'true';
+
+    // 모달이 닫히지 않았으면 모달 표시
+    if (!modalClosed) {
+      setIsModalOpen(true);
+    }
+  }, [restoreContentsFromStorage]);
+
+  // 모달 닫기 시 plan 생성 및 localStorage 저장
+  const handleCloseModal = async () => {
+    try {
+      // 사업계획서 생성
+      await initializePlan();
+      // 모달 닫음 플래그 저장
+      localStorage.setItem(MODAL_CLOSED_KEY, 'true');
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('사업계획서 생성 실패:', error);
+      setIsModalOpen(false);
+    }
+  };
 
   useEffect(() => {
     setSelectedItem({
@@ -36,13 +62,14 @@ const Page = () => {
         />
       </main>
 
-      {open && (
+      {isModalOpen && (
         <CreateModal
           title="사업계획서 쉽게 생성하기"
           subtitle={`사업계획서 초안을 체크리스트로 쉽게 작성해 보세요.
 앞으로 사업계획서의 작성 효율과 퀄리티를 높여주는 자료가 될 거예요.`}
-          onClose={close}
-          onClick={confirm}
+          onClose={handleCloseModal}
+          onClick={handleCloseModal}
+          buttonText="생성하기"
         />
       )}
     </div>
