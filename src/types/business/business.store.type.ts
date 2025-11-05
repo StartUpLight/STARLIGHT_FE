@@ -22,6 +22,7 @@ export interface ItemContent {
     editorGoals?: EditorJSON | null;
     // 일반 항목 전용
     editorContent?: EditorJSON | null; // TipTap JSON
+    checks?: boolean[];
 }
 
 export interface BusinessStore {

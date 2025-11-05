@@ -18,7 +18,7 @@ export const uploadImage = async (file: File): Promise<string> => {
             },
         });
 
-        console.log(uploadUrlResponse.data.data);
+        //console.log(uploadUrlResponse.data.data);
         if (uploadUrlResponse.data.result !== 'SUCCESS' || !uploadUrlResponse.data.data?.preSignedUrl) {
             throw new Error('presigned URL을 받지 못했습니다.');
         }
@@ -32,7 +32,7 @@ export const uploadImage = async (file: File): Promise<string> => {
             },
         });
 
-        console.log(putResponse.data);
+        //console.log(putResponse.data);
 
         // 3. 공개 처리
         // curl의 --data-urlencode와 동일하게 application/x-www-form-urlencoded 형식으로 전송
@@ -51,7 +51,7 @@ export const uploadImage = async (file: File): Promise<string> => {
             }
         );
 
-        console.log(publicResponse.data);
+        //console.log(publicResponse.data);
 
         if (publicResponse.data.result !== 'SUCCESS') {
             throw new Error('공개 처리에 실패했습니다.');

@@ -1,6 +1,6 @@
 "use client";
 import { create } from 'zustand';
-import { buildSubsectionRequest } from '@/lib/businessFormMapper';
+import { buildSubsectionRequest } from '@/lib/business/requestBuilder';
 import { postBusinessPlan, postBusinessPlanSubsections } from '@/api/business';
 import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
@@ -81,9 +81,10 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         allItems.forEach((item: SidebarItem) => {
             const content = contents[item.number] || {};
             const requestBody = buildSubsectionRequest(item.number, item.title, content);
+            //console.log('requestBody', requestBody);
 
             if (!requestBody.blocks || requestBody.blocks.length === 0) {
-                console.log(`[${item.number}] 스킵: 빈 블록`);
+                //console.log(`[${item.number}] 스킵: 빈 블록`);
                 return;
             }
 
