@@ -4,13 +4,11 @@ import WriteForm from './components/WriteForm';
 import { useBusinessStore } from '@/store/business.store';
 import CreateModal from './components/CreateModal';
 
-const MODAL_CLOSED_KEY = 'businessPlanModalClosed';
-
 const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
-  const { initializePlan, restoreContentsFromStorage } = useBusinessStore();
+  const { initializePlan, restoreContentsFromStorage, clearStorage, resetDraft } = useBusinessStore();
 
   // 페이지 진입 시 모달 표시 여부 확인
   useEffect(() => {
@@ -19,22 +17,58 @@ const Page = () => {
     // localStorage에서 작성 중인 내용 복원
     restoreContentsFromStorage();
 
-    // 모달이 닫혔는지 확인
-    const modalClosed = localStorage.getItem(MODAL_CLOSED_KEY) === 'true';
+    // 새로고침인지 확인
+    const isRefreshing = sessionStorage.getItem('isRefreshing') === 'true';
+    const previousUrl = sessionStorage.getItem('previousUrl');
+    const currentUrl = window.location.href;
 
-    // 모달이 닫히지 않았으면 모달 표시
-    if (!modalClosed) {
+    // 같은 URL이고 플래그가 있으면 새로고침
+    const isRefresh = isRefreshing && previousUrl === currentUrl;
+
+    if (isRefresh) {
+      // 새로고침: 모달 표시 안 함, 작성 중인 내용과 planId는 이미 복원됨
+      sessionStorage.removeItem('isRefreshing');
+      sessionStorage.removeItem('previousUrl');
+      setIsModalOpen(false);
+    } else {
+      // 다른 페이지에서 진입: 모달 표시, 새로운 사업계획서 생성 준비
+      sessionStorage.removeItem('isRefreshing');
+      sessionStorage.removeItem('previousUrl');
       setIsModalOpen(true);
+      // 기존 작성 내용 및 planId 초기화 (새로운 사업계획서이므로)
+      clearStorage();
+      resetDraft();
     }
-  }, [restoreContentsFromStorage]);
+  }, [restoreContentsFromStorage, clearStorage, resetDraft]);
 
-  // 모달 닫기 시 plan 생성 및 localStorage 저장
-  const handleCloseModal = async () => {
+  // 새로고침 감지 및 다른 페이지 이동 감지
+  useEffect(() => {
+    // 현재 URL 저장
+    const currentUrl = window.location.href;
+
+    const handleBeforeUnload = () => {
+      // 새로고침 플래그 설정 (나중에 같은 URL인지 확인)
+      sessionStorage.setItem('isRefreshing', 'true');
+      sessionStorage.setItem('previousUrl', currentUrl);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  // 모달 닫기 (X 버튼 클릭 시)
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // 모달 버튼 클릭 시 plan 생성
+  const handleCreatePlan = async () => {
     try {
-      // 사업계획서 생성
+      // 사업계획서 생성 (이미 planId가 있으면 새로 생성하지 않음)
       await initializePlan();
-      // 모달 닫음 플래그 저장
-      localStorage.setItem(MODAL_CLOSED_KEY, 'true');
       setIsModalOpen(false);
     } catch (error) {
       console.error('사업계획서 생성 실패:', error);
@@ -68,7 +102,7 @@ const Page = () => {
           subtitle={`사업계획서 초안을 체크리스트로 쉽게 작성해 보세요.
 앞으로 사업계획서의 작성 효율과 퀄리티를 높여주는 자료가 될 거예요.`}
           onClose={handleCloseModal}
-          onClick={handleCloseModal}
+          onClick={handleCreatePlan}
           buttonText="생성하기"
         />
       )}

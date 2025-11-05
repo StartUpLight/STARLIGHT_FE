@@ -6,6 +6,7 @@ import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
 
 const STORAGE_KEY = 'businessPlanContents';
+const PLAN_ID_KEY = 'businessPlanId';
 
 // localStorage에서 contents 복원
 const loadContentsFromStorage = (): Record<string, ItemContent> => {
@@ -28,10 +29,31 @@ const saveContentsToStorage = (contents: Record<string, ItemContent>) => {
     }
 };
 
+// localStorage에서 planId 복원
+const loadPlanIdFromStorage = (): number | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+        const stored = localStorage.getItem(PLAN_ID_KEY);
+        return stored ? parseInt(stored, 10) : null;
+    } catch {
+        return null;
+    }
+};
+
+// localStorage에 planId 저장
+const savePlanIdToStorage = (planId: number) => {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(PLAN_ID_KEY, String(planId));
+    } catch (error) {
+        console.error('localStorage 저장 실패:', error);
+    }
+};
+
 let initializingPlanPromise: Promise<number> | null = null;
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
-    planId: null,
+    planId: loadPlanIdFromStorage(),
     initializePlan: async () => {
         const current = get().planId;
         if (typeof current === 'number' && current > 0) return current;
@@ -42,8 +64,11 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
             try {
                 const res = await postBusinessPlan();
                 if (res.result === 'SUCCESS' && res.data?.businessPlanId) {
-                    set({ planId: res.data.businessPlanId });
-                    return res.data.businessPlanId;
+                    const newPlanId = res.data.businessPlanId;
+                    set({ planId: newPlanId });
+                    // localStorage에 저장
+                    savePlanIdToStorage(newPlanId);
+                    return newPlanId;
                 }
                 throw new Error('Failed to initialize business plan');
             } finally {
@@ -62,11 +87,13 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     clearStorage: () => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(PLAN_ID_KEY);
         }
     },
     resetDraft: () => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(PLAN_ID_KEY);
         }
         set({
             planId: null,
