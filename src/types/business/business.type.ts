@@ -50,3 +50,22 @@ export interface BusinessPlanCreateResponse {
     error: null;
 }
 
+export type SubSectionType =
+    | 'OVERVIEW_BASIC'
+    | 'PROBLEM_BACKGROUND'
+    | 'PROBLEM_PURPOSE'
+    | 'PROBLEM_MARKET'
+    | 'FEASIBILITY_STRATEGY'
+    | 'FEASIBILITY_MARKET'
+    | 'GROWTH_MODEL'
+    | 'GROWTH_FUNDING'
+    | 'GROWTH_ENTRY'
+    | 'TEAM_FOUNDER'
+    | 'TEAM_MEMBERS';
+
+export interface BusinessPlanSubsectionResponse {
+    result: 'SUCCESS';
+    data: BusinessPlanSubsectionRequest;
+    error: null;
+}
+
