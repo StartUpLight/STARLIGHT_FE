@@ -22,6 +22,8 @@ const Header = () => {
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`);
 
+  const isHomePage = pathname === '/';
+
   const navLink =
     'ds-text px-2 font-medium transition-colors hover:text-primary-500 hover:font-semibold';
   const dropdownItem =
@@ -66,12 +68,12 @@ const Header = () => {
   }, [isProfileOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[80] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
+    <header className={`fixed inset-x-0 top-0 z-[80] w-full shadow-[0_4px_6px_0_rgba(0,0,0,0.05)] ${isHomePage ? 'bg-black' : 'bg-white'}`}>
       <div className="mx-auto flex h-[60px] items-center px-8">
         <div className="flex items-center">
           <Link href="/" className="flex items-center gap-1.5">
             <Logo />
-            <span className="text-[18.9px] font-semibold text-gray-900">
+            <span className={`text-[18.9px] font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}>
               Starlight
             </span>
           </Link>
@@ -81,7 +83,7 @@ const Header = () => {
               href="/"
               className={`${navLink} ${isActive('/')
                 ? 'text-primary-500 font-semibold'
-                : 'text-gray-900'
+                : isHomePage ? 'text-white' : 'text-gray-900'
                 }`}
             >
               홈
@@ -92,7 +94,7 @@ const Header = () => {
                 type="button"
                 className={`${menuButton} ${isBusinessActive
                   ? 'text-primary-500 font-semibold'
-                  : 'text-gray-900'
+                  : isHomePage ? 'text-white' : 'text-gray-900'
                   }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
@@ -123,7 +125,7 @@ const Header = () => {
               href="/expert"
               className={`${navLink} ${isActive('/expert')
                 ? 'text-primary-500 font-semibold'
-                : 'text-gray-900'
+                : isHomePage ? 'text-white' : 'text-gray-900'
                 }`}
             >
               전문가
@@ -132,7 +134,7 @@ const Header = () => {
               href="/pricing"
               className={`${navLink} ${isActive('/pricing')
                 ? 'text-primary-500 font-semibold'
-                : 'text-gray-900'
+                : isHomePage ? 'text-white' : 'text-gray-900'
                 }`}
             >
               요금제
@@ -173,7 +175,7 @@ const Header = () => {
             <button
               type="button"
               onClick={handleAuthClick}
-              className="cursor-pointer ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap text-gray-900 transition-colors hover:font-semibold"
+              className={`cursor-pointer ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap transition-colors hover:font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
             >
               로그인
             </button>
