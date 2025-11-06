@@ -16,26 +16,35 @@ const BusinessHeader = () => {
   const { saveAllItems, initializePlan, planId, isPreview, setPreview } = useBusinessStore();
   const [title, setTitle] = useState("");
 
-  // localStorage에서 제목 불러오기
+  // localStorage에서 제목 불러오기 (planId가 있을 때만)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedTitle = localStorage.getItem('businessPlanTitle');
-      if (storedTitle) {
+      if (storedTitle && planId) {
         setTitle(storedTitle);
+      } else if (!planId) {
+        // planId가 없으면 제목 초기화
+        setTitle("");
       }
     }
-  }, []);
+  }, [planId]);
 
   // 제목 변경 시 localStorage에 저장 및 API 요청 (debounce 적용)
   useEffect(() => {
-    if (typeof window !== 'undefined' && title) {
-      localStorage.setItem('businessPlanTitle', title);
+    const trimmedTitle = title.trim();
+
+    // planId가 있을 때만 localStorage에 저장 (공백이 아닐 때만)
+    if (typeof window !== 'undefined' && trimmedTitle && planId) {
+      localStorage.setItem('businessPlanTitle', trimmedTitle);
+    } else if (typeof window !== 'undefined' && !planId) {
+      // planId가 없으면 localStorage에서 제목 제거
+      localStorage.removeItem('businessPlanTitle');
     }
-    if (!planId) return;
+    if (!planId || !trimmedTitle) return;
     let timeoutId: NodeJS.Timeout;
     const updateTitle = async () => {
       try {
-        await patchBusinessPlanTitle(planId, title);
+        await patchBusinessPlanTitle(planId, trimmedTitle);
       } catch (error) {
         console.error('제목 업데이트 실패:', error);
       }

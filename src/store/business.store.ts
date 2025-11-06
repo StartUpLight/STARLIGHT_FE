@@ -88,12 +88,14 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         if (typeof window !== 'undefined') {
             localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(PLAN_ID_KEY);
+            localStorage.removeItem('businessPlanTitle');
         }
     },
     resetDraft: () => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(PLAN_ID_KEY);
+            localStorage.removeItem('businessPlanTitle');
         }
         set({
             planId: null,
