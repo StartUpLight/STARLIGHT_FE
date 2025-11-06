@@ -10,9 +10,11 @@ import { useAuthStore } from '@/store/auth.store';
 const Header = () => {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
 
   useEffect(() => {
+    setMounted(true);
     checkAuth();
   }, [checkAuth]);
 
@@ -22,7 +24,7 @@ const Header = () => {
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`);
 
-  const isHomePage = pathname === '/';
+  const isHomePage = mounted && pathname === '/';
 
   const navLink =
     'ds-text px-2 font-medium transition-colors hover:text-primary-500 hover:font-semibold';
