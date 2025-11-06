@@ -1,4 +1,5 @@
 import Landing from './_components/landing/Landing';
+import LandingBlackSection from './_components/landing/LandingBlackSection';
 import LandingChecklist from './_components/landing/LandingChecklist';
 
 const page = () => {
@@ -23,6 +24,7 @@ const page = () => {
       <section className="h-[526px] bg-gradient-to-b from-black to-[#6F55FF] pt-[240px]" />
 
       <LandingChecklist />
+      <LandingBlackSection />
     </div>
   );
 };
