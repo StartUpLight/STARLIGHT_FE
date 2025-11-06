@@ -13,7 +13,7 @@ import { patchBusinessPlanTitle } from '@/api/business';
 
 const BusinessHeader = () => {
   const router = useRouter();
-  const { saveAllItems, initializePlan, planId, isPreview, setPreview } = useBusinessStore();
+  const { saveAllItems, initializePlan, planId, isPreview, setPreview, setIsSaving } = useBusinessStore();
   const [title, setTitle] = useState("");
 
   // localStorage에서 제목 불러오기 (planId가 있을 때만)
@@ -62,7 +62,7 @@ const BusinessHeader = () => {
   const [inputWidth, setInputWidth] = useState(179);
   const spanRef = useRef<HTMLSpanElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const isSaving = useBusinessStore((state) => state.isSaving);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);

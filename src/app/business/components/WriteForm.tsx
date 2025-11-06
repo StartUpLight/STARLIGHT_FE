@@ -354,7 +354,7 @@ const WriteForm = ({
       },
     },
   });
-  const { updateItemContent, getItemContent } = useBusinessStore();
+  const { updateItemContent, getItemContent, lastSavedTime, isSaving } = useBusinessStore();
   const [activeEditor, setActiveEditor] = useState<
     typeof editorFeatures | null
   >(null);
@@ -540,13 +540,15 @@ const WriteForm = ({
     <div className="rounded-[12px] border border-gray-100 bg-white w-full h-[756px] flex flex-col">
       {/* 고정 헤더 */}
       <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="h-[20px] px-[6px] rounded-full flex items-center justify-center bg-gray-900 text-white ds-caption font-semibold">
-            {number}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-[20px] px-[6px] rounded-full flex items-center justify-center bg-gray-900 text-white ds-caption font-semibold">
+              {number}
+            </div>
+            <p className="ds-subtitle font-semibold text-gray-900">
+              {number === "0" ? "개요" : title}
+            </p>
           </div>
-          <p className="ds-subtitle font-semibold text-gray-900">
-            {number === "0" ? "개요" : title}
-          </p>
         </div>
         {number !== "0" && (
           <p className="ds-subtext font-medium text-gray-600 mt-[10px]">
@@ -674,9 +676,14 @@ const WriteForm = ({
           {grammarActive ? <GrammerActiveIcon /> : <GrammerIcon />}
           <span className="ds-subtext">맞춤법 검사</span>
         </button>
-        {/* 임시 저장 버튼은 헤더로 이동됨 - 여기서는 제거 */}
+        {isSaving ? (
+          <span className="ml-auto ds-caption font-medium text-gray-600">저장 중...</span>
+        ) : lastSavedTime ? (
+          <span className="ml-auto ds-caption font-medium text-gray-600">
+            최근 저장 ({lastSavedTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })})
+          </span>
+        ) : null}
       </div>
-
       {/* 스크롤 가능한 콘텐츠 영역 */}
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-[24px] px-5 py-4">

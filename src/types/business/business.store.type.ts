@@ -53,6 +53,14 @@ export interface BusinessStore {
     // 미리보기 모드
     isPreview: boolean;
     setPreview: (isPreview: boolean) => void;
+
+    // 저장 시간
+    lastSavedTime: Date | null;
+    setLastSavedTime: (time: Date | null) => void;
+
+    // 저장 중 상태
+    isSaving: boolean;
+    setIsSaving: (isSaving: boolean) => void;
 }
 
 
