@@ -106,7 +106,7 @@ const Page = () => {
   return (
     <>
       {isPreview ? (
-        <Preview onBack={handleTogglePreview} />
+        <Preview />
       ) : (
         <div className="min-h-[calc(100vh-60px)] w-full bg-gray-100">
           <main className="mx-auto w-full px-6">
