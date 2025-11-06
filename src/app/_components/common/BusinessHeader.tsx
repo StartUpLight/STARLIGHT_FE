@@ -6,6 +6,7 @@ import Eye from '@/assets/icons/eye.svg';
 import Button from './Button';
 import CreateModal from '@/app/business/components/CreateModal';
 import Image from 'next/image';
+import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 
 const BusinessHeader = () => {
@@ -37,6 +38,55 @@ const BusinessHeader = () => {
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleDownloadPDF = async () => {
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf') as any;
+
+      const previewContent = document.querySelector('[data-preview-content]') as HTMLElement;
+      if (!previewContent) {
+        alert('미리보기 내용을 찾을 수 없습니다.');
+        return;
+      }
+
+      const canvas = await html2canvas(previewContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const fileName = title || '사업계획서';
+      pdf.save(`${fileName}.pdf`);
+    } catch (error) {
+      console.error('PDF 다운로드 실패:', error);
+      alert('PDF 다운로드에 실패했습니다.');
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -108,75 +158,102 @@ const BusinessHeader = () => {
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2">
-          <span
-            ref={spanRef}
-            className="ds-text invisible absolute font-medium whitespace-pre text-gray-900"
-            aria-hidden="true"
-          >
-            {title || '제목을 입력하세요'}
-          </span>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            placeholder="제목을 입력하세요."
-            aria-label="문서 제목"
-            style={{ width: inputWidth }}
-            className="ds-text hover:border-primary-200 rounded-[8px] bg-white px-3 py-[6px] text-start font-medium overflow-ellipsis transition-[width] duration-200 ease-out placeholder:text-gray-400 hover:border-[1.2px] focus:outline-none"
-          />
+          {isPreview ? (
+            null
+          ) : (
+            <>
+              <span
+                ref={spanRef}
+                className="ds-text invisible absolute font-medium whitespace-pre text-gray-900"
+                aria-hidden="true"
+              >
+                {title || '제목을 입력하세요'}
+              </span>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder="제목을 입력하세요."
+                aria-label="문서 제목"
+                style={{ width: inputWidth }}
+                className="ds-text hover:border-primary-200 rounded-[8px] bg-white px-3 py-[6px] text-start font-medium overflow-ellipsis transition-[width] duration-200 ease-out placeholder:text-gray-400 hover:border-[1.2px] focus:outline-none"
+              />
+            </>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-3">
-          <div className="group relative">
-            <button
-              type="button"
-              onClick={() => {
-                // window에 등록된 토글 함수 호출
-                if (typeof window !== 'undefined' && (window as any).togglePreview) {
-                  (window as any).togglePreview();
-                }
-              }}
-              className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
-            >
-              <Eye />
-            </button>
-            <div className="pointer-events-none absolute top-10 left-1/2 hidden -translate-x-1/2 group-hover:block">
-              <div className="relative h-[44px] w-[73px] select-none">
-                <Image
-                  src="/images/bubble.png"
-                  alt="미리보기 호버 말풍선"
-                  fill
-                  sizes="73px"
-                  className="object-contain"
-                />
-                <span className="ds-subtext absolute inset-0 top-2 flex items-center justify-center font-medium text-white">
-                  미리보기
-                </span>
+          {isPreview ? (
+            <>
+              <button
+                type="button"
+                onClick={handleDownloadPDF}
+                className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
+              >
+                <Download />
+              </button>
+              <Button
+                text="채점하기"
+                size="M"
+                color="primary"
+                className="ds-subtext h-[33px] rounded-[8px] px-4 py-[6px]"
+                onClick={handleOpenModal}
+              />
+            </>
+          ) : (
+            <>
+              <div className="group relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // window에 등록된 토글 함수 호출
+                    if (typeof window !== 'undefined' && (window as any).togglePreview) {
+                      (window as any).togglePreview();
+                    }
+                  }}
+                  className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
+                >
+                  <Eye />
+                </button>
+                <div className="pointer-events-none absolute top-10 left-1/2 hidden -translate-x-1/2 group-hover:block">
+                  <div className="relative h-[44px] w-[73px] select-none">
+                    <Image
+                      src="/images/bubble.png"
+                      alt="미리보기 호버 말풍선"
+                      fill
+                      sizes="73px"
+                      className="object-contain"
+                    />
+                    <span className="ds-subtext absolute inset-0 top-2 flex items-center justify-center font-medium text-white">
+                      미리보기
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="h-8 w-[1.6px] bg-gray-200" />
+              <div className="h-8 w-[1.6px] bg-gray-200" />
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSaving}
-              className={`text-primary-500 border-primary-500 ds-subtext h-[33px] border-[1.2px] rounded-[8px] px-3 py-2 flex items-center justify-center font-medium transition ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-primary-50'}`}
-            >
-              {isSaving ? "저장 중..." : "임시 저장"}
-            </button>
-            <Button
-              text="채점하기"
-              size="M"
-              color="primary"
-              className="ds-subtext h-[33px] rounded-[8px] px-4 py-[6px]"
-              onClick={handleOpenModal}
-            />
-          </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className={`text-primary-500 border-primary-500 ds-subtext h-[33px] border-[1.2px] rounded-[8px] px-3 py-2 flex items-center justify-center font-medium transition ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-primary-50'}`}
+                >
+                  {isSaving ? "저장 중..." : "임시 저장"}
+                </button>
+                <Button
+                  text="채점하기"
+                  size="M"
+                  color="primary"
+                  className="ds-subtext h-[33px] rounded-[8px] px-4 py-[6px]"
+                  onClick={handleOpenModal}
+                />
+              </div>
+            </>
+          )}
         </div>
         {isModalOpen && (
           <CreateModal

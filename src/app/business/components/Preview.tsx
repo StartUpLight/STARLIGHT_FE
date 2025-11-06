@@ -34,7 +34,11 @@ const Preview = ({ onBack }: PreviewProps) => {
     return (
         <div className="min-h-[calc(100vh-60px)] w-full bg-gray-100">
             <main className="pt-0 pb-12">
-                <div className="mx-auto mt-8 w-full max-w-[794px] bg-white shadow-lg" style={{ minHeight: '1123px' }}>
+                <div
+                    data-preview-content
+                    className="mx-auto mt-8 w-full max-w-[794px] bg-white shadow-lg"
+                    style={{ minHeight: '1123px' }}
+                >
                     <div className="px-12 py-10">
                         {allSections.map((section, sectionIndex) => (
                             <div key={sectionIndex} className="mb-8 last:mb-0">
