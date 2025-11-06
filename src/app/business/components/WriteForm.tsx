@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import type { EditorView } from '@tiptap/pm/view';
@@ -15,7 +15,7 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
-import { Extension } from '@tiptap/core';
+import { Editor, Extension } from '@tiptap/core';
 import TextInput from './editor/TextInput';
 import ToolButton from './editor/ToolButton';
 import BoldIcon from '@/assets/icons/write-icons/bold.svg';
@@ -614,17 +614,34 @@ const WriteForm = ({
   const { openPanel, setLoading, setItems } = useSpellCheckStore();
   const { mutate: spellcheck } = useSpellCheck();
   const spellChecking = useSpellCheckStore((s) => s.loading);
-
   const items = useSpellCheckStore((s) => s.items);
+  const register = useEditorStore((s) => s.register);
+
+  const editors = useMemo(
+    () =>
+      (number === '0'
+        ? [editorFeatures, editorSkills, editorGoals]
+        : [editorFeatures]
+      ).filter((e): e is Editor => !!e && !e.isDestroyed),
+    [number, editorFeatures, editorSkills, editorGoals]
+  );
 
   useEffect(() => {
-    const editors =
-      number === '0'
-        ? [editorFeatures, editorSkills, editorGoals]
-        : [editorFeatures];
+    if (editors.length === 0) return;
+    const id = requestAnimationFrame(() => {
+      applySpellHighlights(editors, items);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [editors, items]);
 
-    applySpellHighlights(editors.filter(Boolean), items);
-  }, [items, number, editorFeatures, editorSkills, editorGoals]);
+  useEffect(() => {
+    register({
+      sectionNumber: number,
+      features: editorFeatures ?? null,
+      skills: number === '0' ? (editorSkills ?? null) : null,
+      goals: number === '0' ? (editorGoals ?? null) : null,
+    });
+  }, [number, editorFeatures, editorSkills, editorGoals, register]);
 
   const handleSpellCheckClick = () => {
     setGrammarActive((v) => !v);
