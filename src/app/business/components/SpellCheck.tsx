@@ -1,41 +1,67 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Button from '@/app/_components/common/Button';
 import Arrow from '@/assets/icons/arrow_up.svg';
+import { useSpellCheckStore } from '@/store/spellcheck.store';
+import { useEditorStore } from '@/store/editor.store';
+import { applyAllCorrections, type CorrectionPair } from '@/util/spellReplace';
+import { applySpellHighlights } from '@/util/spellMark';
+import type { Editor } from '@tiptap/core';
+
+type UIResult = {
+  id: number;
+  original: string;
+  corrected: string;
+  open: boolean;
+  custom: string;
+};
 
 const SpellCheck = () => {
+  const { items, loading } = useSpellCheckStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [results, setResults] = useState<UIResult[]>([]);
 
-  const [results, setResults] = useState([
-    {
-      id: 1,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
+  const { features, skills, goals, sectionNumber } = useEditorStore();
+  const editors = useMemo(
+    () =>
+      (sectionNumber === '0' ? [features, skills, goals] : [features]).filter(
+        (e): e is Editor => !!e && !e.isDestroyed
+      ),
+    [features, skills, goals, sectionNumber]
+  );
+
+  const [pendingPairs, setPendingPairs] = useState<CorrectionPair[] | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (loading) setIsOpen(true);
+  }, [loading]);
+
+  useEffect(() => {
+    const next = (items ?? []).map((item) => ({
+      id: item.id,
+      original: item.original ?? '',
+      corrected:
+        (Array.isArray(item.suggestions) && item.suggestions[0]) ||
+        item.corrected ||
+        item.original ||
+        '',
+      open: Boolean(item.open),
       custom: '',
-    },
-    {
-      id: 2,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
-      custom: '',
-    },
-    {
-      id: 3,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
-      custom: '',
-    },
-    {
-      id: 4,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
-      custom: '',
-    },
-  ]);
+    }));
+    setResults(next);
+  }, [items]);
+
+  useEffect(() => {
+    if (!pendingPairs || editors.length === 0) return;
+    const raf = requestAnimationFrame(() => {
+      applyAllCorrections(editors, pendingPairs);
+      applySpellHighlights(editors, items);
+      setPendingPairs(null);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [pendingPairs, editors, items]);
 
   const toggleItem = (id: number) => {
     setResults((prev) =>
@@ -52,21 +78,49 @@ const SpellCheck = () => {
   };
 
   const handleApply = (id: number) => {
-    setResults((prev) =>
-      prev.map((item) =>
+    setResults((prev) => {
+      const target = prev.find((p) => p.id === id);
+      if (target) {
+        const replacement =
+          target.custom || target.corrected || target.original;
+        setPendingPairs([
+          { original: target.original, corrected: replacement },
+        ]);
+      }
+      return prev.map((item) =>
         item.id === id
-          ? { ...item, corrected: item.custom || item.corrected, open: false }
+          ? {
+              ...item,
+              corrected: item.custom || item.corrected,
+              open: false,
+              custom: '',
+            }
           : item
-      )
+      );
+    });
+  };
+
+  const handleApplyAll = () => {
+    const pairs: CorrectionPair[] = results.map((r) => ({
+      original: r.original,
+      corrected: r.custom || r.corrected || r.original,
+    }));
+    setPendingPairs(pairs);
+    setResults((prev) =>
+      prev.map((it) => ({ ...it, open: false, custom: '' }))
     );
   };
 
   return (
     <div
-      className={`flex w-full flex-col rounded-[12px] bg-white ${isOpen ? 'h-[297px]' : ''}`}
+      className={`flex w-full flex-col rounded-[12px] bg-white ${
+        isOpen ? 'h-[297px]' : ''
+      }`}
     >
       <div
-        className={`flex w-full items-center justify-between border-b border-gray-200 px-6 ${isOpen ? 'pt-4 pb-[10px]' : 'py-4'}`}
+        className={`flex w-full items-center justify-between border-b border-gray-200 px-6 ${
+          isOpen ? 'pt-4 pb-[10px]' : 'py-4'
+        }`}
       >
         <span className="ds-subtitle font-semibold text-gray-900">
           맞춤법 검사
@@ -75,6 +129,8 @@ const SpellCheck = () => {
           type="button"
           aria-label="맞춤법검사 토글"
           onClick={() => setIsOpen((prev) => !prev)}
+          disabled={loading}
+          className={loading ? 'cursor-not-allowed opacity-60' : ''}
         >
           <Arrow
             className={`cursor-pointer ${isOpen ? 'rotate-180' : 'rotate-0'}`}
@@ -135,7 +191,11 @@ const SpellCheck = () => {
           </div>
 
           <div className="px-6 py-4">
-            <Button text="모두 수정하기" className="w-full rounded-[8px]" />
+            <Button
+              text="모두 수정하기"
+              className="w-full rounded-[8px]"
+              onClick={handleApplyAll}
+            />
           </div>
         </>
       )}

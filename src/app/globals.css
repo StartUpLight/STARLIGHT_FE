@@ -192,3 +192,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+.ProseMirror span.spell-error {
+  color: #f6002e;
+}

@@ -13,7 +13,6 @@ const useEntryBusiness = ({
   storageKey = 'businessCreateModal',
   queryKey = 'create',
   pathname = '/business',
-  storage = 'local',
   ignoreSeenOnQuery = false,
 }: Options = {}) => {
   const [open, setOpen] = useState(false);
