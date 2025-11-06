@@ -22,6 +22,7 @@ export interface ItemContent {
     editorGoals?: EditorJSON | null;
     // 일반 항목 전용
     editorContent?: EditorJSON | null; // TipTap JSON
+    checks?: boolean[];
 }
 
 export interface BusinessStore {
@@ -42,6 +43,12 @@ export interface BusinessStore {
 
     // 모든 항목 저장 (전역 저장 함수)
     saveAllItems: (planId?: number) => Promise<void>;
+
+    // localStorage에서 contents 복원
+    restoreContentsFromStorage: () => Record<string, ItemContent>;
+
+    // localStorage 초기화
+    clearStorage: () => void;
 }
 
 
