@@ -50,12 +50,52 @@ const BusinessHeader = () => {
         return;
       }
 
+      // 스크롤을 맨 위로 이동
+      const scrollContainer = previewContent.querySelector('.overflow-y-auto') as HTMLElement;
+      const originalScrollTop = scrollContainer?.scrollTop || 0;
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+      }
+
       const canvas = await html2canvas(previewContent, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc) => {
+          // 클론된 문서에서 모든 관련 요소 찾기
+          const clonedPreview = clonedDoc.querySelector('[data-preview-content]') as HTMLElement;
+          if (clonedPreview) {
+            // 부모 컨테이너의 높이 제한 제거
+            clonedPreview.style.height = 'auto';
+            clonedPreview.style.maxHeight = 'none';
+
+            // 외부 flex 컨테이너도 확인
+            const parentContainer = clonedPreview.parentElement;
+            if (parentContainer) {
+              parentContainer.style.height = 'auto';
+              parentContainer.style.maxHeight = 'none';
+            }
+
+            // 스크롤 컨테이너 찾기 및 스타일 변경
+            const clonedScrollContainer = clonedPreview.querySelector('.overflow-y-auto') as HTMLElement;
+            if (clonedScrollContainer) {
+              clonedScrollContainer.style.overflow = 'visible';
+              clonedScrollContainer.style.height = 'auto';
+              clonedScrollContainer.style.maxHeight = 'none';
+              clonedScrollContainer.style.flex = 'none';
+              clonedScrollContainer.scrollTop = 0;
+            }
+          }
+        },
       });
+
+      // 원래 스크롤 위치로 복원
+      if (scrollContainer) {
+        scrollContainer.scrollTop = originalScrollTop;
+      }
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
