@@ -26,7 +26,7 @@ export async function patchBusinessPlanTitle(
     planId: number,
     title: string
 ): Promise<BusinessPlanTitleResponse> {
-    const res = await api.patch(`/v1/business-plans/${planId}/title`, { title });
+    const res = await api.patch(`/v1/business-plans/${planId}`, { title: title });
     return res.data as BusinessPlanTitleResponse;
 }
 

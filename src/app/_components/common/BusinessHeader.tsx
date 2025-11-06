@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { downloadPDF } from '@/lib/business/pdfDownload';
+import { patchBusinessPlanTitle } from '@/api/business';
 
 const BusinessHeader = () => {
   const router = useRouter();
@@ -25,12 +26,29 @@ const BusinessHeader = () => {
     }
   }, []);
 
-  // 제목 변경 시 localStorage에 저장
+  // 제목 변경 시 localStorage에 저장 및 API 요청 (debounce 적용)
   useEffect(() => {
     if (typeof window !== 'undefined' && title) {
       localStorage.setItem('businessPlanTitle', title);
     }
-  }, [title]);
+    if (!planId) return;
+    let timeoutId: NodeJS.Timeout;
+    const updateTitle = async () => {
+      try {
+        await patchBusinessPlanTitle(planId, title);
+      } catch (error) {
+        console.error('제목 업데이트 실패:', error);
+      }
+    };
+    timeoutId = setTimeout(() => {
+      updateTitle();
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [title, planId]);
+
   const [focused, setFocused] = useState(false);
   const [inputWidth, setInputWidth] = useState(179);
   const spanRef = useRef<HTMLSpanElement>(null);
