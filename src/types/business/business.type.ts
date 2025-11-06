@@ -69,3 +69,16 @@ export interface BusinessPlanSubsectionResponse {
     error: null;
 }
 
+export interface BusinessPlanTitleResponse {
+    result: 'SUCCESS';
+    data: {
+        businessPlanId: number;
+        title: string;
+        planStatus: string;
+    };
+    error: {
+        code: string;
+        message: string;
+    } | null;
+}
+

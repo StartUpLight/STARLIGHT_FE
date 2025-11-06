@@ -1,5 +1,5 @@
 import api from './api';
-import { BusinessPlanCreateResponse, BusinessPlanSubsectionRequest, BusinessPlanSubsectionResponse, SubSectionType } from '@/types/business/business.type';
+import { BusinessPlanCreateResponse, BusinessPlanSubsectionRequest, BusinessPlanSubsectionResponse, BusinessPlanTitleResponse, SubSectionType } from '@/types/business/business.type';
 
 export async function postBusinessPlan(): Promise<BusinessPlanCreateResponse> {
     const res = await api.post(`/v1/business-plans`);
@@ -20,6 +20,14 @@ export async function getBusinessPlanSubsection(
 ): Promise<BusinessPlanSubsectionResponse> {
     const res = await api.get(`/v1/business-plans/${planId}/subsections/${subSectionType}`);
     return res.data as BusinessPlanSubsectionResponse;
+}
+
+export async function patchBusinessPlanTitle(
+    planId: number,
+    title: string
+): Promise<BusinessPlanTitleResponse> {
+    const res = await api.patch(`/v1/business-plans/${planId}/title`, { title });
+    return res.data as BusinessPlanTitleResponse;
 }
 
 
