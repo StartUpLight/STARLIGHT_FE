@@ -44,7 +44,7 @@ const LandingBlackSection = () => {
           alt="피드백 이미지"
           width={1176}
           height={651}
-          className="mt-[60px] max-w-[1176px]"
+          className="mt-[60px] w-full"
           priority
         />
       </div>
