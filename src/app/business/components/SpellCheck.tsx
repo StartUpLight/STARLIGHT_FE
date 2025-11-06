@@ -1,41 +1,40 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '@/app/_components/common/Button';
 import Arrow from '@/assets/icons/arrow_up.svg';
+import { useSpellCheckStore } from '@/store/spellcheck.store';
+
+type UIResult = {
+  id: number;
+  original: string;
+  corrected: string;
+  open: boolean;
+  custom: string;
+};
 
 const SpellCheck = () => {
+  const { items, loading } = useSpellCheckStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [results, setResults] = useState<UIResult[]>([]);
 
-  const [results, setResults] = useState([
-    {
-      id: 1,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
+  useEffect(() => {
+    if (loading) setIsOpen(true);
+  }, [loading]);
+
+  useEffect(() => {
+    const next = (items ?? []).map((item) => ({
+      id: item.id,
+      original: item.original ?? '',
+      corrected:
+        (Array.isArray(item.suggestions) && item.suggestions[0]) ||
+        item.corrected ||
+        item.original ||
+        '',
+      open: Boolean(item.open),
       custom: '',
-    },
-    {
-      id: 2,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
-      custom: '',
-    },
-    {
-      id: 3,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
-      custom: '',
-    },
-    {
-      id: 4,
-      original: '안농하세요',
-      corrected: '안녕하세요',
-      open: false,
-      custom: '',
-    },
-  ]);
+    }));
+    setResults(next);
+  }, [items]);
 
   const toggleItem = (id: number) => {
     setResults((prev) =>
@@ -75,6 +74,8 @@ const SpellCheck = () => {
           type="button"
           aria-label="맞춤법검사 토글"
           onClick={() => setIsOpen((prev) => !prev)}
+          disabled={loading}
+          className={loading ? 'cursor-not-allowed opacity-60' : ''}
         >
           <Arrow
             className={`cursor-pointer ${isOpen ? 'rotate-180' : 'rotate-0'}`}
