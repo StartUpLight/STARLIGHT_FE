@@ -164,5 +164,9 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
 
         await Promise.allSettled(requests);
     },
+
+    // 미리보기 모드
+    isPreview: false,
+    setPreview: (isPreview: boolean) => set({ isPreview }),
 }));
 

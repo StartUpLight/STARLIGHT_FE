@@ -49,6 +49,10 @@ export interface BusinessStore {
 
     // localStorage 초기화
     clearStorage: () => void;
+
+    // 미리보기 모드
+    isPreview: boolean;
+    setPreview: (isPreview: boolean) => void;
 }
 
 

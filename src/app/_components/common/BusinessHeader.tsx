@@ -10,8 +10,25 @@ import { useBusinessStore } from '@/store/business.store';
 
 const BusinessHeader = () => {
   const router = useRouter();
-  const { saveAllItems, initializePlan, planId } = useBusinessStore();
-  const [title, setTitle] = useState('');
+  const { saveAllItems, initializePlan, planId, isPreview, setPreview } = useBusinessStore();
+  const [title, setTitle] = useState('스타라이트의 사업계획서');
+
+  // localStorage에서 제목 불러오기
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedTitle = localStorage.getItem('businessPlanTitle');
+      if (storedTitle) {
+        setTitle(storedTitle);
+      }
+    }
+  }, []);
+
+  // 제목 변경 시 localStorage에 저장
+  useEffect(() => {
+    if (typeof window !== 'undefined' && title) {
+      localStorage.setItem('businessPlanTitle', title);
+    }
+  }, [title]);
   const [focused, setFocused] = useState(false);
   const [inputWidth, setInputWidth] = useState(179);
   const spanRef = useRef<HTMLSpanElement>(null);
@@ -74,7 +91,14 @@ const BusinessHeader = () => {
     <header className="fixed inset-x-0 top-0 z-[100] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
       <div className="flex h-[60px] w-full items-center justify-between px-8">
         <div
-          onClick={() => router.back()}
+          onClick={() => {
+            // 미리보기 모드일 때는 작성 화면으로 전환
+            if (isPreview) {
+              setPreview(false);
+            } else {
+              router.back();
+            }
+          }}
           className="flex cursor-pointer items-center justify-center gap-1 rounded-[8px] px-4 py-[6px] active:bg-gray-200"
         >
           <Back />
@@ -108,6 +132,12 @@ const BusinessHeader = () => {
           <div className="group relative">
             <button
               type="button"
+              onClick={() => {
+                // window에 등록된 토글 함수 호출
+                if (typeof window !== 'undefined' && (window as any).togglePreview) {
+                  (window as any).togglePreview();
+                }
+              }}
               className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
             >
               <Eye />
