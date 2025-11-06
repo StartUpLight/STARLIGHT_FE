@@ -140,7 +140,7 @@ const BusinessHeader = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end gap-6">
           {isPreview ? (
             <>
               <button
@@ -150,6 +150,7 @@ const BusinessHeader = () => {
               >
                 <Download />
               </button>
+              <div className="h-[32px] w-[1.6px] bg-gray-200" />
               <Button
                 text="채점하기"
                 size="M"
