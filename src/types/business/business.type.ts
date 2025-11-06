@@ -88,7 +88,7 @@ export interface BusinessSpellCheckProps {
 
 export interface BusinessSpellCheckResponse {
   result: string;
-  data: BusinessSpellCheckProps[];
+  data: BusinessSpellCheckProps[] | { typos?: BusinessSpellCheckProps[] };
   corrected: string;
   error: null;
 }
@@ -115,15 +115,27 @@ export interface BusinessSpellCheckRequest {
   }>;
 }
 
-function extractList(
-  res: BusinessSpellCheckResponse
-): BusinessSpellCheckProps[] {
-  if (!res || !res.data) return [];
-  if (Array.isArray(res.data)) return res.data;
-  const anyData = res.data as any;
-  return Array.isArray(anyData.typos) ? anyData.typos : [];
-}
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null;
 
+const get = (v: unknown, k: string): unknown =>
+  isRecord(v) && k in v ? (v as Record<string, unknown>)[k] : undefined;
+
+const isPropsArray = (v: unknown): v is BusinessSpellCheckProps[] =>
+  Array.isArray(v) &&
+  v.every((p) => isRecord(p) && typeof p.original === 'string');
+
+export function extractList(response: unknown): BusinessSpellCheckProps[] {
+  const layer1 = get(response, 'data') ?? response;
+  const layer2 = get(layer1, 'data') ?? layer1;
+
+  if (isPropsArray(layer2)) return layer2;
+
+  const typos = get(layer2, 'typos');
+  if (isPropsArray(typos)) return typos;
+
+  return [];
+}
 export function mapSpellResponse(
   res: BusinessSpellCheckResponse
 ): SpellCheckItem[] {

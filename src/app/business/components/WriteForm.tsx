@@ -30,7 +30,7 @@ import TableToolbar from './editor/TableToolbar';
 import { useSpellCheck } from '@/hooks/mutation/useSpellCheck';
 import { SpellPayload } from '@/lib/business/postSpellCheck';
 import { useSpellCheckStore } from '@/store/spellcheck.store';
-import { applySpellHighlights, markSpellErrors } from '@/util/spellMark';
+import { applySpellHighlights } from '@/util/spellMark';
 import SpellError from '@/util/spellError';
 import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
@@ -844,7 +844,7 @@ const WriteForm = ({
                 </label>
                 <div
                   className="min-h-[252px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2"
-                  onClick={(e) => {
+                  onClick={() => {
                     if (editorFeatures && !editorFeatures.isDestroyed) {
                       editorFeatures.commands.focus();
                       setActiveEditor(editorFeatures);
@@ -867,7 +867,7 @@ const WriteForm = ({
                 </label>
                 <div
                   className="min-h-[252px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2"
-                  onClick={(e) => {
+                  onClick={() => {
                     if (editorSkills && !editorSkills.isDestroyed) {
                       editorSkills.commands.focus();
                       setActiveEditor(editorSkills);
@@ -889,7 +889,7 @@ const WriteForm = ({
                 </label>
                 <div
                   className="min-h-[252px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2"
-                  onClick={(e) => {
+                  onClick={() => {
                     if (editorGoals && !editorGoals.isDestroyed) {
                       editorGoals.commands.focus();
                       setActiveEditor(editorGoals);
@@ -909,7 +909,7 @@ const WriteForm = ({
           ) : (
             <div
               className="min-h-[252px] cursor-text rounded-[4px] bg-white px-3 py-2"
-              onClick={(e) => {
+              onClick={() => {
                 if (editorFeatures && !editorFeatures.isDestroyed) {
                   editorFeatures.commands.focus();
                   setActiveEditor(editorFeatures);
