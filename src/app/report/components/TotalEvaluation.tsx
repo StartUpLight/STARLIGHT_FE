@@ -48,7 +48,7 @@ const TotalEvaluation = () => {
   const cards = selected === '강점' ? strengths : weaknesses;
 
   return (
-    <div className="mt-6 mb-4 flex w-full flex-col items-start gap-4 rounded-[12px] border border-gray-300 p-6">
+    <div className="mt-6 mb-4 flex w-full flex-col items-start gap-4 rounded-[12px] border border-gray-300 bg-white p-6">
       <div className="ds-subtitle font-semibold text-gray-900">총평</div>
 
       <div className="flex w-full items-center justify-between">

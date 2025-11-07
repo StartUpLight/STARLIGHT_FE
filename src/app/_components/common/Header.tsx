@@ -70,12 +70,16 @@ const Header = () => {
   }, [isProfileOpen]);
 
   return (
-    <header className={`fixed inset-x-0 top-0 z-[80] w-full shadow-[0_4px_6px_0_rgba(0,0,0,0.05)] ${isHomePage ? 'bg-black' : 'bg-white'}`}>
+    <header
+      className={`fixed inset-x-0 top-0 z-[80] w-full shadow-[0_4px_6px_0_rgba(0,0,0,0.05)] ${isHomePage ? 'bg-black/30' : 'bg-white'}`}
+    >
       <div className="mx-auto flex h-[60px] items-center px-8">
         <div className="flex items-center">
           <Link href="/" className="flex items-center gap-1.5">
             <Logo />
-            <span className={`text-[18.9px] font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}>
+            <span
+              className={`text-[18.9px] font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
+            >
               Starlight
             </span>
           </Link>
@@ -83,10 +87,13 @@ const Header = () => {
           <nav className="ml-[100px] flex items-center gap-12 text-nowrap">
             <Link
               href="/"
-              className={`${navLink} ${isActive('/')
-                ? 'text-primary-500 font-semibold'
-                : isHomePage ? 'text-white' : 'text-gray-900'
-                }`}
+              className={`${navLink} ${
+                isActive('/')
+                  ? 'text-primary-500 font-semibold'
+                  : isHomePage
+                    ? 'text-white'
+                    : 'text-gray-900'
+              }`}
             >
               홈
             </Link>
@@ -94,10 +101,13 @@ const Header = () => {
             <div className={menuWrapper}>
               <button
                 type="button"
-                className={`${menuButton} ${isBusinessActive
-                  ? 'text-primary-500 font-semibold'
-                  : isHomePage ? 'text-white' : 'text-gray-900'
-                  }`}
+                className={`${menuButton} ${
+                  isBusinessActive
+                    ? 'text-primary-500 font-semibold'
+                    : isHomePage
+                      ? 'text-white'
+                      : 'text-gray-900'
+                }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -125,19 +135,25 @@ const Header = () => {
 
             <Link
               href="/expert"
-              className={`${navLink} ${isActive('/expert')
-                ? 'text-primary-500 font-semibold'
-                : isHomePage ? 'text-white' : 'text-gray-900'
-                }`}
+              className={`${navLink} ${
+                isActive('/expert')
+                  ? 'text-primary-500 font-semibold'
+                  : isHomePage
+                    ? 'text-white'
+                    : 'text-gray-900'
+              }`}
             >
               전문가
             </Link>
             <Link
               href="/pricing"
-              className={`${navLink} ${isActive('/pricing')
-                ? 'text-primary-500 font-semibold'
-                : isHomePage ? 'text-white' : 'text-gray-900'
-                }`}
+              className={`${navLink} ${
+                isActive('/pricing')
+                  ? 'text-primary-500 font-semibold'
+                  : isHomePage
+                    ? 'text-white'
+                    : 'text-gray-900'
+              }`}
             >
               요금제
             </Link>
@@ -146,27 +162,27 @@ const Header = () => {
 
         <div className="ml-auto flex items-center">
           {isAuthenticated ? (
-            <div className="relative profile-dropdown">
+            <div className="profile-dropdown relative">
               <div
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="cursor-pointer flex items-center justify-center bg-gray-400 rounded-full w-[36px] h-[36px]"
+                className="flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-gray-400"
               >
-                <span className="ds-text text-white font-medium">홍</span>
+                <span className="ds-text font-medium text-white">홍</span>
               </div>
 
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-[100px] bg-white rounded-[8px] shadow-[0_0_10px_0_rgba(0,0,0,0.10)] overflow-hidden z-20">
+                <div className="absolute right-0 z-20 mt-2 w-[100px] overflow-hidden rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
                   <Link
                     href="/mypage"
                     onClick={() => setIsProfileOpen(false)}
-                    className="block px-[12px] py-[8px] ds-subtext font-medium text-gray-900 transition-colors hover:bg-primary-50"
+                    className="ds-subtext hover:bg-primary-50 block px-[12px] py-[8px] font-medium text-gray-900 transition-colors"
                   >
                     마이페이지
                   </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="cursor-pointer w-full text-left px-[12px] py-[8px] ds-subtext font-medium text-gray-900 transition-colors hover:bg-primary-50"
+                    className="ds-subtext hover:bg-primary-50 w-full cursor-pointer px-[12px] py-[8px] text-left font-medium text-gray-900 transition-colors"
                   >
                     로그아웃
                   </button>
@@ -177,7 +193,7 @@ const Header = () => {
             <button
               type="button"
               onClick={handleAuthClick}
-              className={`cursor-pointer ds-text hover:text-primary-500 px-4 py-[6px] font-medium text-nowrap transition-colors hover:font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
+              className={`ds-text hover:text-primary-500 cursor-pointer px-4 py-[6px] font-medium text-nowrap transition-colors hover:font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
             >
               로그인
             </button>
@@ -188,10 +204,7 @@ const Header = () => {
         open={openUpload}
         onClose={() => setOpenUpload(false)}
       />
-      <LoginModal
-        open={openLogin}
-        onClose={() => setOpenLogin(false)}
-      />
+      <LoginModal open={openLogin} onClose={() => setOpenLogin(false)} />
     </header>
   );
 };
