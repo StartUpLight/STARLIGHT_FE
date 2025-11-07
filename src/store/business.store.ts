@@ -151,7 +151,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         allItems.forEach((item: SidebarItem) => {
             const content = contents[item.number] || {};
             const requestBody = buildSubsectionRequest(item.number, item.title, content);
-            //console.log('requestBody', requestBody);
+            //console.log(`[${item.number}] requestBody:`, JSON.stringify(requestBody, null, 2));
 
             if (!requestBody.blocks || requestBody.blocks.length === 0) {
                 //console.log(`[${item.number}] 스킵: 빈 블록`);
