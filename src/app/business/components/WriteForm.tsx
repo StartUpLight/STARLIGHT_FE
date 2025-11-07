@@ -7,7 +7,6 @@ import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
-import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
@@ -21,7 +20,7 @@ import { applySpellHighlights } from '@/util/spellMark';
 import SpellError from '@/util/spellError';
 import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
-import { DeleteTableOnDelete, ImageCutPaste } from '../../../lib/business/extensions';
+import { DeleteTableOnDelete, ImageCutPaste, ResizableImage } from '../../../lib/business/extensions';
 import { createPasteHandler } from '../../../lib/business/useEditorConfig';
 import WriteFormHeader from './editor/WriteFormHeader';
 import WriteFormToolbar from './editor/WriteFormToolbar';
@@ -46,7 +45,7 @@ const WriteForm = ({
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
-      Image.configure({ inline: false }),
+      ResizableImage.configure({ inline: false }),
       Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
@@ -73,7 +72,7 @@ const WriteForm = ({
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
-      Image.configure({ inline: false }),
+      ResizableImage.configure({ inline: false }),
       Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
@@ -100,7 +99,7 @@ const WriteForm = ({
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
-      Image.configure({ inline: false }),
+      ResizableImage.configure({ inline: false }),
       Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
