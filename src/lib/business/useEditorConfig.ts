@@ -1,5 +1,8 @@
+import type { Editor } from '@tiptap/core';
 import type { EditorView } from '@tiptap/pm/view';
 import { uploadImage } from '@/lib/imageUpload';
+
+type EditorViewWithEditor = EditorView & { editor?: Editor };
 
 export const createPasteHandler = () => {
     return (view: EditorView, event: ClipboardEvent) => {
@@ -23,15 +26,12 @@ export const createPasteHandler = () => {
                 uploadImage(file)
                     .then((imageUrl) => {
                         if (imageUrl) {
-                            // view.editor를 통해 에디터 인스턴스에 접근
-                            const editor = (view as any).editor;
-                            if (editor) {
-                                editor
-                                    .chain()
-                                    .focus()
-                                    .setImage({ src: imageUrl })
-                                    .run();
-                            }
+                            const editor = (view as EditorViewWithEditor).editor;
+                            editor
+                                ?.chain()
+                                .focus()
+                                .setImage({ src: imageUrl })
+                                .run();
                         }
                     })
                     .catch((error) => {

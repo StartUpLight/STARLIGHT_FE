@@ -1,5 +1,6 @@
 import { Extension } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
+import type { EditorState, Selection } from '@tiptap/pm/state';
 import Image from '@tiptap/extension-image';
 
 export const DeleteTableOnDelete = Extension.create({
@@ -38,7 +39,7 @@ export const ImageCutPaste = Extension.create({
             }
         };
 
-        const findImageNode = (state: any, selection: any) => {
+        const findImageNode = (state: EditorState, selection: Selection) => {
             const { $from } = selection;
             let imageNode: PMNode | null = null;
             let imagePos = -1;
@@ -181,7 +182,6 @@ export const ResizableImage = Image.extend({
 
             let isResizing = false;
             let startX = 0;
-            let startY = 0;
             let startWidth = 0;
             let startHeight = 0;
 
@@ -201,7 +201,6 @@ export const ResizableImage = Image.extend({
                 e.stopPropagation();
                 isResizing = true;
                 startX = e.clientX;
-                startY = e.clientY;
                 startWidth = img.offsetWidth;
                 startHeight = img.offsetHeight;
 
