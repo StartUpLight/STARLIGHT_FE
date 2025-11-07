@@ -14,8 +14,15 @@ import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
 const BusinessHeader = () => {
   const router = useRouter();
-  const { saveAllItems, initializePlan, planId, isPreview, setPreview, setIsSaving } = useBusinessStore();
-  const [title, setTitle] = useState("");
+  const {
+    saveAllItems,
+    initializePlan,
+    planId,
+    isPreview,
+    setPreview,
+    setIsSaving,
+  } = useBusinessStore();
+  const [title, setTitle] = useState('');
 
   // localStorage에서 제목 불러오기 (planId가 있을 때만)
   useEffect(() => {
@@ -25,7 +32,7 @@ const BusinessHeader = () => {
         setTitle(storedTitle);
       } else if (!planId) {
         // planId가 없으면 제목 초기화
-        setTitle("");
+        setTitle('');
       }
     }
   }, [planId]);
@@ -93,6 +100,7 @@ const BusinessHeader = () => {
 
       await saveAllItems(id);
       await saveAllItems(id);
+      await saveAllItems(id);
 
       handleOpenModal();
       postGradeMutate(id, {
@@ -158,9 +166,7 @@ const BusinessHeader = () => {
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2">
-          {isPreview ? (
-            null
-          ) : (
+          {isPreview ? null : (
             <>
               <span
                 ref={spanRef}
@@ -212,7 +218,9 @@ const BusinessHeader = () => {
                   onClick={() => {
                     // window에 등록된 토글 함수 호출
                     if (typeof window !== 'undefined') {
-                      const win = window as Window & { togglePreview?: () => void };
+                      const win = window as Window & {
+                        togglePreview?: () => void;
+                      };
                       if (win.togglePreview) {
                         win.togglePreview();
                       }
