@@ -85,4 +85,3 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
         alert('PDF 다운로드에 실패했습니다.');
     }
 };
-
