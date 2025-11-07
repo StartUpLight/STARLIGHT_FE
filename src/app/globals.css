@@ -225,6 +225,7 @@
 
 .ProseMirror .image-wrapper {
   position: relative;
+  text-align: center;
 }
 
 .ProseMirror .image-container {
