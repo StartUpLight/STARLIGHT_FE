@@ -26,13 +26,11 @@ export const uploadImage = async (file: File): Promise<string> => {
 
         // 2. presigned URL에 이미지 업로드
         // presigned URL도 인코딩된 파일명을 포함할 수 있으므로 그대로 사용
-        const putResponse = await axios.put(preSignedUrl, file, {
+        await axios.put(preSignedUrl, file, {
             headers: {
                 'Content-Type': file.type,
             },
         });
-
-        //console.log(putResponse.data);
 
         // 3. 공개 처리
         // curl의 --data-urlencode와 동일하게 application/x-www-form-urlencoded 형식으로 전송

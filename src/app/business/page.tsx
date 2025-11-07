@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import WriteForm from './components/WriteForm';
 import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
@@ -87,21 +87,23 @@ const Page = () => {
   }, [setSelectedItem]);
 
   // 미리보기 모드 전환 핸들러
-  const handleTogglePreview = () => {
+  const handleTogglePreview = useCallback(() => {
     setPreview(!isPreview);
-  };
+  }, [isPreview, setPreview]);
 
   // 전역으로 미리보기 토글 함수 등록 (BusinessHeader에서 사용)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      (window as any).togglePreview = handleTogglePreview;
+      const win = window as Window & { togglePreview?: () => void };
+      win.togglePreview = handleTogglePreview;
     }
     return () => {
       if (typeof window !== 'undefined') {
-        delete (window as any).togglePreview;
+        const win = window as Window & { togglePreview?: () => void };
+        delete win.togglePreview;
       }
     };
-  }, [isPreview, setPreview]);
+  }, [handleTogglePreview]);
 
   return (
     <>

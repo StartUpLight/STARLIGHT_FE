@@ -1,7 +1,7 @@
 export const downloadPDF = async (fileName: string = '사업계획서') => {
     try {
         const html2canvas = (await import('html2canvas')).default;
-        const { jsPDF } = await import('jspdf') as any;
+        const { jsPDF } = await import('jspdf') as { jsPDF: typeof import('jspdf').jsPDF };
 
         const previewContent = document.querySelector('[data-preview-content]') as HTMLElement;
         if (!previewContent) {

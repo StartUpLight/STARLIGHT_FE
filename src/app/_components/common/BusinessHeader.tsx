@@ -42,15 +42,14 @@ const BusinessHeader = () => {
       localStorage.removeItem('businessPlanTitle');
     }
     if (!planId || !trimmedTitle) return;
-    let timeoutId: NodeJS.Timeout;
-    const updateTitle = async () => {
-      try {
-        await patchBusinessPlanTitle(planId, trimmedTitle);
-      } catch (error) {
-        console.error('제목 업데이트 실패:', error);
-      }
-    };
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
+      const updateTitle = async () => {
+        try {
+          await patchBusinessPlanTitle(planId, trimmedTitle);
+        } catch (error) {
+          console.error('제목 업데이트 실패:', error);
+        }
+      };
       updateTitle();
     }, 300);
 
@@ -210,8 +209,11 @@ const BusinessHeader = () => {
                   type="button"
                   onClick={() => {
                     // window에 등록된 토글 함수 호출
-                    if (typeof window !== 'undefined' && (window as any).togglePreview) {
-                      (window as any).togglePreview();
+                    if (typeof window !== 'undefined') {
+                      const win = window as Window & { togglePreview?: () => void };
+                      if (win.togglePreview) {
+                        win.togglePreview();
+                      }
                     }
                   }}
                   className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
