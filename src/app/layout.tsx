@@ -25,18 +25,31 @@ export default function RootLayout({
 
       <Script id="maze-inline" strategy="afterInteractive">
         {`(function (m, a, z, e) {
-    var s, t;
-    try { t = m.sessionStorage.getItem('maze-us'); } catch (err) {}
-    if (!t) {
-      t = new Date().getTime();
-      try { m.sessionStorage.setItem('maze-us', t); } catch (err) {}
-    }
-    s = a.createElement('script');
-    s.src = z + '?apiKey=' + e;
-    s.async = true;
-    a.getElementsByTagName('head')[0].appendChild(s);
-    m.mazeUniversalSnippetApiKey = e;
-  })(window, document, 'https://snippet.maze.co/maze-universal-loader.js', 'fb7a611e-c8b2-4f26-bbde-7586411b578e');`}
+        var s, t, u, v;
+        try {
+        t = m.sessionStorage.getItem('maze-us');
+        } catch (err) {}
+         
+        if (!t) {
+        t = new Date().getTime();
+        try {
+        m.sessionStorage.setItem('maze-us', t);
+        } catch (err) {}
+         }
+        
+        u = document.currentScript || (function () {
+        var w = document.getElementsByTagName('script');
+        return w[w.length - 1];
+        })();
+        v = u && u.nonce;
+
+        s = a.createElement('script');
+        s.src = z + '?apiKey=' + e;
+        s.async = true;
+        if (v) s.setAttribute('nonce', v);
+        a.getElementsByTagName('head')[0].appendChild(s);
+        m.mazeUniversalSnippetApiKey = e;
+        })(window, document, 'https://snippet.maze.co/maze-universal-loader.js', '5f372884-917e-4206-acdc-870d0fe09aea');`}
       </Script>
     </html>
   );
