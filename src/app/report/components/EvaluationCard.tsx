@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import StrengthIcon from '@/assets/icons/strength_graph.svg';
 import WeaknessIcon from '@/assets/icons/weak_graph.svg';
