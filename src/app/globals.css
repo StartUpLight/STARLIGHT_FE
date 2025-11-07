@@ -164,7 +164,7 @@
 
 .ProseMirror th {
   text-align: left;
-  font-weight: 600;
+  font-weight: normal;
 }
 
 .ProseMirror .selectedCell {
