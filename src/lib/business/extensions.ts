@@ -20,91 +20,66 @@ export const DeleteTableOnDelete = Extension.create({
 export const ImageCutPaste = Extension.create({
     name: 'imageCutPaste',
     addKeyboardShortcuts() {
+        const copyImageToClipboard = (imageSrc: string) => {
+            if (
+                typeof navigator !== 'undefined' &&
+                navigator.clipboard &&
+                navigator.clipboard.write
+            ) {
+                fetch(imageSrc)
+                    .then((res) => res.blob())
+                    .then((blob) => {
+                        const clipboardItem = new ClipboardItem({
+                            [blob.type || 'image/png']: blob,
+                        });
+                        return navigator.clipboard.write([clipboardItem]);
+                    })
+                    .catch(() => { });
+            }
+        };
+
+        const findImageNode = (state: any, selection: any) => {
+            const { $from } = selection;
+            let imageNode: PMNode | null = null;
+            let imagePos = -1;
+
+            if (selection.empty) {
+                for (let d = $from.depth; d > 0; d--) {
+                    const node = $from.node(d);
+                    if (node.type.name === 'image') {
+                        imageNode = node;
+                        imagePos = $from.before(d);
+                        break;
+                    }
+                }
+            } else {
+                state.doc.nodesBetween(selection.from, selection.to, (node: PMNode, pos: number) => {
+                    if (node.type.name === 'image') {
+                        imageNode = node;
+                        imagePos = pos;
+                    }
+                });
+            }
+
+            return { imageNode, imagePos };
+        };
+
         return {
             'Mod-x': ({ editor }) => {
                 const { state } = editor;
                 const { selection } = state;
-                const { $from } = selection;
+                const { imageNode, imagePos } = findImageNode(state, selection);
 
-                // 선택된 노드가 이미지인지 확인
-                let imageNode: PMNode | null = null;
-                let imagePos = -1;
+                if (imageNode && imageNode.attrs.src) {
+                    copyImageToClipboard(imageNode.attrs.src);
 
-                if (selection.empty) {
-                    // 커서 위치에서 이미지 찾기
-                    for (let d = $from.depth; d > 0; d--) {
-                        const node = $from.node(d);
-                        if (node.type.name === 'image') {
-                            imageNode = node;
-                            imagePos = $from.before(d);
-                            break;
-                        }
-                    }
-                } else {
-                    // 선택 범위에서 이미지 찾기
-                    state.doc.nodesBetween(
-                        selection.from,
-                        selection.to,
-                        (node: PMNode, pos: number) => {
-                            if (node.type.name === 'image') {
-                                imageNode = node;
-                                imagePos = pos;
-                            }
-                        }
-                    );
-                }
-
-                if (imageNode) {
-                    const imageSrc = imageNode.attrs.src;
-
-                    // 클립보드에 이미지 복사 (잘라내기용)
-                    if (
-                        imageSrc &&
-                        typeof navigator !== 'undefined' &&
-                        navigator.clipboard &&
-                        navigator.clipboard.write
-                    ) {
-                        if (imageSrc.startsWith('data:')) {
-                            // base64 이미지를 Blob으로 변환
-                            const base64resonse = fetch(imageSrc);
-                            base64resonse
-                                .then((res) => res.blob())
-                                .then((blob) => {
-                                    const clipboardItem = new ClipboardItem({
-                                        [blob.type || 'image/png']: blob,
-                                    });
-                                    return navigator.clipboard.write([clipboardItem]);
-                                })
-                                .catch(() => {
-                                    // 복사 실패 시에도 잘라내기 진행
-                                });
-                        } else {
-                            // URL 이미지
-                            fetch(imageSrc)
-                                .then((res) => res.blob())
-                                .then((blob) => {
-                                    const clipboardItem = new ClipboardItem({
-                                        [blob.type || 'image/png']: blob,
-                                    });
-                                    return navigator.clipboard.write([clipboardItem]);
-                                })
-                                .catch(() => {
-                                    // 복사 실패 시에도 잘라내기 진행
-                                });
-                        }
-                    }
-
-                    // 이미지 삭제 (잘라내기)
-                    const _imageNode = imageNode; // capture for type-narrowing in async closure
-                    const _imagePos = imagePos;
                     setTimeout(() => {
-                        if (!_imageNode) return;
                         editor
                             .chain()
                             .focus()
                             .setTextSelection({
-                                from: _imagePos,
-                                to: _imagePos + _imageNode.nodeSize,
+                                from: imagePos,
+                                to: imagePos + imageNode.nodeSize,
                             })
                             .deleteSelection()
                             .run();
@@ -118,65 +93,10 @@ export const ImageCutPaste = Extension.create({
             'Mod-c': ({ editor }) => {
                 const { state } = editor;
                 const { selection } = state;
-                const { $from } = selection;
-
-                // 선택된 노드가 이미지인지 확인
-                let imageNode: PMNode | null = null;
-
-                if (selection.empty) {
-                    // 커서 위치에서 이미지 찾기
-                    for (let d = $from.depth; d > 0; d--) {
-                        const node = $from.node(d);
-                        if (node.type.name === 'image') {
-                            imageNode = node;
-                            break;
-                        }
-                    }
-                } else {
-                    // 선택 범위에서 이미지 찾기
-                    state.doc.nodesBetween(
-                        selection.from,
-                        selection.to,
-                        (node: PMNode) => {
-                            if (node.type.name === 'image') {
-                                imageNode = node;
-                            }
-                        }
-                    );
-                }
+                const { imageNode } = findImageNode(state, selection);
 
                 if (imageNode && imageNode.attrs.src) {
-                    const imageSrc = imageNode.attrs.src;
-
-                    // 클립보드에 이미지 복사
-                    if (
-                        typeof navigator !== 'undefined' &&
-                        navigator.clipboard &&
-                        navigator.clipboard.write
-                    ) {
-                        if (imageSrc.startsWith('data:')) {
-                            fetch(imageSrc)
-                                .then((res) => res.blob())
-                                .then((blob) => {
-                                    const clipboardItem = new ClipboardItem({
-                                        [blob.type || 'image/png']: blob,
-                                    });
-                                    return navigator.clipboard.write([clipboardItem]);
-                                })
-                                .catch(() => { });
-                        } else {
-                            fetch(imageSrc)
-                                .then((res) => res.blob())
-                                .then((blob) => {
-                                    const clipboardItem = new ClipboardItem({
-                                        [blob.type || 'image/png']: blob,
-                                    });
-                                    return navigator.clipboard.write([clipboardItem]);
-                                })
-                                .catch(() => { });
-                        }
-                    }
-
+                    copyImageToClipboard(imageNode.attrs.src);
                     return true;
                 }
 
@@ -234,22 +154,23 @@ export const ResizableImage = Image.extend({
             img.style.height = 'auto';
             img.style.cursor = 'pointer';
 
+            const updateContainerWidth = () => {
+                if (img.offsetWidth > 0) {
+                    imgContainer.style.width = `${img.offsetWidth}px`;
+                }
+            };
+
             if (node.attrs.width) {
                 img.style.width = `${node.attrs.width}px`;
                 imgContainer.style.width = `${node.attrs.width}px`;
             } else {
-                // 이미지 로드 후 컨테이너 너비 설정
-                const updateContainerWidth = () => {
-                    if (!node.attrs.width && img.offsetWidth > 0) {
-                        imgContainer.style.width = `${img.offsetWidth}px`;
-                    }
-                };
                 if (img.complete) {
                     setTimeout(updateContainerWidth, 0);
                 } else {
                     img.onload = updateContainerWidth;
                 }
             }
+
             if (node.attrs.height) {
                 img.style.height = `${node.attrs.height}px`;
             }
@@ -265,15 +186,13 @@ export const ResizableImage = Image.extend({
             let startHeight = 0;
 
             const updateImageSize = (width: number, height: number) => {
-                if (typeof getPos === 'function') {
-                    const pos = getPos();
-                    if (pos !== null && pos !== undefined) {
-                        editor
-                            .chain()
-                            .setNodeSelection(pos)
-                            .updateAttributes('image', { width, height })
-                            .run();
-                    }
+                const pos = typeof getPos === 'function' ? getPos() : null;
+                if (pos !== null && pos !== undefined) {
+                    editor
+                        .chain()
+                        .setNodeSelection(pos)
+                        .updateAttributes('image', { width, height })
+                        .run();
                 }
             };
 
@@ -294,8 +213,6 @@ export const ResizableImage = Image.extend({
                 if (!isResizing) return;
 
                 const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-
                 const aspectRatio = startHeight / startWidth;
                 const newWidth = Math.max(50, startWidth + deltaX);
                 const newHeight = newWidth * aspectRatio;
@@ -320,28 +237,24 @@ export const ResizableImage = Image.extend({
             resizeHandle.addEventListener('mousedown', handleMouseDown);
 
             const handleImageClick = () => {
-                if (typeof getPos === 'function') {
-                    const pos = getPos();
-                    if (pos !== null && pos !== undefined) {
-                        editor.chain().setNodeSelection(pos).run();
-                    }
+                const pos = typeof getPos === 'function' ? getPos() : null;
+                if (pos !== null && pos !== undefined) {
+                    editor.chain().setNodeSelection(pos).run();
                 }
             };
 
             img.addEventListener('click', handleImageClick);
 
             const updateResizeHandle = () => {
-                if (typeof getPos === 'function') {
-                    const pos = getPos();
-                    if (pos !== null && pos !== undefined) {
-                        const isSelected = editor.state.selection.from === pos;
-                        if (isSelected) {
-                            resizeHandle.style.display = 'block';
-                            img.classList.add('selected');
-                        } else {
-                            resizeHandle.style.display = 'none';
-                            img.classList.remove('selected');
-                        }
+                const pos = typeof getPos === 'function' ? getPos() : null;
+                if (pos !== null && pos !== undefined) {
+                    const isSelected = editor.state.selection.from === pos;
+                    if (isSelected) {
+                        resizeHandle.style.display = 'block';
+                        img.classList.add('selected');
+                    } else {
+                        resizeHandle.style.display = 'none';
+                        img.classList.remove('selected');
                     }
                 }
             };
@@ -369,12 +282,6 @@ export const ResizableImage = Image.extend({
                     } else {
                         img.style.width = '';
                         imgContainer.style.width = '';
-                        // 이미지 로드 후 컨테이너 너비 업데이트
-                        const updateContainerWidth = () => {
-                            if (img.offsetWidth > 0) {
-                                imgContainer.style.width = `${img.offsetWidth}px`;
-                            }
-                        };
                         if (img.complete) {
                             setTimeout(updateContainerWidth, 0);
                         } else {
