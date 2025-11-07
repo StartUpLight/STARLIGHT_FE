@@ -131,9 +131,9 @@ const TotalEvaluation = () => {
         )}
         {!isLoading &&
           !isError &&
-          cards.map((item) => (
+          cards.map((item, idx) => (
             <EvaluationCard
-              key={item.index}
+              key={`${variant}-${idx}`}
               title={item.title}
               description={item.description}
               type={variant}
