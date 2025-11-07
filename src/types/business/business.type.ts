@@ -166,8 +166,8 @@ export interface AiGradeResponse {
       sectionType: string;
       gradingListScores: GradingListScoreProps[];
     }[];
-    strengths: [title: string, content: string];
-    weaknesses: [title: string, content: string];
+    strengths: { title: string; content: string }[];
+    weaknesses: { title: string; content: string }[];
   };
 }
 

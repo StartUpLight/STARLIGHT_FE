@@ -131,7 +131,7 @@ const ChartCard = () => {
             <PolarAngleAxis
               dataKey="subject"
               tick={(props) => {
-                const { payload, index } = props as any;
+                const { payload, index } = props;
                 const angle = (90 - index * 90) * (Math.PI / 180);
                 const distance =
                   outerRadius + labelDistances[index as 0 | 1 | 2 | 3];

@@ -3,7 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useGetGrade } from '@/hooks/queries/useBusiness';
-import { GradingListScoreProps } from '@/types/business/business.type';
+import {
+  AiGradeResponse,
+  GradingListScoreProps,
+} from '@/types/business/business.type';
 
 interface Category {
   title: string;
@@ -97,10 +100,11 @@ const EvaluationScoreBoard = () => {
   const selectedType =
     sectionTypeMap[selected.title as keyof typeof sectionTypeMap];
 
-  const checklist =
-    (evaluateScore?.data?.sectionScores ?? []).find(
-      (s: any) => s.sectionType === selectedType
-    )?.gradingListScores ?? [];
+  const checklist: GradingListScoreProps[] =
+    (
+      evaluateScore?.data?.sectionScores ??
+      ([] as AiGradeResponse['data']['sectionScores'])
+    ).find((s) => s.sectionType === selectedType)?.gradingListScores ?? [];
 
   return (
     <div className="flex h-[359px] min-w-[812px] items-start justify-between rounded-[12px] border border-gray-300 p-6">
