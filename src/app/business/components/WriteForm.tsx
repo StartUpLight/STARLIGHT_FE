@@ -196,7 +196,7 @@ const ImageCutPaste = Extension.create({
                   });
                   return navigator.clipboard.write([clipboardItem]);
                 })
-                .catch(() => {});
+                .catch(() => { });
             } else {
               fetch(imageSrc)
                 .then((res) => res.blob())
@@ -206,7 +206,7 @@ const ImageCutPaste = Extension.create({
                   });
                   return navigator.clipboard.write([clipboardItem]);
                 })
-                .catch(() => {});
+                .catch(() => { });
             }
           }
 
@@ -407,7 +407,7 @@ const WriteForm = ({
       },
     },
   });
-  const { updateItemContent, getItemContent } = useBusinessStore();
+  const { updateItemContent, getItemContent, lastSavedTime, isSaving } = useBusinessStore();
   const [activeEditor, setActiveEditor] = useState<
     typeof editorFeatures | null
   >(null);
@@ -809,8 +809,14 @@ const WriteForm = ({
             {spellChecking ? '검사 중...' : '맞춤법 검사'}
           </span>
         </button>
+        {isSaving ? (
+          <span className="ml-auto ds-caption font-medium text-gray-600">저장 중...</span>
+        ) : lastSavedTime ? (
+          <span className="ml-auto ds-caption font-medium text-gray-600">
+            최근 저장 ({lastSavedTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })})
+          </span>
+        ) : null}
       </div>
-
       {/* 스크롤 가능한 콘텐츠 영역 */}
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-[24px] px-5 py-4">

@@ -88,12 +88,14 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         if (typeof window !== 'undefined') {
             localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(PLAN_ID_KEY);
+            localStorage.removeItem('businessPlanTitle');
         }
     },
     resetDraft: () => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(PLAN_ID_KEY);
+            localStorage.removeItem('businessPlanTitle');
         }
         set({
             planId: null,
@@ -163,6 +165,21 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         });
 
         await Promise.allSettled(requests);
+
+        // 저장 성공 시 시간 업데이트
+        set({ lastSavedTime: new Date() });
     },
+
+    // 미리보기 모드
+    isPreview: false,
+    setPreview: (isPreview: boolean) => set({ isPreview }),
+
+    // 저장 시간
+    lastSavedTime: null,
+    setLastSavedTime: (time: Date | null) => set({ lastSavedTime: time }),
+
+    // 저장 중 상태
+    isSaving: false,
+    setIsSaving: (isSaving: boolean) => set({ isSaving }),
 }));
 

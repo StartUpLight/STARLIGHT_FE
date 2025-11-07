@@ -1,6 +1,7 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import WriteForm from './components/WriteForm';
+import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
 import CreateModal from './components/CreateModal';
 
@@ -8,7 +9,7 @@ const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
-  const { initializePlan, restoreContentsFromStorage, clearStorage, resetDraft } = useBusinessStore();
+  const { initializePlan, restoreContentsFromStorage, clearStorage, resetDraft, isPreview, setPreview } = useBusinessStore();
 
   // 페이지 진입 시 모달 표시 여부 확인
   useEffect(() => {
@@ -85,28 +86,53 @@ const Page = () => {
     });
   }, [setSelectedItem]);
 
-  return (
-    <div className="min-h-[calc(100vh-60px)] w-full bg-gray-100">
-      <main className="mx-auto w-full px-6">
-        <WriteForm
-          key={selectedItem.number}
-          number={selectedItem.number}
-          title={selectedItem.title}
-          subtitle={selectedItem.subtitle}
-        />
-      </main>
+  // 미리보기 모드 전환 핸들러
+  const handleTogglePreview = useCallback(() => {
+    setPreview(!isPreview);
+  }, [isPreview, setPreview]);
 
-      {isModalOpen && (
-        <CreateModal
-          title="사업계획서 쉽게 생성하기"
-          subtitle={`사업계획서 초안을 체크리스트로 쉽게 작성해 보세요.
+  // 전역으로 미리보기 토글 함수 등록 (BusinessHeader에서 사용)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const win = window as Window & { togglePreview?: () => void };
+      win.togglePreview = handleTogglePreview;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        const win = window as Window & { togglePreview?: () => void };
+        delete win.togglePreview;
+      }
+    };
+  }, [handleTogglePreview]);
+
+  return (
+    <>
+      {isPreview ? (
+        <Preview />
+      ) : (
+        <div className="min-h-[calc(100vh-60px)] w-full bg-gray-100">
+          <main className="mx-auto w-full px-6">
+            <WriteForm
+              key={selectedItem.number}
+              number={selectedItem.number}
+              title={selectedItem.title}
+              subtitle={selectedItem.subtitle}
+            />
+          </main>
+
+          {isModalOpen && (
+            <CreateModal
+              title="사업계획서 쉽게 생성하기"
+              subtitle={`사업계획서 초안을 체크리스트로 쉽게 작성해 보세요.
 앞으로 사업계획서의 작성 효율과 퀄리티를 높여주는 자료가 될 거예요.`}
-          onClose={handleCloseModal}
-          onClick={handleCreatePlan}
-          buttonText="생성하기"
-        />
+              onClose={handleCloseModal}
+              onClick={handleCreatePlan}
+              buttonText="생성하기"
+            />
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 };
 
