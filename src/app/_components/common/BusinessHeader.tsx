@@ -195,11 +195,12 @@ const BusinessHeader = () => {
               </button>
               <div className="h-[32px] w-[1.6px] bg-gray-200" />
               <Button
-                text="채점하기"
+                text={isGrading ? '채점 중...' : '채점하기'}
                 size="M"
                 color="primary"
-                className="ds-subtext h-[33px] rounded-[8px] px-4 py-[6px]"
-                onClick={handleOpenModal}
+                className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isGrading ? 'pointer-events-none opacity-50' : ''}`}
+                disabled={isGrading}
+                onClick={handleGrade}
               />
             </>
           ) : (
@@ -236,26 +237,26 @@ const BusinessHeader = () => {
                 </div>
               </div>
               <div className="h-8 w-[1.6px] bg-gray-200" />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${isSaving ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-50 cursor-pointer'}`}
+                >
+                  {isSaving ? '저장 중...' : '임시 저장'}
+                </button>
+                <Button
+                  text={isGrading ? '채점 중...' : '채점하기'}
+                  size="M"
+                  color="primary"
+                  className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isSaving || isGrading ? 'pointer-events-none opacity-50' : ''}`}
+                  disabled={isSaving || isGrading}
+                  onClick={handleGrade}
+                />
+              </div>
             </>
           )}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSaving}
-              className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${isSaving ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-50 cursor-pointer'}`}
-            >
-              {isSaving ? '저장 중...' : '임시 저장'}
-            </button>
-            <Button
-              text={isGrading ? '채점 중...' : '채점하기'}
-              size="M"
-              color="primary"
-              className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isSaving || isGrading ? 'pointer-events-none opacity-50' : ''}`}
-              disabled={isSaving || isGrading}
-              onClick={handleGrade}
-            />
-          </div>
         </div>
 
         {isModalOpen && (
