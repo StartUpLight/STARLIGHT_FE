@@ -6,7 +6,11 @@ const MainHeader = ({ children }: PropsWithChildren) => {
   const pathname = usePathname();
   const isHome = pathname === '/';
 
-  return <main className={isHome ? '' : 'pt-[60px]'}>{children}</main>;
+  return (
+    <main className={isHome ? '' : 'min-h-screen bg-white pt-[60px]'}>
+      {children}
+    </main>
+  );
 };
 
 export default MainHeader;

@@ -5,7 +5,7 @@ import TotalEvaluation from './components/TotalEvaluation';
 
 const page = () => {
   return (
-    <div className="mt-[30px] flex w-full flex-col px-8">
+    <div className="mt-[30px] flex w-full flex-col bg-white px-8">
       <div className="ds-title font-semibold text-gray-900">
         사업계획서 AI 리포트
       </div>
