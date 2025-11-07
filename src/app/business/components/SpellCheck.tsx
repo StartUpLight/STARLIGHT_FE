@@ -17,7 +17,7 @@ type UIResult = {
 };
 
 const SpellCheck = () => {
-  const { items, loading } = useSpellCheckStore();
+  const { items, loading, closePanel } = useSpellCheckStore();
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState<UIResult[]>([]);
 
@@ -33,6 +33,12 @@ const SpellCheck = () => {
   const [pendingPairs, setPendingPairs] = useState<CorrectionPair[] | null>(
     null
   );
+
+  useEffect(() => {
+    setIsOpen(false);
+    setResults([]);
+    closePanel();
+  }, [sectionNumber, closePanel]);
 
   useEffect(() => {
     if (loading) setIsOpen(true);

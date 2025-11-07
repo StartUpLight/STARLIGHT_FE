@@ -16,11 +16,15 @@ import { Editor } from '@tiptap/core';
 import { useSpellCheck } from '@/hooks/mutation/useSpellCheck';
 import { SpellPayload } from '@/lib/business/postSpellCheck';
 import { useSpellCheckStore } from '@/store/spellcheck.store';
-import { applySpellHighlights } from '@/util/spellMark';
+import { applySpellHighlights, clearSpellErrors } from '@/util/spellMark';
 import SpellError from '@/util/spellError';
 import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
-import { DeleteTableOnDelete, ImageCutPaste, ResizableImage } from '../../../lib/business/extensions';
+import {
+  DeleteTableOnDelete,
+  ImageCutPaste,
+  ResizableImage,
+} from '../../../lib/business/extensions';
 import { createPasteHandler } from '../../../lib/business/useEditorConfig';
 import WriteFormHeader from './editor/WriteFormHeader';
 import WriteFormToolbar from './editor/WriteFormToolbar';
@@ -115,7 +119,8 @@ const WriteForm = ({
       handlePaste: createPasteHandler(),
     },
   });
-  const { updateItemContent, getItemContent, lastSavedTime, isSaving } = useBusinessStore();
+  const { updateItemContent, getItemContent, lastSavedTime, isSaving } =
+    useBusinessStore();
   const [activeEditor, setActiveEditor] = useState<
     typeof editorFeatures | null
   >(null);
@@ -379,6 +384,24 @@ const WriteForm = ({
       },
     });
   };
+
+  const resetSpell = useSpellCheckStore((s) => s.reset);
+
+  useEffect(() => {
+    resetSpell();
+
+    const editors =
+      number === '0'
+        ? [editorFeatures, editorSkills, editorGoals]
+        : [editorFeatures];
+
+    const id = requestAnimationFrame(() => {
+      editors.forEach((ed) => {
+        if (ed && !ed.isDestroyed) clearSpellErrors(ed);
+      });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [number, editorFeatures, editorSkills, editorGoals, resetSpell]);
 
   return (
     <div className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white">
