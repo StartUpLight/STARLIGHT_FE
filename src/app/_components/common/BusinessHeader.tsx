@@ -7,6 +7,7 @@ import Button from './Button';
 import CreateModal from '@/app/business/components/CreateModal';
 import Image from 'next/image';
 import { useBusinessStore } from '@/store/business.store';
+import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
 const BusinessHeader = () => {
   const router = useRouter();
@@ -18,13 +19,15 @@ const BusinessHeader = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const { mutate: postGradeMutate, isPending: isGrading } = usePostGrade();
+
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      const currentPlanId = planId || await initializePlan();
+      const currentPlanId = planId || (await initializePlan());
       await saveAllItems(currentPlanId);
     } catch (error) {
       console.error('저장 중 오류 발생:', error);
@@ -33,11 +36,27 @@ const BusinessHeader = () => {
     }
   };
 
+  const handleGrade = async () => {
+    try {
+      setIsSaving(true);
+      const id = planId ?? (await initializePlan());
+      if (id == null) throw new Error('planId 생성에 실패했습니다.');
+
+      await saveAllItems(id);
+
+      handleOpenModal();
+      postGradeMutate(id, {
+        onSuccess: () => router.push('/report'),
+        onError: (e) => console.error('채점 실패:', e),
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // 3분마다 자동 임시 저장 (planId가 있을 때만)
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval> | null = null;
-
-    // planId가 있을 때만 자동 저장 시작
     const checkAndStartAutoSave = async () => {
       const currentPlanId = planId;
       if (currentPlanId) {
@@ -50,9 +69,7 @@ const BusinessHeader = () => {
         }, 180000);
       }
     };
-
     checkAndStartAutoSave();
-
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
@@ -135,27 +152,32 @@ const BusinessHeader = () => {
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className={`text-primary-500 border-primary-500 ds-subtext h-[33px] border-[1.2px] rounded-[8px] px-3 py-2 flex items-center justify-center font-medium transition ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-primary-50'}`}
+              className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${isSaving ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-50 cursor-pointer'}`}
             >
-              {isSaving ? "저장 중..." : "임시 저장"}
+              {isSaving ? '저장 중...' : '임시 저장'}
             </button>
+
             <Button
-              text="채점하기"
+              text={isGrading ? '채점 중...' : '채점하기'}
               size="M"
               color="primary"
-              className="ds-subtext h-[33px] rounded-[8px] px-4 py-[6px]"
-              onClick={handleOpenModal}
+              className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isSaving || isGrading ? 'pointer-events-none opacity-50' : ''}`}
+              disabled={isSaving || isGrading}
+              onClick={handleGrade}
             />
           </div>
         </div>
+
         {isModalOpen && (
           <CreateModal
             title="AI로 사업계획서 채점하기"
             subtitle={`방금 작성하신 사업계획서를 항목별로 분석해 점수·강점·리스크를 즉시 제공해드려요.
     70점 이상이면, 아이템에 맞는 전문가 추천까지 제공해드려요.`}
             onClose={handleCloseModal}
-            buttonText="채점받기"
-            onClick={() => router.push('/report')}
+            buttonText={isGrading ? '채점 중...' : '결과 보기'}
+            onClick={() => {
+              if (!isGrading) router.push('/report');
+            }}
           />
         )}
       </div>

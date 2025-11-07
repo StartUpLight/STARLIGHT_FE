@@ -151,3 +151,28 @@ export function mapSpellResponse(
     suggestions: d.suggestions ?? [],
   }));
 }
+
+export interface AiGradeResponse {
+  result: string;
+  data: {
+    id: number;
+    businessPlanId: number;
+    totalScore: number;
+    problemRecognitionScore: number;
+    feasibilityScore: number;
+    growthStrategyScore: number;
+    teamCompetenceScore: number;
+    sectionScores: {
+      sectionType: string;
+      gradingListScores: GradingListScoreProps[];
+    }[];
+    strengths: { title: string; content: string }[];
+    weaknesses: { title: string; content: string }[];
+  };
+}
+
+export interface GradingListScoreProps {
+  item: string;
+  score: number;
+  maxScore: number;
+}

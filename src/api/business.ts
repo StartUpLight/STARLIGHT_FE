@@ -1,5 +1,6 @@
 import api from './api';
 import {
+  AiGradeResponse,
   BusinessPlanCreateResponse,
   BusinessPlanSubsectionRequest,
   BusinessPlanSubsectionResponse,
@@ -37,5 +38,18 @@ export async function postSpellCheck(body: BusinessSpellCheckRequest) {
     body
   );
 
+  return res.data;
+}
+
+export async function postGrade(planId: number) {
+  const res = await api.post(`/v1/ai-reports/${planId}/grade`);
+
+  return res.data;
+}
+
+export async function getGrade(planId: number): Promise<AiGradeResponse> {
+  const res = await api.get<AiGradeResponse>(`/v1/ai-reports/${planId}`, {
+    params: { planId },
+  });
   return res.data;
 }
