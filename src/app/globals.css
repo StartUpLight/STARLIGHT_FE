@@ -164,7 +164,7 @@
 
 .ProseMirror th {
   text-align: left;
-  font-weight: 600;
+  font-weight: normal;
 }
 
 .ProseMirror .selectedCell {
@@ -195,4 +195,40 @@
 
 .ProseMirror span.spell-error {
   color: #f6002e;
+}
+
+/* TipTap image */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+  position: relative;
+}
+
+.ProseMirror img.selected {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.ProseMirror .image-resize-handle {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 10px;
+  height: 10px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+  cursor: nwse-resize;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ProseMirror .image-wrapper {
+  position: relative;
+  text-align: center;
+}
+
+.ProseMirror .image-container {
+  position: relative;
+  display: inline-block;
 }

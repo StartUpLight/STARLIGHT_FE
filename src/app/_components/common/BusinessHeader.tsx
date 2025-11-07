@@ -8,7 +8,7 @@ import CreateModal from '@/app/business/components/CreateModal';
 import Image from 'next/image';
 import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
-import { downloadPDF } from '@/lib/business/pdfDownload';
+import { downloadPDF } from '@/lib/pdfDownload';
 import { patchBusinessPlanTitle } from '@/api/business';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
