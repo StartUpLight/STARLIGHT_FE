@@ -60,9 +60,7 @@ const ExpertCard = () => {
             등록된 멘토가 없습니다.
           </div>
         ) : (
-          filtered.map(({ categories, ...card }) => (
-            <MentorCard key={card.id} {...card} />
-          ))
+          filtered.map((card) => <MentorCard key={card.id} {...card} />)
         )}
       </div>
     </div>

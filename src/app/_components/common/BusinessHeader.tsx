@@ -44,7 +44,7 @@ const BusinessHeader = () => {
 
       await saveAllItems(id);
 
-      setIsModalOpen(true);
+      handleOpenModal();
       postGradeMutate(id, {
         onSuccess: () => router.push('/report'),
         onError: (e) => console.error('채점 실패:', e),
