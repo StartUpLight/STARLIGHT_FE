@@ -7,7 +7,13 @@ const MainHeader = ({ children }: PropsWithChildren) => {
   const isHome = pathname === '/';
 
   return (
-    <main className={isHome ? '' : 'min-h-screen bg-white pt-[60px]'}>
+    <main
+      className={
+        isHome
+          ? 'no-scrollbar flex-1 overflow-y-auto'
+          : 'flex-1 overflow-y-auto bg-white'
+      }
+    >
       {children}
     </main>
   );

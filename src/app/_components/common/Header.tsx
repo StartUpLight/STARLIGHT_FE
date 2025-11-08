@@ -11,12 +11,34 @@ const Header = () => {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [openUpload, setOpenUpload] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
 
   useEffect(() => {
     setMounted(true);
     checkAuth();
   }, [checkAuth]);
+
+  // 프로필 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!isProfileOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.profile-dropdown')) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [isProfileOpen]);
+
+  // /business 경로에서는 헤더 숨김
+  if (pathname.startsWith('/business')) {
+    return null;
+  }
 
   const isBusinessActive =
     pathname.startsWith('/business') || pathname.startsWith('/report');
@@ -38,9 +60,6 @@ const Header = () => {
     'rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)] transition-all duration-150 ease-in-out ' +
     'group-hover/nav:visible group-hover/nav:opacity-100 group-hover/nav:scale-100';
 
-  const [openUpload, setOpenUpload] = useState(false);
-  const [openLogin, setOpenLogin] = useState(false);
-
   const handleAuthClick = () => {
     if (isAuthenticated) {
       logout();
@@ -54,24 +73,9 @@ const Header = () => {
     setIsProfileOpen(false);
   };
 
-  // 프로필 드롭다운 외부 클릭 시 닫기
-  useEffect(() => {
-    if (!isProfileOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('.profile-dropdown')) {
-        setIsProfileOpen(false);
-      }
-    };
-
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, [isProfileOpen]);
-
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-[80] w-full shadow-[0_4px_6px_0_rgba(0,0,0,0.05)] ${isHomePage ? 'bg-black/30' : 'bg-white'}`}
+      className={`h-[60px] w-full shadow-[0_4px_6px_0_rgba(0,0,0,0.05)] ${isHomePage ? 'fixed bg-black/30' : 'bg-white'} z-[80]`}
     >
       <div className="mx-auto flex h-[60px] items-center px-8">
         <div className="flex items-center">

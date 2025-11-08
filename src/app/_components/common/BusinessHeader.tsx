@@ -146,8 +146,8 @@ const BusinessHeader = () => {
   }, [title, focused]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[100] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
-      <div className="flex h-[60px] w-full items-center justify-between px-8">
+    <header className="fixed top-0 right-0 bottom-0 z-[100] h-[60px] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
+      <div className="flex w-full items-center justify-between px-8 pt-3">
         <div
           onClick={() => {
             // 미리보기 모드일 때는 작성 화면으로 전환
