@@ -61,10 +61,10 @@ const EvaluationScoreBoard = () => {
 
   const [totalScore, setTotalScore] = useState(0);
   const [categories, setCategories] = useState<Category[]>([
-    { title: '문제 정의', score: 0, total: 30 },
+    { title: '문제 정의', score: 0, total: 20 },
     { title: '실현 가능성', score: 0, total: 30 },
     { title: '성장 전략', score: 0, total: 30 },
-    { title: '팀 역량', score: 0, total: 30 },
+    { title: '팀 역량', score: 0, total: 20 },
   ]);
   const [selectedId, setSelectedId] = useState(0);
   const selected = categories[selectedId];
