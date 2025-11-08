@@ -32,7 +32,7 @@ const ChartCard = () => {
       {
         subject: '문제 정의',
         value: d?.problemRecognitionScore ?? 0,
-        fullMark: 30,
+        fullMark: 20,
       },
       { subject: '실현 가능성', value: d?.feasibilityScore ?? 0, fullMark: 30 },
       {
@@ -40,7 +40,7 @@ const ChartCard = () => {
         value: d?.growthStrategyScore ?? 0,
         fullMark: 30,
       },
-      { subject: '팀 역량', value: d?.teamCompetenceScore ?? 0, fullMark: 30 },
+      { subject: '팀 역량', value: d?.teamCompetenceScore ?? 0, fullMark: 20 },
     ];
   }, [data]);
 
