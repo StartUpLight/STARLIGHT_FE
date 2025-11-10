@@ -18,7 +18,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <LeftSidebar />
             </aside>
 
-            <aside className="fixed top-[90px] right-8 h-[calc(100vh-90px)] w-[326px] overflow-y-auto">
+            <aside className="no-scrollbar fixed top-[90px] right-8 h-[calc(100vh-90px)] w-[326px] overflow-y-auto">
               <RightSidebar />
             </aside>
           </>

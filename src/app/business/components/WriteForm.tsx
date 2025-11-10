@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
 import { useBusinessStore } from '@/store/business.store';
 import { uploadImage } from '@/lib/imageUpload';
@@ -30,6 +30,7 @@ import WriteFormHeader from './editor/WriteFormHeader';
 import WriteFormToolbar from './editor/WriteFormToolbar';
 import OverviewSection from './editor/OverviewSection';
 import GeneralSection from './editor/GeneralSection';
+import { clearFixedCorrections } from '@/util/spellReplace';
 
 const WriteForm = ({
   number = '0',
@@ -324,7 +325,13 @@ const WriteForm = ({
 
   //-----------------------------------------------------------------------------------------
   //맞춤법검사
-  const { openPanel, setLoading, setItems } = useSpellCheckStore();
+
+  const {
+    openPanel,
+    setLoading,
+    setItems,
+    reset: resetSpell,
+  } = useSpellCheckStore();
   const { mutate: spellcheck } = useSpellCheck();
   const spellChecking = useSpellCheckStore((s) => s.loading);
   const items = useSpellCheckStore((s) => s.items);
@@ -339,8 +346,17 @@ const WriteForm = ({
     [number, editorFeatures, editorSkills, editorGoals]
   );
 
+  const resetSpellVisuals = useCallback((edit: Editor[]) => {
+    const id = requestAnimationFrame(() => {
+      clearFixedCorrections(edit);
+
+      edit.forEach((ed) => clearSpellErrors(ed));
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   useEffect(() => {
-    if (editors.length === 0) return;
+    if (!editors.length) return;
     const id = requestAnimationFrame(() => {
       applySpellHighlights(editors, items);
     });
@@ -356,9 +372,20 @@ const WriteForm = ({
     });
   }, [number, editorFeatures, editorSkills, editorGoals, register]);
 
+  useEffect(() => {
+    resetSpell();
+    if (!editors.length) return;
+    return resetSpellVisuals(editors);
+  }, [number, editors, resetSpell, resetSpellVisuals]);
+
   const handleSpellCheckClick = () => {
     setGrammarActive((v) => !v);
     openPanel();
+
+    if (editors.length) {
+      resetSpellVisuals(editors);
+    }
+
     setLoading(true);
 
     const payload = SpellPayload({
@@ -384,24 +411,6 @@ const WriteForm = ({
       },
     });
   };
-
-  const resetSpell = useSpellCheckStore((s) => s.reset);
-
-  useEffect(() => {
-    resetSpell();
-
-    const editors =
-      number === '0'
-        ? [editorFeatures, editorSkills, editorGoals]
-        : [editorFeatures];
-
-    const id = requestAnimationFrame(() => {
-      editors.forEach((ed) => {
-        if (ed && !ed.isDestroyed) clearSpellErrors(ed);
-      });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [number, editorFeatures, editorSkills, editorGoals, resetSpell]);
 
   return (
     <div className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white">
