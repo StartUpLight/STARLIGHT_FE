@@ -22,9 +22,19 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
                     text = `==${text}==`;
                     break;
                 case 'textStyle':
+                    {
+                        const color = mark.attrs?.color as string | undefined;
+                        if (color) {
+                            text = `<span style="color:${color}">${text}</span>`;
+                        }
+                    }
                     break;
                 case 'code':
                     text = `\`${text}\``;
+                    break;
+                case 'spellError':
+                    // 맞춤법 오류 마크는 클래스 기반 span으로 래핑하여 보존
+                    text = `<span class="spell-error">${text}</span>`;
                     break;
                 default:
                     break;

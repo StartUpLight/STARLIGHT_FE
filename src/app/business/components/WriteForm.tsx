@@ -120,8 +120,10 @@ const WriteForm = ({
       handlePaste: createPasteHandler(),
     },
   });
-  const { updateItemContent, getItemContent, lastSavedTime, isSaving } =
+  const { updateItemContent, getItemContent, lastSavedTime, isSaving, saveAllItems, planId } =
     useBusinessStore();
+  // 현재 섹션의 contents만 구독하여 변경 감지
+  const currentContent = useBusinessStore((state) => state.contents[number]);
   const [activeEditor, setActiveEditor] = useState<
     typeof editorFeatures | null
   >(null);
@@ -135,7 +137,7 @@ const WriteForm = ({
     savedContent.oneLineIntro || ''
   );
 
-  // number가 변경될 때 store에서 내용 불러오기
+  // number가 변경되거나 contents가 업데이트될 때 store에서 내용 불러오기
   useEffect(() => {
     if (!editorFeatures) return;
 
@@ -183,17 +185,17 @@ const WriteForm = ({
         }
       }
     }
-  }, [number, editorFeatures, editorSkills, editorGoals, getItemContent]);
+  }, [number, editorFeatures, editorSkills, editorGoals, currentContent, getItemContent]);
 
-  // 에디터에 onChange 이벤트 리스너 추가 (디바운스 적용)
+  // 에디터에 onChange 이벤트 리스너 추가 (디바운스 적용하여 저장)
   useEffect(() => {
-    if (!editorFeatures) return;
+    if (!editorFeatures || !planId) return;
 
     let timeoutId: NodeJS.Timeout;
 
     const handleUpdate = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(async () => {
         if (number === '0') {
           updateItemContent(number, {
             itemName,
@@ -207,7 +209,13 @@ const WriteForm = ({
             editorContent: editorFeatures.getJSON(),
           });
         }
-      }, 300);
+        // debounce 후 저장 요청
+        try {
+          await saveAllItems(planId);
+        } catch (error) {
+          console.error('자동 저장 실패:', error);
+        }
+      }, 500);
     };
 
     editorFeatures.on('update', handleUpdate);
@@ -216,13 +224,19 @@ const WriteForm = ({
       let skillsTimeoutId: NodeJS.Timeout;
       const handleSkillsUpdate = () => {
         clearTimeout(skillsTimeoutId);
-        skillsTimeoutId = setTimeout(() => {
+        skillsTimeoutId = setTimeout(async () => {
           updateItemContent(number, {
             itemName,
             oneLineIntro,
             editorSkills: editorSkills.getJSON(),
           });
-        }, 300);
+          // debounce 후 저장 요청
+          try {
+            await saveAllItems(planId);
+          } catch (error) {
+            console.error('자동 저장 실패:', error);
+          }
+        }, 500);
       };
       editorSkills.on('update', handleSkillsUpdate);
     }
@@ -231,13 +245,19 @@ const WriteForm = ({
       let goalsTimeoutId: NodeJS.Timeout;
       const handleGoalsUpdate = () => {
         clearTimeout(goalsTimeoutId);
-        goalsTimeoutId = setTimeout(() => {
+        goalsTimeoutId = setTimeout(async () => {
           updateItemContent(number, {
             itemName,
             oneLineIntro,
             editorGoals: editorGoals.getJSON(),
           });
-        }, 300);
+          // debounce 후 저장 요청
+          try {
+            await saveAllItems(planId);
+          } catch (error) {
+            console.error('자동 저장 실패:', error);
+          }
+        }, 500);
       };
       editorGoals.on('update', handleGoalsUpdate);
     }
@@ -260,17 +280,49 @@ const WriteForm = ({
     updateItemContent,
     itemName,
     oneLineIntro,
+    planId,
+    saveAllItems,
   ]);
 
-  // TextInput 값 변경 시 store에 저장
+  // TextInput 값 변경 시 store에 저장 (debounce 적용)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleItemNameChange = (value: string) => {
     setItemName(value);
     updateItemContent(number, { itemName: value });
+
+    // debounce로 저장 요청
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    if (planId) {
+      saveTimeoutRef.current = setTimeout(async () => {
+        try {
+          await saveAllItems(planId);
+        } catch (error) {
+          console.error('자동 저장 실패:', error);
+        }
+      }, 500);
+    }
   };
 
   const handleOneLineIntroChange = (value: string) => {
     setOneLineIntro(value);
     updateItemContent(number, { oneLineIntro: value });
+
+    // debounce로 저장 요청
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    if (planId) {
+      saveTimeoutRef.current = setTimeout(async () => {
+        try {
+          await saveAllItems(planId);
+        } catch (error) {
+          console.error('자동 저장 실패:', error);
+        }
+      }, 500);
+    }
   };
 
   // 이미지 파일 선택 핸들러
