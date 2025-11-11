@@ -179,6 +179,20 @@ const WriteForm = ({
         clearTimeout(timeoutRef.current);
       }
       timeoutRef.current = setTimeout(() => {
+        // 저장 전 커서 위치 저장
+        const saveSelection = (editor: Editor | null) => {
+          if (!editor || editor.isDestroyed) return null;
+          return {
+            from: editor.state.selection.from,
+            to: editor.state.selection.to,
+          };
+        };
+
+        const mainSelection = saveSelection(editorFeatures);
+        const skillsSelection = saveSelection(editorSkills);
+        const goalsSelection = saveSelection(editorGoals);
+
+        // 저장 로직 실행
         if (isOverview) {
           updateItemContent(number, {
             itemName,
@@ -192,10 +206,37 @@ const WriteForm = ({
             editorContent: editorFeatures?.getJSON() || null,
           });
         }
+
+        // 커서 위치 복원 로직
+        requestAnimationFrame(() => {
+          const currentActiveEditor = activeEditor || editorFeatures;
+          if (currentActiveEditor && !currentActiveEditor.isDestroyed) {
+            let selectionToRestore = null;
+            if (currentActiveEditor === editorFeatures && mainSelection) {
+              selectionToRestore = mainSelection;
+            } else if (currentActiveEditor === editorSkills && skillsSelection) {
+              selectionToRestore = skillsSelection;
+            } else if (currentActiveEditor === editorGoals && goalsSelection) {
+              selectionToRestore = goalsSelection;
+            }
+            if (selectionToRestore) {
+              try {
+                currentActiveEditor
+                  .chain()
+                  .focus()
+                  .setTextSelection({ from: selectionToRestore.from, to: selectionToRestore.to })
+                  .run();
+              } catch (e) {
+                // 커서 위치 복원 실패 시 무시
+              }
+            }
+          }
+        });
+
         debouncedSave();
       }, 500);
     };
-  }, [isOverview, number, itemName, oneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave]);
+  }, [isOverview, number, itemName, oneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave, activeEditor]);
 
   // 에디터에 onChange 이벤트 리스너 추가 (디바운스 적용하여 저장)
   const mainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
