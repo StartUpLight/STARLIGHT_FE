@@ -3,6 +3,7 @@ import type { Node as PMNode } from '@tiptap/pm/model';
 import type { EditorState, Selection } from '@tiptap/pm/state';
 import { Plugin } from '@tiptap/pm/state';
 import { TextSelection } from '@tiptap/pm/state';
+import { EditorView } from '@tiptap/pm/view';
 import Image from '@tiptap/extension-image';
 
 export const DeleteTableOnDelete = Extension.create({
@@ -313,7 +314,7 @@ export const SelectTableOnBorderClick = Extension.create({
     name: 'select-table-on-border-click',
     addProseMirrorPlugins() {
         // 표 전체 선택 상태를 추적하는 함수
-        const updateTableSelection = (view: any) => {
+        const updateTableSelection = (view: EditorView) => {
             const { state } = view;
             const { selection, doc } = state;
 
