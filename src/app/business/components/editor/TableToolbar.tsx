@@ -9,6 +9,7 @@ const TableToolbar = ({ editor }: { editor: Editor | null }) => {
         if (!isInTable) return false;
 
         const selection = editor.state.selection;
+        // 표 내부에 있고 선택이 있으면 표시
         return !selection.empty;
     };
 

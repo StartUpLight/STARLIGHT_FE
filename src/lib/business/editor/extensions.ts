@@ -1,7 +1,10 @@
 import { Extension } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import type { EditorState, Selection } from '@tiptap/pm/state';
+import { Plugin } from '@tiptap/pm/state';
+import { TextSelection } from '@tiptap/pm/state';
 import Image from '@tiptap/extension-image';
+import Table from '@tiptap/extension-table';
 
 export const DeleteTableOnDelete = Extension.create({
     name: 'delete-table-on-delete',
@@ -303,6 +306,219 @@ export const ResizableImage = Image.extend({
                 },
             };
         };
+    },
+});
+
+// 표 테두리 클릭 시 전체 선택 Extension
+export const SelectTableOnBorderClick = Extension.create({
+    name: 'select-table-on-border-click',
+    addProseMirrorPlugins() {
+        // 표 전체 선택 상태를 추적하는 함수
+        const updateTableSelection = (view: any) => {
+            const { state } = view;
+            const { selection, doc } = state;
+
+            if (selection.empty) {
+                // 선택이 없으면 모든 표에서 클래스 제거
+                const tables = view.dom.querySelectorAll('table.table-selected');
+                tables.forEach((table: Element) => {
+                    if (table instanceof HTMLElement) {
+                        table.classList.remove('table-selected');
+                    }
+                });
+                return;
+            }
+
+            // 선택 범위 내의 모든 표 찾기
+            const selectedTables = new Set<HTMLElement>();
+
+            doc.nodesBetween(selection.from, selection.to, (node: PMNode, pos: number) => {
+                if (node.type.name === 'table') {
+                    const dom = view.nodeDOM(pos);
+                    if (dom && dom instanceof HTMLElement) {
+                        const tableElement = dom.closest('table') as HTMLElement;
+                        if (tableElement) {
+                            // 표 전체가 선택되었는지 확인
+                            const tableStart = pos + 1;
+                            const tableEnd = pos + node.nodeSize - 1;
+
+                            // 선택 범위가 표 전체를 포함하는지 확인
+                            if (selection.from <= tableStart && selection.to >= tableEnd) {
+                                selectedTables.add(tableElement);
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 모든 표에서 클래스 제거
+            const allTables = view.dom.querySelectorAll('table');
+            allTables.forEach((table: Element) => {
+                if (table instanceof HTMLElement) {
+                    table.classList.remove('table-selected');
+                }
+            });
+
+            // 선택된 표에 클래스 추가
+            selectedTables.forEach((table) => {
+                table.classList.add('table-selected');
+            });
+        };
+
+        return [
+            new Plugin({
+                view(editorView) {
+                    return {
+                        update: (view, prevState) => {
+                            if (view.state.selection !== prevState.selection) {
+                                updateTableSelection(view);
+                            }
+                        },
+                        destroy: () => {
+                            // 정리 작업
+                            const tables = editorView.dom.querySelectorAll('table.table-selected');
+                            tables.forEach((table) => {
+                                if (table instanceof HTMLElement) {
+                                    table.classList.remove('table-selected');
+                                }
+                            });
+                        },
+                    };
+                },
+                props: {
+                    handleDOMEvents: {
+                        mousemove: (view, event) => {
+                            const target = event.target as HTMLElement;
+                            const tableElement = target.closest('table');
+
+                            if (!tableElement) return false;
+
+                            // 테두리 영역인지 확인
+                            const rect = tableElement.getBoundingClientRect();
+                            const mouseX = event.clientX;
+                            const mouseY = event.clientY;
+
+                            const borderThreshold = 8; // 테두리 영역으로 간주할 픽셀 수
+                            const isOnBorder =
+                                mouseX <= rect.left + borderThreshold ||
+                                mouseX >= rect.right - borderThreshold ||
+                                mouseY <= rect.top + borderThreshold ||
+                                mouseY >= rect.bottom - borderThreshold;
+
+                            // 테두리 영역에 cursor-pointer 적용
+                            if (isOnBorder) {
+                                tableElement.style.cursor = 'pointer';
+                            } else {
+                                tableElement.style.cursor = '';
+                            }
+
+                            return false;
+                        },
+                        mousedown: (view, event) => {
+                            const target = event.target as HTMLElement;
+                            const tableElement = target.closest('table');
+
+                            if (!tableElement) return false;
+
+                            // 테두리 영역인지 확인
+                            const rect = tableElement.getBoundingClientRect();
+                            const clickX = event.clientX;
+                            const clickY = event.clientY;
+
+                            const borderThreshold = 8; // 테두리 영역으로 간주할 픽셀 수
+                            const isOnBorder =
+                                clickX <= rect.left + borderThreshold ||
+                                clickX >= rect.right - borderThreshold ||
+                                clickY <= rect.top + borderThreshold ||
+                                clickY >= rect.bottom - borderThreshold;
+
+                            // 테두리 영역이 아니면 처리하지 않음
+                            if (!isOnBorder) return false;
+
+                            // 클릭 위치에서 표 노드 찾기
+                            const pos = view.posAtCoords({ left: clickX, top: clickY });
+                            if (!pos) return false;
+
+                            const { state } = view;
+                            const { doc } = state;
+                            const $pos = doc.resolve(pos.pos);
+
+                            // 표 내부인지 확인
+                            let tableNode: PMNode | null = null;
+                            let tablePos = -1;
+
+                            for (let d = $pos.depth; d > 0; d--) {
+                                const node = $pos.node(d);
+                                if (node.type.name === 'table') {
+                                    tableNode = node;
+                                    tablePos = $pos.before(d);
+                                    break;
+                                }
+                            }
+
+                            if (!tableNode) return false;
+
+                            // 표의 첫 번째 셀과 마지막 셀 찾기
+                            const tableStart = tablePos + 1;
+                            const tableEnd = tableStart + tableNode.nodeSize - 1;
+
+                            let firstCellStart = -1;
+                            let lastCellEnd = -1;
+
+                            // 표의 모든 셀을 순회하며 첫 번째와 마지막 셀 찾기
+                            doc.nodesBetween(tableStart, tableEnd, (node, pos) => {
+                                if (node.type.name === 'tableCell' || node.type.name === 'tableHeader') {
+                                    // 첫 번째 셀의 시작 위치 찾기
+                                    if (firstCellStart === -1) {
+                                        // 셀 내부의 첫 번째 텍스트 노드 찾기
+                                        let found = false;
+                                        node.descendants((child, childPos) => {
+                                            if (child.isText && !found) {
+                                                firstCellStart = pos + childPos + 1;
+                                                found = true;
+                                            }
+                                        });
+                                        // 텍스트 노드가 없으면 셀 시작 위치 사용
+                                        if (firstCellStart === -1) {
+                                            firstCellStart = pos + 1;
+                                        }
+                                    }
+                                    // 마지막 셀의 끝 위치 업데이트
+                                    lastCellEnd = pos + node.nodeSize - 1;
+                                }
+                            });
+
+                            if (firstCellStart !== -1 && lastCellEnd !== -1) {
+                                event.preventDefault();
+                                event.stopPropagation();
+
+                                // 표 전체를 텍스트 선택으로 선택
+                                const tr = view.state.tr;
+                                try {
+                                    const selection = TextSelection.create(tr.doc, firstCellStart, lastCellEnd);
+                                    tr.setSelection(selection);
+                                    view.dispatch(tr);
+                                    view.focus();
+
+                                    // 선택 후 표에 클래스 추가
+                                    setTimeout(() => {
+                                        updateTableSelection(view);
+                                    }, 0);
+
+                                    return true;
+                                } catch (e) {
+                                    // 선택 실패 시 무시
+                                    console.warn('표 선택 실패:', e);
+                                    return false;
+                                }
+                            }
+
+                            return false;
+                        },
+                    },
+                },
+            }),
+        ];
     },
 });
 
