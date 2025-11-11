@@ -1,7 +1,9 @@
+'use client';
 import Button from '@/app/_components/common/Button';
 import React from 'react';
 import Close from '@/assets/icons/close.svg';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 
 interface CreateModalProps {
   title: string;
@@ -19,7 +21,7 @@ const CreateModal = ({
   onClick,
 }: CreateModalProps) => {
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/20">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20">
       <div className="relative flex w-[585px] flex-col items-start rounded-[20px] bg-gray-100 p-10">
         <button
           onClick={onClose}
@@ -35,11 +37,21 @@ const CreateModal = ({
           {subtitle}
         </div>
 
-        <div className="mt-8 h-[144px] w-[505px] bg-white" />
+        {/* <div className="mt-8 h-[144px] w-[505px] bg-white" /> */}
+
+        <div className="mt-8 flex h-[144px] w-[505px] items-center justify-center">
+          <Image
+            src="/images/spinner.gif"
+            alt="미리보기 호버 말풍선"
+            width={100}
+            height={100}
+            className="self-center object-contain"
+          />
+        </div>
 
         <Button
           text={buttonText}
-          className="mt-8 rounded-full"
+          className="mt-8 w-full rounded-full"
           onClick={onClick}
         />
       </div>

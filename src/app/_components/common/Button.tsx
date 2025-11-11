@@ -5,6 +5,8 @@ interface ButtonProps {
   rounded?: string;
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 function Button({
@@ -14,11 +16,19 @@ function Button({
   rounded = '',
   onClick,
   className = '',
+  disabled = false,
+  type = 'button',
 }: ButtonProps) {
-  const sizeClasses = {
-    S: 'ds-caption px-3 py-[6px]',
-    M: 'ds-text px-4 py-[8px]',
-    L: 'ds-text px-5 py-[10px]',
+  const paddingClasses = {
+    S: 'p-2',
+    M: 'px-3 py-2',
+    L: 'px-8 py-[10px]',
+  };
+
+  const defaultTextClasses = {
+    S: 'ds-caption',
+    M: 'ds-text',
+    L: 'ds-text',
   };
 
   const variantClasses: Record<string, string> = {
@@ -26,14 +36,24 @@ function Button({
       'bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700',
     secondary:
       'bg-white text-gray-900 border border-gray-300 hover:bg-gray-100 active:bg-gray-200',
+    disabled:
+      'bg-gray-200 text-gray-500 border border-gray-200 cursor-not-allowed ',
   };
 
-  const colorClasses = variantClasses[color] || color;
+  const colorClasses = disabled
+    ? variantClasses.disabled
+    : variantClasses[color] || color;
+
+  const hasCustomTextClass =
+    /ds-(caption|subtext|text|subtitle|title|heading)/.test(className);
+  const textClass = hasCustomTextClass ? '' : defaultTextClasses[size];
 
   return (
     <button
+      type={type}
       onClick={onClick}
-      className={`w-full cursor-pointer rounded-[8px] font-medium transition ${sizeClasses[size]} ${colorClasses} ${rounded} ${className} `}
+      disabled={disabled}
+      className={`flex items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       {text}
     </button>

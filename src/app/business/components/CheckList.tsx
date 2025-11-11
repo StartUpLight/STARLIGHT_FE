@@ -1,63 +1,148 @@
-"use client";
-import Button from "@/app/_components/common/Button";
-import React, { useState } from "react";
-import Check from "@/assets/icons/white_check.svg";
+'use client';
+import React, { useEffect, useState } from 'react';
+import Button from '@/app/_components/common/Button';
+import Check from '@/assets/icons/white_check.svg';
+import { useBusinessStore } from '@/store/business.store';
+import sections from '@/data/sidebar.json';
+import { CheckListResponse, Section } from '@/types/business/checklist.type';
+import { usePostCheckList } from '@/hooks/mutation/usePostChecklist';
+import { getSubSectionTypeFromNumber } from '@/lib/business/getSubsection';
 
 const CheckList = () => {
-  const [checklist, setChecklist] = useState([
-    { id: 1, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: true },
-    { id: 2, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: true },
-    { id: 3, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: true },
-    { id: 4, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: false },
-    { id: 5, text: "문맥에 맞게 글이 잘 쓰여져룰루루", checked: false },
-  ]);
+  const selected = useBusinessStore((s) => s.selectedItem);
+  const planId = useBusinessStore((s) => s.planId);
+  const saveAllItems = useBusinessStore((s) => s.saveAllItems);
+  const { mutate: checkListConfirm, isPending } = usePostCheckList();
 
-  const toggleCheck = (id: number) => {
-    setChecklist((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item
+  const [items, setItems] = useState<
+    Array<{
+      title: string;
+      content: string;
+      userChecked: boolean;
+      Checked: boolean;
+    }>
+  >([]);
+
+  useEffect(() => {
+    const data = sections as Section[];
+    for (const section of data) {
+      const found = section.items.find((it) => it.number === selected.number);
+      if (found?.checklist) {
+        setItems(
+          found.checklist.map((e) => ({
+            title: e.title,
+            content: e.content,
+            userChecked: false,
+            Checked: false,
+          }))
+        );
+        return;
+      }
+    }
+    setItems([]);
+  }, [selected.number]);
+
+  const toggleCheck = (idx: number) => {
+    setItems((prev) =>
+      prev.map((item, i) =>
+        i === idx ? { ...item, userChecked: !item.userChecked } : item
       )
     );
   };
+
+  const handleCheck = async () => {
+    if (!planId || items.length === 0) return;
+
+    await saveAllItems(planId);
+
+    const subSectionType = getSubSectionTypeFromNumber(selected.number);
+    if (!subSectionType) {
+      console.error('해당되는 subsection을 찾을 수 없습니다.', selected.number);
+      return;
+    }
+
+    const body: CheckListResponse = {
+      subSectionType,
+      checks: items.map(() => false),
+      meta: {
+        author: '이호근',
+        createdAt: new Date().toISOString().slice(0, 10),
+      },
+      blocks: items.map((item) => ({
+        meta: { title: item.title },
+        content: [{ type: 'text', value: item.content }],
+      })),
+    };
+
+    checkListConfirm(
+      { planId, body },
+      {
+        onSuccess: (res) => {
+          setItems((prev) =>
+            prev.map((item, i) => ({
+              ...item,
+              Checked: res.checks?.[i] || false,
+            }))
+          );
+        },
+      }
+    );
+  };
+
   return (
-    <div className="flex flex-col w-full rounded-[12px] bg-white">
-      <div className="flex items-center w-full px-6 pt-4 pb-[10px] border-b border-gray-200">
-        <span className="text-gray-900 font-semibold ds-subtitle">
+    <div className="flex h-[439px] w-full flex-col rounded-[12px] bg-white">
+      <div className="flex w-full items-center border-b border-gray-200 px-6 pt-4 pb-[10px]">
+        <span className="ds-subtitle font-semibold text-gray-900">
           체크리스트
         </span>
       </div>
 
-      <div className="flex flex-col px-6 py-5 space-y-[10px] w-full">
-        {checklist.map((item, i) => (
-          <div key={item.id}>
-            <div
-              className="flex items-center gap-[10px] cursor-pointer"
-              onClick={() => toggleCheck(item.id)}
-            >
-              {item.checked ? (
-                <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-primary-500">
-                  <Check />
-                </div>
-              ) : (
-                <div className="w-[18px] h-[18px] rounded-full border-2 border-gray-400" />
-              )}
+      <div className="flex w-full flex-col space-y-[10px] px-6 py-5">
+        {items.map((item, i) => {
+          const isChecked = item.userChecked || item.Checked;
+          const isUserCheck = item.userChecked;
 
+          return (
+            <div key={`${item.title}-${i}`}>
               <div
-                className={`ds-text font-medium ${
-                  item.checked ? "text-gray-800" : "text-gray-600"
-                }`}
+                className="flex cursor-pointer items-center gap-[10px]"
+                onClick={() => toggleCheck(i)}
               >
-                {item.text}
+                {isChecked ? (
+                  <div
+                    className={`flex h-[18px] w-[18px] items-center justify-center rounded-full ${
+                      isUserCheck ? 'bg-gray-900' : 'bg-primary-500'
+                    }`}
+                  >
+                    <Check />
+                  </div>
+                ) : (
+                  <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-400" />
+                )}
+
+                <div className="flex flex-col">
+                  <div className="ds-subtext font-semibold text-gray-900">
+                    {item.title}:
+                  </div>
+                  <div className="ds-subtext font-medium text-gray-600">
+                    {item.content}
+                  </div>
+                </div>
               </div>
+
+              {i < items.length - 1 && (
+                <div className="mt-[10px] h-[1px] w-full bg-gray-100" />
+              )}
             </div>
+          );
+        })}
 
-            {i < checklist.length - 1 && (
-              <div className="w-full h-[1px] bg-gray-100 mt-[10px]" />
-            )}
-          </div>
-        ))}
-
-        <Button text="점검하기" className="mt-[10px] rounded-[8px]" />
+        <Button
+          text={isPending ? '점검 중' : '점검하기'}
+          className="mt-[10px] rounded-[8px]"
+          disabled={isPending}
+          onClick={handleCheck}
+        />
       </div>
     </div>
   );
