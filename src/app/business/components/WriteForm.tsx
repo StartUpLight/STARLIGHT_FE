@@ -142,6 +142,25 @@ const WriteForm = ({
     if (!editor || editor.isDestroyed || !content) return;
     try {
       editor.commands.setContent(content);
+
+      setTimeout(() => {
+        if (!editor || editor.isDestroyed) return;
+
+        const { doc } = editor.state;
+        if (doc.content.size === 0) return;
+
+        // 마지막 노드 확인
+        const lastNode = doc.lastChild;
+        if (lastNode && lastNode.type.name === 'table') {
+          // 표가 마지막이면 표 아래에 빈 문단 추가
+          const endPos = doc.content.size;
+          editor.commands.insertContentAt(
+            endPos,
+            { type: 'paragraph' },
+            { updateSelection: false }
+          );
+        }
+      }, 0);
     } catch (e) {
       console.error('에디터 내용 복원 실패:', e);
     }
