@@ -4,7 +4,6 @@ import type { EditorState, Selection } from '@tiptap/pm/state';
 import { Plugin } from '@tiptap/pm/state';
 import { TextSelection } from '@tiptap/pm/state';
 import Image from '@tiptap/extension-image';
-import Table from '@tiptap/extension-table';
 
 export const DeleteTableOnDelete = Extension.create({
     name: 'delete-table-on-delete',
