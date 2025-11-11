@@ -20,11 +20,7 @@ import { applySpellHighlights, clearSpellErrors } from '@/util/spellMark';
 import SpellError from '@/util/spellError';
 import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
-import {
-  DeleteTableOnDelete,
-  ImageCutPaste,
-  ResizableImage,
-} from '../../../lib/business/editor/extensions';
+import { DeleteTableOnDelete, ImageCutPaste, ResizableImage } from '../../../lib/business/editor/extensions';
 import { createPasteHandler } from '../../../lib/business/editor/useEditorConfig';
 import WriteFormHeader from './editor/WriteFormHeader';
 import WriteFormToolbar from './editor/WriteFormToolbar';
@@ -120,8 +116,7 @@ const WriteForm = ({
       handlePaste: createPasteHandler(),
     },
   });
-  const { updateItemContent, getItemContent, lastSavedTime, isSaving, saveAllItems, planId } =
-    useBusinessStore();
+  const { updateItemContent, getItemContent, lastSavedTime, isSaving, saveAllItems, planId } = useBusinessStore();
   // 현재 섹션의 contents만 구독하여 변경 감지
   const currentContent = useBusinessStore((state) => state.contents[number]);
   const [activeEditor, setActiveEditor] = useState<
@@ -130,12 +125,24 @@ const WriteForm = ({
   const [grammarActive, setGrammarActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isOverview = number === '0';
+
   // store에서 저장된 내용 불러오기
   const savedContent = getItemContent(number);
   const [itemName, setItemName] = useState(savedContent.itemName || '');
   const [oneLineIntro, setOneLineIntro] = useState(
     savedContent.oneLineIntro || ''
   );
+
+  // 에디터 내용 복원 헬퍼 함수
+  const restoreEditorContent = useCallback((editor: Editor | null, content: any) => {
+    if (!editor || editor.isDestroyed || !content) return;
+    try {
+      editor.commands.setContent(content);
+    } catch (e) {
+      console.error('에디터 내용 복원 실패:', e);
+    }
+  }, []);
 
   // number가 변경되거나 contents가 업데이트될 때 store에서 내용 불러오기
   useEffect(() => {
@@ -146,184 +153,125 @@ const WriteForm = ({
     setOneLineIntro(content.oneLineIntro || '');
 
     // 에디터 내용 복원
-    if (number === '0') {
-      if (
-        content.editorFeatures &&
-        editorFeatures &&
-        !editorFeatures.isDestroyed
-      ) {
-        try {
-          editorFeatures.commands.setContent(content.editorFeatures);
-        } catch (e) {
-          console.error('에디터 내용 복원 실패:', e);
-        }
-      }
-      if (content.editorSkills && editorSkills && !editorSkills.isDestroyed) {
-        try {
-          editorSkills.commands.setContent(content.editorSkills);
-        } catch (e) {
-          console.error('에디터 내용 복원 실패:', e);
-        }
-      }
-      if (content.editorGoals && editorGoals && !editorGoals.isDestroyed) {
-        try {
-          editorGoals.commands.setContent(content.editorGoals);
-        } catch (e) {
-          console.error('에디터 내용 복원 실패:', e);
-        }
-      }
+    if (isOverview) {
+      restoreEditorContent(editorFeatures, content.editorFeatures);
+      restoreEditorContent(editorSkills, content.editorSkills);
+      restoreEditorContent(editorGoals, content.editorGoals);
     } else {
-      if (
-        content.editorContent &&
-        editorFeatures &&
-        !editorFeatures.isDestroyed
-      ) {
-        try {
-          editorFeatures.commands.setContent(content.editorContent);
-        } catch (e) {
-          console.error('에디터 내용 복원 실패:', e);
-        }
-      }
+      restoreEditorContent(editorFeatures, content.editorContent);
     }
-  }, [number, editorFeatures, editorSkills, editorGoals, currentContent, getItemContent]);
+  }, [number, editorFeatures, editorSkills, editorGoals, currentContent, getItemContent, isOverview, restoreEditorContent]);
 
-  // 에디터에 onChange 이벤트 리스너 추가 (디바운스 적용하여 저장)
-  useEffect(() => {
-    if (!editorFeatures || !planId) return;
+  // 공통 저장 함수 (디바운스 적용)
+  const debouncedSave = useCallback(async () => {
+    if (!planId) return;
+    try {
+      await saveAllItems(planId);
+    } catch (error) {
+      console.error('자동 저장 실패:', error);
+    }
+  }, [planId, saveAllItems]);
 
-    let timeoutId: NodeJS.Timeout;
-
-    const handleUpdate = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(async () => {
-        if (number === '0') {
+  // 에디터 업데이트 핸들러 생성
+  const createUpdateHandler = useCallback((timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        if (isOverview) {
           updateItemContent(number, {
             itemName,
             oneLineIntro,
-            editorFeatures: editorFeatures.getJSON(),
+            editorFeatures: editorFeatures?.getJSON() || null,
             editorSkills: editorSkills?.getJSON() || null,
             editorGoals: editorGoals?.getJSON() || null,
           });
         } else {
           updateItemContent(number, {
-            editorContent: editorFeatures.getJSON(),
+            editorContent: editorFeatures?.getJSON() || null,
           });
         }
-        // debounce 후 저장 요청
-        try {
-          await saveAllItems(planId);
-        } catch (error) {
-          console.error('자동 저장 실패:', error);
-        }
+        debouncedSave();
       }, 500);
     };
+  }, [isOverview, number, itemName, oneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave]);
 
-    editorFeatures.on('update', handleUpdate);
+  // 에디터에 onChange 이벤트 리스너 추가 (디바운스 적용하여 저장)
+  const mainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const skillsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const goalsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    if (number === '0' && editorSkills) {
-      let skillsTimeoutId: NodeJS.Timeout;
-      const handleSkillsUpdate = () => {
-        clearTimeout(skillsTimeoutId);
-        skillsTimeoutId = setTimeout(async () => {
-          updateItemContent(number, {
-            itemName,
-            oneLineIntro,
-            editorSkills: editorSkills.getJSON(),
-          });
-          // debounce 후 저장 요청
-          try {
-            await saveAllItems(planId);
-          } catch (error) {
-            console.error('자동 저장 실패:', error);
-          }
-        }, 500);
-      };
-      editorSkills.on('update', handleSkillsUpdate);
-    }
+  useEffect(() => {
+    if (!editorFeatures || !planId) return;
 
-    if (number === '0' && editorGoals) {
-      let goalsTimeoutId: NodeJS.Timeout;
-      const handleGoalsUpdate = () => {
-        clearTimeout(goalsTimeoutId);
-        goalsTimeoutId = setTimeout(async () => {
-          updateItemContent(number, {
-            itemName,
-            oneLineIntro,
-            editorGoals: editorGoals.getJSON(),
-          });
-          // debounce 후 저장 요청
-          try {
-            await saveAllItems(planId);
-          } catch (error) {
-            console.error('자동 저장 실패:', error);
-          }
-        }, 500);
-      };
-      editorGoals.on('update', handleGoalsUpdate);
+    const handleMainUpdate = createUpdateHandler(mainTimeoutRef);
+    editorFeatures.on('update', handleMainUpdate);
+
+    const cleanup: (() => void)[] = [() => {
+      if (mainTimeoutRef.current) clearTimeout(mainTimeoutRef.current);
+      editorFeatures.off('update', handleMainUpdate);
+    }];
+
+    if (isOverview) {
+      if (editorSkills) {
+        const handleSkillsUpdate = createUpdateHandler(skillsTimeoutRef);
+        editorSkills.on('update', handleSkillsUpdate);
+        cleanup.push(() => {
+          if (skillsTimeoutRef.current) clearTimeout(skillsTimeoutRef.current);
+          editorSkills.off('update', handleSkillsUpdate);
+        });
+      }
+
+      if (editorGoals) {
+        const handleGoalsUpdate = createUpdateHandler(goalsTimeoutRef);
+        editorGoals.on('update', handleGoalsUpdate);
+        cleanup.push(() => {
+          if (goalsTimeoutRef.current) clearTimeout(goalsTimeoutRef.current);
+          editorGoals.off('update', handleGoalsUpdate);
+        });
+      }
     }
 
     return () => {
-      clearTimeout(timeoutId);
-      editorFeatures.off('update', handleUpdate);
-      if (number === '0' && editorSkills) {
-        editorSkills.off('update');
-      }
-      if (number === '0' && editorGoals) {
-        editorGoals.off('update');
-      }
+      cleanup.forEach(fn => fn());
     };
   }, [
     editorFeatures,
     editorSkills,
     editorGoals,
-    number,
-    updateItemContent,
-    itemName,
-    oneLineIntro,
     planId,
-    saveAllItems,
+    isOverview,
+    createUpdateHandler,
   ]);
 
   // TextInput 값 변경 시 store에 저장 (debounce 적용)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const textInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleItemNameChange = (value: string) => {
-    setItemName(value);
-    updateItemContent(number, { itemName: value });
+  const handleTextInputChange = useCallback((field: 'itemName' | 'oneLineIntro', value: string) => {
+    if (field === 'itemName') {
+      setItemName(value);
+      updateItemContent(number, { itemName: value });
+    } else {
+      setOneLineIntro(value);
+      updateItemContent(number, { oneLineIntro: value });
+    }
 
-    // debounce로 저장 요청
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
+    if (textInputTimeoutRef.current) {
+      clearTimeout(textInputTimeoutRef.current);
     }
-    if (planId) {
-      saveTimeoutRef.current = setTimeout(async () => {
-        try {
-          await saveAllItems(planId);
-        } catch (error) {
-          console.error('자동 저장 실패:', error);
-        }
-      }, 500);
-    }
-  };
+    textInputTimeoutRef.current = setTimeout(() => {
+      debouncedSave();
+    }, 500);
+  }, [number, updateItemContent, debouncedSave]);
 
-  const handleOneLineIntroChange = (value: string) => {
-    setOneLineIntro(value);
-    updateItemContent(number, { oneLineIntro: value });
+  const handleItemNameChange = useCallback((value: string) => {
+    handleTextInputChange('itemName', value);
+  }, [handleTextInputChange]);
 
-    // debounce로 저장 요청
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    if (planId) {
-      saveTimeoutRef.current = setTimeout(async () => {
-        try {
-          await saveAllItems(planId);
-        } catch (error) {
-          console.error('자동 저장 실패:', error);
-        }
-      }, 500);
-    }
-  };
+  const handleOneLineIntroChange = useCallback((value: string) => {
+    handleTextInputChange('oneLineIntro', value);
+  }, [handleTextInputChange]);
 
   // 이미지 파일 선택 핸들러
   const handleImageUpload = async (
@@ -391,11 +339,11 @@ const WriteForm = ({
 
   const editors = useMemo(
     () =>
-      (number === '0'
+      (isOverview
         ? [editorFeatures, editorSkills, editorGoals]
         : [editorFeatures]
       ).filter((e): e is Editor => !!e && !e.isDestroyed),
-    [number, editorFeatures, editorSkills, editorGoals]
+    [isOverview, editorFeatures, editorSkills, editorGoals]
   );
 
   const resetSpellVisuals = useCallback((edit: Editor[]) => {
@@ -419,10 +367,10 @@ const WriteForm = ({
     register({
       sectionNumber: number,
       features: editorFeatures ?? null,
-      skills: number === '0' ? (editorSkills ?? null) : null,
-      goals: number === '0' ? (editorGoals ?? null) : null,
+      skills: isOverview ? (editorSkills ?? null) : null,
+      goals: isOverview ? (editorGoals ?? null) : null,
     });
-  }, [number, editorFeatures, editorSkills, editorGoals, register]);
+  }, [number, isOverview, editorFeatures, editorSkills, editorGoals, register]);
 
   useEffect(() => {
     resetSpell();
@@ -486,7 +434,7 @@ const WriteForm = ({
       {/* 스크롤 가능한 콘텐츠 영역 */}
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-[24px] px-5 py-4">
-          {number === '0' ? (
+          {isOverview ? (
             <OverviewSection
               itemName={itemName}
               oneLineIntro={oneLineIntro}
