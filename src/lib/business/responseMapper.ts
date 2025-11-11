@@ -6,9 +6,6 @@ import { JSONNode, JSONMark } from './editorContentMapper';
 const parseMarkdownText = (text: string): JSONNode[] => {
     if (!text) return [{ type: 'text', text: ' ' }];
 
-    // 1) 인라인 HTML <span> 우선 처리
-    //   - <span class="spell-error">...</span> => spellError mark
-    //   - <span style="color:...">...</span>   => textStyle mark with color
     const nodes: JSONNode[] = [];
     let currentIndex = 0;
     const spanRegex = /<span([^>]*)>(.*?)<\/span>/gi;
@@ -39,86 +36,47 @@ const parseMarkdownText = (text: string): JSONNode[] => {
         if (remain) nodes.push({ type: 'text', text: remain });
     }
 
-    // 2) 간단 마크다운 처리 (**bold**, *italic*, `code`, ==highlight==)
-    const patterns = [
-        { regex: /\*\*(.+?)\*\*/g, markType: 'bold' },
-        { regex: /\*(.+?)\*/g, markType: 'italic' },
-        { regex: /`(.+?)`/g, markType: 'code' },
-        { regex: /==(.+?)==/g, markType: 'highlight' },
-    ];
-
-    const applyMarkdown = (n: JSONNode): JSONNode[] => {
-        if (n.type !== 'text' || n.marks) return [n];
-        const src = n.text || '';
-        const matches: Array<{ start: number; end: number; text: string; markType: string }> = [];
-        patterns.forEach(({ regex, markType }) => {
-            let m: RegExpExecArray | null;
-            regex.lastIndex = 0;
-            while ((m = regex.exec(src)) !== null) {
-                matches.push({ start: m.index, end: m.index + m[0].length, text: m[1], markType });
-            }
-        });
-        matches.sort((a, b) => a.start - b.start);
-        const filtered: typeof matches = [];
-        let last = -1;
-        matches.forEach(m => {
-            if (m.start >= last) {
-                filtered.push(m);
-                last = m.end;
-            }
-        });
+    const applyMarkerAcrossNodes = (srcNodes: JSONNode[], marker: string, mark: JSONMark): JSONNode[] => {
         const out: JSONNode[] = [];
-        let i = 0;
-        filtered.forEach(m => {
-            if (m.start > i) {
-                const pre = src.substring(i, m.start);
-                if (pre) out.push({ type: 'text', text: pre });
+        let open = false;
+        let carry: JSONMark[] = [];
+        for (const node of srcNodes) {
+            if (node.type !== 'text') {
+                out.push(node);
+                continue;
             }
-            const mark: JSONMark = { type: m.markType };
-            if (m.markType === 'highlight') mark.attrs = { color: '#FFF59D' };
-            out.push({ type: 'text', text: m.text, marks: [mark] });
-            i = m.end;
-        });
-        if (i < src.length) {
-            const tail = src.substring(i);
-            if (tail) out.push({ type: 'text', text: tail });
+            let text = node.text || '';
+            while (true) {
+                const idx = text.indexOf(marker);
+                if (idx === -1) break;
+                const before = text.slice(0, idx);
+                if (before) {
+                    const baseMarks = node.marks || [];
+                    const combined = open ? [...baseMarks, ...carry] : baseMarks;
+                    out.push({ type: 'text', text: before, marks: combined.length ? combined : undefined });
+                }
+                open = !open;
+                if (open) {
+                    carry = [...(node.marks || []), mark];
+                } else {
+                    carry = [];
+                }
+                text = text.slice(idx + marker.length);
+            }
+            if (text) {
+                const baseMarks = node.marks || [];
+                const combined = open ? [...baseMarks, ...carry] : baseMarks;
+                out.push({ type: 'text', text, marks: combined.length ? combined : undefined });
+            }
         }
-        return out.length ? out : [n];
+        return out;
     };
-
-    const finalNodes: JSONNode[] = [];
-    nodes.forEach(n => finalNodes.push(...applyMarkdown(n)));
-    return finalNodes.length ? finalNodes : [{ type: 'text', text: ' ' }];
-};
-
-// SubSectionType을 number로 변환
-export const getNumberFromSubSectionType = (subSectionType: string): string => {
-    switch (subSectionType) {
-        case 'OVERVIEW_BASIC':
-            return '0';
-        case 'PROBLEM_BACKGROUND':
-            return '1-1';
-        case 'PROBLEM_PURPOSE':
-            return '1-2';
-        case 'PROBLEM_MARKET':
-            return '1-3';
-        case 'FEASIBILITY_STRATEGY':
-            return '2-1';
-        case 'FEASIBILITY_MARKET':
-            return '2-2';
-        case 'GROWTH_MODEL':
-            return '3-1';
-        case 'GROWTH_FUNDING':
-            return '3-2';
-        case 'GROWTH_ENTRY':
-            return '3-3';
-        case 'TEAM_FOUNDER':
-            return '4-1';
-        case 'TEAM_MEMBERS':
-            return '4-2';
-        default:
-            return '0';
-    }
+    let processed = nodes;
+    processed = applyMarkerAcrossNodes(processed, '**', { type: 'bold' });
+    processed = applyMarkerAcrossNodes(processed, '==', { type: 'highlight', attrs: { color: '#FFF59D' } });
+    processed = applyMarkerAcrossNodes(processed, '*', { type: 'italic' });
+    processed = applyMarkerAcrossNodes(processed, '`', { type: 'code' });
+    return processed.length ? processed : [{ type: 'text', text: ' ' }];
 };
 
 // BlockContentItem을 EditorJSON으로 변환
@@ -129,15 +87,12 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             return [{ type: 'paragraph' }];
         }
 
-        // 마크다운 형식 파싱 (간단한 버전)
-        // **bold**, *italic*, `code`, ==highlight== 등을 처리
         const lines = text.split('\n');
         const paragraphs: JSONNode[] = [];
         let currentParagraph: JSONNode = { type: 'paragraph', content: [] };
 
         lines.forEach((line, index) => {
             if (line.trim() === '') {
-                // 빈 줄이면 새 paragraph 시작
                 if (currentParagraph.content && currentParagraph.content.length > 0) {
                     paragraphs.push(currentParagraph);
                     currentParagraph = { type: 'paragraph', content: [] };
@@ -151,7 +106,6 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             }
         });
 
-        // 마지막 paragraph 추가
         if (currentParagraph.content && currentParagraph.content.length > 0) {
             paragraphs.push(currentParagraph);
         }
@@ -161,8 +115,8 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         const tableItem = item as TableContentItem;
         const rows: JSONNode[] = [];
 
-        // 헤더 행
-        if (tableItem.columns && tableItem.columns.length > 0) {
+        const hasHeader = Array.isArray(tableItem.columns) && tableItem.columns.length > 0;
+        if (hasHeader) {
             const headerCells = tableItem.columns.map(col => ({
                 type: 'tableHeader',
                 content: [{
@@ -176,9 +130,18 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             });
         }
 
-        // 데이터 행
         if (tableItem.rows && tableItem.rows.length > 0) {
-            tableItem.rows.forEach(row => {
+            let dataRows = tableItem.rows;
+            if (hasHeader) {
+                const firstEqualsHeader =
+                    Array.isArray(dataRows[0]) &&
+                    dataRows[0].length === tableItem.columns.length &&
+                    dataRows[0].every((cell, idx) => String(cell ?? '') === String(tableItem.columns[idx] ?? ''));
+                if (firstEqualsHeader) {
+                    dataRows = dataRows.slice(1);
+                }
+            }
+            dataRows.forEach(row => {
                 const cells = row.map(cell => ({
                     type: 'tableCell',
                     content: [{
@@ -211,7 +174,6 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
     return [{ type: 'paragraph' }];
 };
 
-// Block을 EditorJSON으로 변환
 const convertBlockToEditorJson = (block: Block): JSONNode[] => {
     const nodes: JSONNode[] = [];
     block.content.forEach(item => {
@@ -220,7 +182,6 @@ const convertBlockToEditorJson = (block: Block): JSONNode[] => {
     return nodes.length > 0 ? nodes : [{ type: 'paragraph' }];
 };
 
-// API 응답의 Block[]을 ItemContent로 변환
 export const convertResponseToItemContent = (
     blocks: Block[],
     checks?: boolean[]
@@ -259,4 +220,3 @@ export const convertResponseToItemContent = (
 
     return content;
 };
-
