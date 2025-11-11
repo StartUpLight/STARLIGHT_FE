@@ -68,7 +68,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         // 모든 섹션을 병렬로 불러오기
         const requests = allItems.map(async (item: SidebarItem) => {
             try {
-                const subSectionType = getSubSectionTypeFromNumber(item.number) as any;
+                const subSectionType = getSubSectionTypeFromNumber(item.number);
                 const response = await getBusinessPlanSubsection(planId, subSectionType);
                 if (response.result === 'SUCCESS' && response.data?.content) {
                     const content = response.data.content;

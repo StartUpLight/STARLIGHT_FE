@@ -12,7 +12,7 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
-import { Editor } from '@tiptap/core';
+import { Editor, JSONContent } from '@tiptap/core';
 import { useSpellCheck } from '@/hooks/mutation/useSpellCheck';
 import { SpellPayload } from '@/lib/business/postSpellCheck';
 import { useSpellCheckStore } from '@/store/spellcheck.store';
@@ -135,7 +135,7 @@ const WriteForm = ({
   );
 
   // 에디터 내용 복원 헬퍼 함수
-  const restoreEditorContent = useCallback((editor: Editor | null, content: any) => {
+  const restoreEditorContent = useCallback((editor: Editor | null, content: JSONContent | null | undefined) => {
     if (!editor || editor.isDestroyed || !content) return;
     try {
       editor.commands.setContent(content);
