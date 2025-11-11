@@ -99,9 +99,6 @@ const BusinessHeader = () => {
       if (id == null) throw new Error('planId 생성에 실패했습니다.');
 
       await saveAllItems(id);
-      await saveAllItems(id);
-      await saveAllItems(id);
-
       handleOpenModal();
       postGradeMutate(id, {
         onSuccess: () => router.push('/report'),

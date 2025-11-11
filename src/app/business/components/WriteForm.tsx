@@ -24,8 +24,8 @@ import {
   DeleteTableOnDelete,
   ImageCutPaste,
   ResizableImage,
-} from '../../../lib/business/extensions';
-import { createPasteHandler } from '../../../lib/business/useEditorConfig';
+} from '../../../lib/business/editor/extensions';
+import { createPasteHandler } from '../../../lib/business/editor/useEditorConfig';
 import WriteFormHeader from './editor/WriteFormHeader';
 import WriteFormToolbar from './editor/WriteFormToolbar';
 import OverviewSection from './editor/OverviewSection';

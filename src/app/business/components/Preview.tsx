@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
 import { useBusinessStore } from '@/store/business.store';
-import { convertEditorJsonToHtml } from '@/lib/business/editorToHtml';
+import { convertEditorJsonToHtml } from '@/lib/business/converter/editorToHtml';
 import sections from '@/data/sidebar.json';
 
 const Preview = () => {

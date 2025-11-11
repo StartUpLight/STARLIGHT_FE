@@ -4,7 +4,7 @@ import { buildSubsectionRequest } from '@/lib/business/requestBuilder';
 import { postBusinessPlan, postBusinessPlanSubsections, getBusinessPlanSubsection } from '@/api/business';
 import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
-import { convertResponseToItemContent } from '@/lib/business/responseMapper';
+import { convertResponseToItemContent } from '@/lib/business/converter/responseMapper';
 import { getSubSectionTypeFromNumber } from '@/lib/business/getSubsection';
 
 const PLAN_ID_KEY = 'businessPlanId';

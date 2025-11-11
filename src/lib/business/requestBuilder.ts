@@ -2,7 +2,7 @@ import { ItemContent } from '@/types/business/business.store.type';
 import { Block, BlockContentItem, BusinessPlanSubsectionRequest, TextContentItem } from '@/types/business/business.type';
 import { getSubSectionTypeFromNumber } from './getSubsection';
 import { getChecks } from './getChecklist';
-import { JSONNode, convertEditorJsonToContent } from './editorContentMapper';
+import { JSONNode, convertEditorJsonToContent } from './converter/editorContentMapper';
 
 // 스토어의 ItemContent를 받아 subsection 요청 바디를 생성합니다(체크리스트 포함).
 export const buildSubsectionRequest = (
