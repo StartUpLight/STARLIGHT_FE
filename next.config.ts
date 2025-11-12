@@ -1,8 +1,7 @@
-// next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['kr.object.ncloudstorage.com'],
+    domains: ['kr.object.ncloudstorage.com', 'k.kakaocdn.net'],
   },
 
   turbopack: {

@@ -2,9 +2,14 @@
 import Image from 'next/image';
 import React, { useState } from 'react';
 import PayHistoryModal from './PayHistoryModal';
+import { useUserStore } from '@/store/user.store';
+import Naver from '@/assets/icons/naver_profile.svg';
+import KaKao from '@/assets/icons/kakao_profile.svg';
 
 const MyAccount = () => {
   const [isModal, setIsModal] = useState(false);
+  const { user } = useUserStore();
+
   return (
     <div className="bg-gray-80 mt-6 flex w-full flex-col items-start gap-6 rounded-[12px] p-6">
       <div className="flex w-full flex-row items-start justify-between">
@@ -21,19 +26,32 @@ const MyAccount = () => {
       <div className="h-px w-full bg-gray-200" />
 
       <div className="flex flex-row gap-4">
-        <div className="h-[52px] w-[52px] rounded-full bg-gray-400" />
+        {user?.profileImageUrl ? (
+          <Image
+            src={user.profileImageUrl}
+            alt="멤버 이미지"
+            width={52}
+            height={52}
+            className="h-[52px] w-[52px] rounded-full object-cover"
+            priority
+          />
+        ) : (
+          <div className="ds-text flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gray-400 font-medium">
+            {user?.name.charAt(0)}
+          </div>
+        )}
+
         <div className="flex flex-col items-start">
-          <div className="ds-text font-medium text-gray-900"> 홍길동 </div>
+          <div className="ds-text font-medium text-gray-900">
+            {' '}
+            {user?.name}{' '}
+          </div>
           <div className="mt-1 flex flex-row items-center gap-2">
-            <Image
-              src="/images/kakao.png"
-              alt="카카오"
-              width={20}
-              height={20}
-              className="h-5 w-5 object-cover"
-            />
+            {user?.provider == 'kakao' && <KaKao />}
+            {user?.provider == 'naver' && <Naver />}
+
             <div className="ds-subtext font-medium text-gray-900">
-              starlight@gmail.com
+              {user?.email}
             </div>
           </div>
         </div>
