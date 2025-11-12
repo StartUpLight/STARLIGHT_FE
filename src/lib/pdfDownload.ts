@@ -17,12 +17,16 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
         }
 
         const canvas = await html2canvas(previewContent, {
-            scale: 2,
+            scale: 1.5, // 해상도 낮춰서 용량 감소 (2 -> 1.5)
             useCORS: true,
+            allowTaint: false, // CORS 이미지 사용 시 필요
             logging: false,
             backgroundColor: '#ffffff',
             scrollX: 0,
             scrollY: 0,
+            imageTimeout: 15000, // 이미지 로딩 타임아웃 증가
+            removeContainer: true,
+            foreignObjectRendering: false, // CORS 문제 해결을 위해 비활성화
             onclone: (clonedDoc) => {
                 // 클론된 문서에서 모든 관련 요소 찾기
                 const clonedPreview = clonedDoc.querySelector('[data-preview-content]') as HTMLElement;
@@ -47,6 +51,16 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
                         clonedScrollContainer.style.flex = 'none';
                         clonedScrollContainer.scrollTop = 0;
                     }
+
+                    // 모든 이미지에 crossOrigin 속성 설정 (CORS 문제 해결)
+                    const images = clonedDoc.querySelectorAll('img');
+                    images.forEach((img) => {
+                        const imgElement = img as HTMLImageElement;
+                        // 이미 crossOrigin이 설정되어 있지 않은 경우에만 설정
+                        if (!imgElement.crossOrigin) {
+                            imgElement.crossOrigin = 'anonymous';
+                        }
+                    });
                 }
             },
         });
@@ -56,11 +70,13 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
             scrollContainer.scrollTop = originalScrollTop;
         }
 
-        const imgData = canvas.toDataURL('image/png');
+        // JPEG로 변환하여 용량 감소 (품질 0.85로 설정)
+        const imgData = canvas.toDataURL('image/jpeg', 0.85);
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
+            compress: true, // PDF 압축 활성화
         });
 
         const imgWidth = 210;
@@ -69,13 +85,13 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
         let heightLeft = imgHeight;
         let position = 0;
 
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
         while (heightLeft > 0) {
             position = heightLeft - imgHeight;
             pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
             heightLeft -= pageHeight;
         }
 
