@@ -16,33 +16,97 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
             scrollContainer.scrollTop = 0;
         }
 
+        // 이미지를 미리 로드하여 CORS 문제 해결
+        const images = Array.from(previewContent.querySelectorAll('img')) as HTMLImageElement[];
+        const imagePromises = images.map(async (img) => {
+            if (!img.src || img.src.startsWith('data:')) {
+                return;
+            }
+
+            try {
+                // fetch를 사용하여 이미지를 blob으로 가져오기 (CORS 헤더가 있는 경우)
+                const separator = img.src.includes('?') ? '&' : '?';
+                const imageUrl = img.src + separator + '_t=' + new Date().getTime();
+
+                const response = await fetch(imageUrl, {
+                    mode: 'cors',
+                    credentials: 'omit',
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    // blob URL을 사용하여 이미지 로드
+                    const imgElement = new Image();
+                    imgElement.crossOrigin = 'anonymous';
+
+                    await new Promise<void>((resolve, reject) => {
+                        imgElement.onload = () => {
+                            try {
+                                // 이미지를 base64로 변환하여 CORS 문제 완전히 우회
+                                const canvas = document.createElement('canvas');
+                                canvas.width = imgElement.width;
+                                canvas.height = imgElement.height;
+                                const ctx = canvas.getContext('2d');
+                                if (ctx) {
+                                    ctx.drawImage(imgElement, 0, 0);
+                                    const dataUrl = canvas.toDataURL('image/png');
+                                    img.src = dataUrl;
+                                    URL.revokeObjectURL(blobUrl);
+                                }
+                            } catch (e) {
+                                console.warn('이미지 변환 실패:', e);
+                            }
+                            resolve();
+                        };
+
+                        imgElement.onerror = () => {
+                            URL.revokeObjectURL(blobUrl);
+                            reject(new Error('이미지 로드 실패'));
+                        };
+
+                        imgElement.src = blobUrl;
+                    });
+                } else {
+                    // fetch 실패 시 원본 이미지에 crossOrigin 설정만 추가
+                    img.crossOrigin = 'anonymous';
+                    const separator2 = img.src.includes('?') ? '&' : '?';
+                    img.src = img.src + separator2 + '_t=' + new Date().getTime();
+                }
+            } catch (e) {
+                // fetch 실패 시 원본 이미지에 crossOrigin 설정만 추가
+                console.warn('이미지 fetch 실패, 원본 URL 사용:', e);
+                img.crossOrigin = 'anonymous';
+                const separator = img.src.includes('?') ? '&' : '?';
+                img.src = img.src + separator + '_t=' + new Date().getTime();
+            }
+        });
+
+        // 모든 이미지 로드 완료 대기
+        await Promise.all(imagePromises);
+
         const canvas = await html2canvas(previewContent, {
-            scale: 1.5, // 해상도 낮춰서 용량 감소 (2 -> 1.5)
+            scale: 1.5,
             useCORS: true,
-            allowTaint: false, // CORS 이미지 사용 시 필요
+            allowTaint: false,
             logging: false,
             backgroundColor: '#ffffff',
             scrollX: 0,
             scrollY: 0,
-            imageTimeout: 15000, // 이미지 로딩 타임아웃 증가
+            imageTimeout: 15000,
             removeContainer: true,
-            foreignObjectRendering: false, // CORS 문제 해결을 위해 비활성화
+            foreignObjectRendering: false,
             onclone: (clonedDoc) => {
-                // 클론된 문서에서 모든 관련 요소 찾기
                 const clonedPreview = clonedDoc.querySelector('[data-preview-content]') as HTMLElement;
                 if (clonedPreview) {
-                    // 부모 컨테이너의 높이 제한 제거
                     clonedPreview.style.height = 'auto';
                     clonedPreview.style.maxHeight = 'none';
-
-                    // 외부 flex 컨테이너도 확인
                     const parentContainer = clonedPreview.parentElement;
                     if (parentContainer) {
                         parentContainer.style.height = 'auto';
                         parentContainer.style.maxHeight = 'none';
                     }
-
-                    // 스크롤 컨테이너 찾기 및 스타일 변경
                     const clonedScrollContainer = clonedPreview.querySelector('.overflow-y-auto') as HTMLElement;
                     if (clonedScrollContainer) {
                         clonedScrollContainer.style.overflow = 'visible';
@@ -51,16 +115,6 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
                         clonedScrollContainer.style.flex = 'none';
                         clonedScrollContainer.scrollTop = 0;
                     }
-
-                    // 모든 이미지에 crossOrigin 속성 설정 (CORS 문제 해결)
-                    const images = clonedDoc.querySelectorAll('img');
-                    images.forEach((img) => {
-                        const imgElement = img as HTMLImageElement;
-                        // 이미 crossOrigin이 설정되어 있지 않은 경우에만 설정
-                        if (!imgElement.crossOrigin) {
-                            imgElement.crossOrigin = 'anonymous';
-                        }
-                    });
                 }
             },
         });

@@ -7,12 +7,15 @@ export const uploadImage = async (file: File): Promise<string> => {
         const accessToken = localStorage.getItem('accessToken');
         const fileName = file.name;
 
+        // 한글 파일명의 경우 인코딩을 한 번 더 적용
+        const encodedFileName = encodeURIComponent(fileName);
+
         const uploadUrlResponse = await axios.get(`${apiUrl}/v1/images/upload-url`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
             },
             params: {
-                fileName,
+                fileName: encodedFileName,
             },
         });
 
@@ -21,6 +24,7 @@ export const uploadImage = async (file: File): Promise<string> => {
         }
 
         const { preSignedUrl, objectUrl } = uploadUrlResponse.data.data;
+        console.log(preSignedUrl, objectUrl);
 
         await axios.put(preSignedUrl, file, {
             headers: {
