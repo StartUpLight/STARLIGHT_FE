@@ -93,10 +93,13 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
 
         lines.forEach((line, index) => {
             if (line.trim() === '') {
+                // 현재 paragraph에 내용이 있으면 저장
                 if (currentParagraph.content && currentParagraph.content.length > 0) {
                     paragraphs.push(currentParagraph);
                     currentParagraph = { type: 'paragraph', content: [] };
                 }
+                // 빈 줄도 빈 paragraph로 추가하여 여러 줄바꿈이 반영되도록 함
+                paragraphs.push({ type: 'paragraph', content: [] });
             } else {
                 // 마크다운 파싱 (간단 버전)
                 const textNodes = parseMarkdownText(line);
@@ -106,6 +109,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             }
         });
 
+        // 마지막 paragraph 처리
         if (currentParagraph.content && currentParagraph.content.length > 0) {
             paragraphs.push(currentParagraph);
         }
