@@ -496,7 +496,7 @@ const WriteForm = ({
       />
       {/* 스크롤 가능한 콘텐츠 영역 */}
       <div className="flex-1 overflow-y-auto">
-        <div className="space-y-[24px] px-5 py-4">
+        <div className="space-y-[24px] px-5 pt-4 pb-[80px]">
           {isOverview ? (
             <OverviewSection
               itemName={itemName}
