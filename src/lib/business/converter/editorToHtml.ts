@@ -112,7 +112,7 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
         } else if (height) {
             style = `width: auto; height: ${height}px;`;
         } else {
-            style = 'max-width: 100%; height: auto;';
+            style = 'max-width: 400px; height: auto;';
         }
 
         // 중앙 정렬을 위한 wrapper div 추가
