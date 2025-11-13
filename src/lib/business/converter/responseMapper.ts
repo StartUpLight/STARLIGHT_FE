@@ -2,7 +2,7 @@ import { Block, BlockContentItem, TextContentItem, TableContentItem, ImageConten
 import { ItemContent } from '@/types/business/business.store.type';
 import { JSONNode, JSONMark } from './editorContentMapper';
 
-// 마크다운/인라인 HTML을 파싱하여 JSONNode 배열로 변환 (간단 버전)
+// 마크다운/인라인 HTML을 파싱하여 JSONNode 배열로 변환
 const parseMarkdownText = (text: string): JSONNode[] => {
     if (!text) return [{ type: 'text', text: ' ' }];
 
@@ -83,7 +83,7 @@ const parseMarkdownText = (text: string): JSONNode[] => {
 const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
     if (item.type === 'text') {
         const text = (item as TextContentItem).value;
-        if (!text || text.trim() === '') {
+        if (!text || text === '') {
             return [{ type: 'paragraph' }];
         }
 
@@ -92,30 +92,41 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         let currentParagraph: JSONNode = { type: 'paragraph', content: [] };
 
         lines.forEach((line, index) => {
+            const isLastLine = index === lines.length - 1;
+            const nextLine = !isLastLine ? lines[index + 1] : null;
+
             if (line.trim() === '') {
-                // 현재 paragraph에 내용이 있으면 저장
+                // 빈 줄: 현재 paragraph 저장(내용이 있으면) 후 새 paragraph 추가
                 if (currentParagraph.content && currentParagraph.content.length > 0) {
                     paragraphs.push(currentParagraph);
                     currentParagraph = { type: 'paragraph', content: [] };
                 }
-                // 빈 줄도 빈 paragraph로 추가하여 여러 줄바꿈이 반영되도록 함
+                // 빈 줄 자체도 문단 구분으로 남기고 싶으면 빈 paragraph 추가
                 paragraphs.push({ type: 'paragraph', content: [] });
-            } else {
-                // 마크다운 파싱 (간단 버전)
-                const textNodes = parseMarkdownText(line);
-                if (currentParagraph.content) {
-                    currentParagraph.content.push(...textNodes);
-                }
+                return;
             }
+
+            // 비어있지 않은 줄: 마크다운/인라인 HTML 파싱
+            const textNodes = parseMarkdownText(line);
+            if (!currentParagraph.content) currentParagraph.content = [];
+            currentParagraph.content.push(...textNodes);
+
+            // 다음 줄이 존재하고 비어있지 않다면 'hardBreak' 추가 (Enter 1회 -> 줄바꿈)
+            if (nextLine !== null && nextLine.trim() !== '') {
+                currentParagraph.content.push({ type: 'hardBreak' });
+            }
+
+            // 다음 줄이 빈 줄이면 paragraph는 빈 줄 처리 시 저장되므로 여기선 아무것도 하지 않음
         });
 
-        // 마지막 paragraph 처리
+        // 마지막 paragraph 처리: 내용이 있으면 추가
         if (currentParagraph.content && currentParagraph.content.length > 0) {
             paragraphs.push(currentParagraph);
         }
 
         return paragraphs.length > 0 ? paragraphs : [{ type: 'paragraph' }];
-    } else if (item.type === 'table') {
+    }
+    else if (item.type === 'table') {
         const tableItem = item as TableContentItem;
         const rows: JSONNode[] = [];
 

@@ -43,9 +43,14 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
         return text;
     }
 
+    if (node.type === 'hardBreak') {
+        // hardBreak는 paragraph 내부의 줄바꿈 (엔터 1회)
+        return '\n';
+    }
+
     if (node.type === 'paragraph') {
         const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
-        return content ? `${content}\n\n` : '';
+        return content;
     }
 
     if (node.type === 'heading') {
@@ -143,7 +148,17 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
     });
 
     if (textNodes.length > 0) {
-        const markdown = textNodes.map((node) => convertToMarkdown(node)).join('').trim();
+        const markdownParts: string[] = [];
+        textNodes.forEach((node, index) => {
+            const content = convertToMarkdown(node);
+            markdownParts.push(content);
+
+            if (index < textNodes.length - 1) {
+                markdownParts.push('\n');
+            }
+        });
+
+        const markdown = markdownParts.join('');
         if (markdown) contents.push({ type: 'text', value: markdown } as TextContentItem);
     }
 
@@ -162,5 +177,3 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
 
     return contents.length > 0 ? contents : [{ type: 'text', value: '' } as TextContentItem];
 };
-
-
