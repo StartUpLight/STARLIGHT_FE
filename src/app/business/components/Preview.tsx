@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useBusinessStore } from '@/store/business.store';
 import { convertEditorJsonToHtml } from '@/lib/business/converter/editorToHtml';
 import sections from '@/data/sidebar.json';
+import { ItemContent } from '@/types/business/business.store.type';
 
 const Preview = () => {
     const { contents } = useBusinessStore();
@@ -46,7 +47,7 @@ const Preview = () => {
                         </h2>
                     </div>
                     {section.items.map((item) => {
-                        const content = contents[item.number] || {};
+                        const content: Partial<ItemContent> = contents[item.number] || {};
 
                         // 개요 섹션 (number === '0')
                         if (item.number === '0') {
@@ -133,7 +134,7 @@ const Preview = () => {
 
 
     // 아이템 렌더링 함수
-    const renderItem = (item: SidebarItem, content: any) => {
+    const renderItem = (item: SidebarItem, content: Partial<ItemContent>) => {
         if (item.number === '0') {
             return (
                 <div key={item.number}>
@@ -242,7 +243,7 @@ const Preview = () => {
                 const itemElements = Array.from(sectionElement.children).slice(1); // 첫 번째는 섹션 제목
 
                 section.items.forEach((item, itemIndex) => {
-                    const content = contents[item.number] || {};
+                    const content: Partial<ItemContent> = contents[item.number] || {};
                     const itemElement = itemElements[itemIndex] as HTMLElement;
                     if (!itemElement) return;
 
