@@ -8,29 +8,72 @@ const parseMarkdownText = (text: string): JSONNode[] => {
 
     const nodes: JSONNode[] = [];
     let currentIndex = 0;
+
+    // 이미지 마크다운 파싱: ![alt](src)
+    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    let imageMatch: RegExpExecArray | null;
+    const imageMatches: Array<{ start: number; end: number; alt: string; src: string }> = [];
+
+    while ((imageMatch = imageRegex.exec(text)) !== null) {
+        imageMatches.push({
+            start: imageMatch.index,
+            end: imageMatch.index + imageMatch[0].length,
+            alt: imageMatch[1] || '',
+            src: imageMatch[2] || '',
+        });
+    }
+
+    // 이미지와 span을 함께 처리하기 위해 모든 매치를 정렬
     const spanRegex = /<span([^>]*)>(.*?)<\/span>/gi;
     let spanMatch: RegExpExecArray | null;
+    const spanMatches: Array<{ start: number; end: number; attrs: string; inner: string }> = [];
+
     while ((spanMatch = spanRegex.exec(text)) !== null) {
-        const start = spanMatch.index;
-        const end = start + spanMatch[0].length;
-        const attrs = spanMatch[1] || '';
-        const inner = spanMatch[2] || '';
-        if (start > currentIndex) {
-            const before = text.substring(currentIndex, start);
+        spanMatches.push({
+            start: spanMatch.index,
+            end: spanMatch.index + spanMatch[0].length,
+            attrs: spanMatch[1] || '',
+            inner: spanMatch[2] || '',
+        });
+    }
+
+    // 모든 매치를 시작 위치로 정렬
+    const allMatches = [
+        ...imageMatches.map(m => ({ ...m, type: 'image' as const })),
+        ...spanMatches.map(m => ({ ...m, type: 'span' as const })),
+    ].sort((a, b) => a.start - b.start);
+
+    // 매치를 순서대로 처리
+    allMatches.forEach((match) => {
+        if (match.start > currentIndex) {
+            const before = text.substring(currentIndex, match.start);
             if (before) nodes.push({ type: 'text', text: before });
         }
-        const hasSpell = /class=["'][^"']*spell-error[^"']*["']/i.test(attrs);
-        const colorMatch = /style=["'][^"']*color\s*:\s*([^;"']+)/i.exec(attrs);
-        if (hasSpell) {
-            nodes.push({ type: 'text', text: inner, marks: [{ type: 'spellError' }] as JSONMark[] });
-        } else if (colorMatch) {
-            const color = colorMatch[1].trim();
-            nodes.push({ type: 'text', text: inner, marks: [{ type: 'textStyle', attrs: { color } }] as JSONMark[] });
-        } else {
-            nodes.push({ type: 'text', text: inner });
+
+        if (match.type === 'image') {
+            nodes.push({
+                type: 'image',
+                attrs: {
+                    src: match.src,
+                    alt: match.alt,
+                },
+            });
+        } else if (match.type === 'span') {
+            const hasSpell = /class=["'][^"']*spell-error[^"']*["']/i.test(match.attrs);
+            const colorMatch = /style=["'][^"']*color\s*:\s*([^;"']+)/i.exec(match.attrs);
+            if (hasSpell) {
+                nodes.push({ type: 'text', text: match.inner, marks: [{ type: 'spellError' }] as JSONMark[] });
+            } else if (colorMatch) {
+                const color = colorMatch[1].trim();
+                nodes.push({ type: 'text', text: match.inner, marks: [{ type: 'textStyle', attrs: { color } }] as JSONMark[] });
+            } else {
+                nodes.push({ type: 'text', text: match.inner });
+            }
         }
-        currentIndex = end;
-    }
+
+        currentIndex = match.end;
+    });
+
     if (currentIndex < text.length) {
         const remain = text.substring(currentIndex);
         if (remain) nodes.push({ type: 'text', text: remain });
@@ -107,9 +150,16 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             }
 
             // 비어있지 않은 줄: 마크다운/인라인 HTML 파싱
-            const textNodes = parseMarkdownText(line);
+            const parsedNodes = parseMarkdownText(line);
             if (!currentParagraph.content) currentParagraph.content = [];
-            currentParagraph.content.push(...textNodes);
+
+            // 파싱된 노드들을 paragraph에 추가
+            // 이미지 노드가 있으면 그대로 추가, 텍스트 노드도 그대로 추가
+            parsedNodes.forEach((node) => {
+                if (currentParagraph.content) {
+                    currentParagraph.content.push(node);
+                }
+            });
 
             // 다음 줄이 존재하고 비어있지 않다면 'hardBreak' 추가 (Enter 1회 -> 줄바꿈)
             if (nextLine !== null && nextLine.trim() !== '') {
