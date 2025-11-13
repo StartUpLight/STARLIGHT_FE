@@ -182,13 +182,18 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
 
         const hasHeader = Array.isArray(tableItem.columns) && tableItem.columns.length > 0;
         if (hasHeader) {
-            const headerCells = tableItem.columns.map(col => ({
-                type: 'tableHeader',
-                content: [{
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: col || ' ' }],
-                }],
-            }));
+            const headerCells = tableItem.columns.map(col => {
+                // 헤더 셀 내용도 마크다운으로 파싱하여 서식 정보 복원
+                const colText = String(col || ' ');
+                const parsedNodes = parseMarkdownText(colText);
+                return {
+                    type: 'tableHeader',
+                    content: [{
+                        type: 'paragraph',
+                        content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
+                    }],
+                };
+            });
             rows.push({
                 type: 'tableRow',
                 content: headerCells,
@@ -207,13 +212,18 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                 }
             }
             dataRows.forEach(row => {
-                const cells = row.map(cell => ({
-                    type: 'tableCell',
-                    content: [{
-                        type: 'paragraph',
-                        content: [{ type: 'text', text: String(cell || ' ') }],
-                    }],
-                }));
+                const cells = row.map(cell => {
+                    // 셀 내용을 마크다운으로 파싱하여 서식 정보 복원
+                    const cellText = String(cell || ' ');
+                    const parsedNodes = parseMarkdownText(cellText);
+                    return {
+                        type: 'tableCell',
+                        content: [{
+                            type: 'paragraph',
+                            content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
+                        }],
+                    };
+                });
                 rows.push({
                     type: 'tableRow',
                     content: cells,
