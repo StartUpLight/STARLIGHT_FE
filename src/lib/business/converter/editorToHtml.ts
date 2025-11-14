@@ -98,7 +98,25 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
         const src = node.attrs?.src || '';
         const alt = node.attrs?.alt || node.attrs?.title || '';
         if (!src) return '';
-        return `<img src="${src}" alt="${alt}" style="max-width: 100%; height: auto;" />`;
+
+        // 에디터에서 설정한 이미지 크기 가져오기
+        const width = node.attrs?.width as number | undefined;
+        const height = node.attrs?.height as number | undefined;
+
+        // width와 height가 있으면 그대로 사용, 없으면 기본 스타일 사용
+        let style = '';
+        if (width && height) {
+            style = `width: ${width}px; height: ${height}px;`;
+        } else if (width) {
+            style = `width: ${width}px; height: auto;`;
+        } else if (height) {
+            style = `width: auto; height: ${height}px;`;
+        } else {
+            style = 'max-width: 400px; height: auto;';
+        }
+
+        // 중앙 정렬을 위한 wrapper div 추가
+        return `<div style="text-align: center; margin: 1rem 0;"><img src="${src}" alt="${alt}" style="${style}" /></div>`;
     }
 
     if (node.content && Array.isArray(node.content)) {

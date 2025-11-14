@@ -9,14 +9,11 @@ const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
-  const { initializePlan, restoreContentsFromStorage, clearStorage, resetDraft, isPreview, setPreview } = useBusinessStore();
+  const { initializePlan, loadContentsFromAPI, clearStorage, resetDraft, isPreview, setPreview, planId } = useBusinessStore();
 
-  // 페이지 진입 시 모달 표시 여부 확인
+  // 페이지 진입 시 모달 표시 여부 확인 및 데이터 불러오기
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    // localStorage에서 작성 중인 내용 복원
-    restoreContentsFromStorage();
 
     // 새로고침인지 확인
     const isRefreshing = sessionStorage.getItem('isRefreshing') === 'true';
@@ -27,10 +24,17 @@ const Page = () => {
     const isRefresh = isRefreshing && previousUrl === currentUrl;
 
     if (isRefresh) {
-      // 새로고침: 모달 표시 안 함, 작성 중인 내용과 planId는 이미 복원됨
+      // 새로고침: 모달 표시 안 함, API에서 데이터 불러오기
       sessionStorage.removeItem('isRefreshing');
       sessionStorage.removeItem('previousUrl');
       setIsModalOpen(false);
+
+      // planId가 있으면 API에서 데이터 불러오기
+      if (planId) {
+        loadContentsFromAPI(planId).catch((error) => {
+          console.error('데이터 불러오기 실패:', error);
+        });
+      }
     } else {
       // 다른 페이지에서 진입: 모달 표시, 새로운 사업계획서 생성 준비
       sessionStorage.removeItem('isRefreshing');
@@ -40,7 +44,7 @@ const Page = () => {
       clearStorage();
       resetDraft();
     }
-  }, [restoreContentsFromStorage, clearStorage, resetDraft]);
+  }, []);
 
   // 새로고침 감지 및 다른 페이지 이동 감지
   useEffect(() => {

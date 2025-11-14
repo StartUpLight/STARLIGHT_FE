@@ -153,7 +153,15 @@
   width: 100%;
   border-collapse: collapse;
   overflow: hidden;
+  position: relative;
 }
+
+/* 표 전체 선택 시 테두리 표시 */
+.ProseMirror table.table-selected {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 .ProseMirror th,
 .ProseMirror td {
   border: 1px solid var(--color-gray-300);

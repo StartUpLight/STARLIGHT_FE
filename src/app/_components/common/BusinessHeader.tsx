@@ -99,9 +99,6 @@ const BusinessHeader = () => {
       if (id == null) throw new Error('planId 생성에 실패했습니다.');
 
       await saveAllItems(id);
-      await saveAllItems(id);
-      await saveAllItems(id);
-
       handleOpenModal();
       postGradeMutate(id, {
         onSuccess: () => router.push('/report'),
@@ -112,26 +109,6 @@ const BusinessHeader = () => {
     }
   };
 
-  // 3분마다 자동 임시 저장 (planId가 있을 때만)
-  useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    const checkAndStartAutoSave = async () => {
-      const currentPlanId = planId;
-      if (currentPlanId) {
-        intervalId = setInterval(async () => {
-          try {
-            await saveAllItems(currentPlanId);
-          } catch (e) {
-            console.error('자동 임시 저장 실패:', e);
-          }
-        }, 180000);
-      }
-    };
-    checkAndStartAutoSave();
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [planId, saveAllItems]);
 
   useEffect(() => {
     if (spanRef.current) {

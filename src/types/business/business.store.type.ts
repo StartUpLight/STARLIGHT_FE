@@ -44,8 +44,8 @@ export interface BusinessStore {
     // 모든 항목 저장 (전역 저장 함수)
     saveAllItems: (planId?: number) => Promise<void>;
 
-    // localStorage에서 contents 복원
-    restoreContentsFromStorage: () => Record<string, ItemContent>;
+    // API에서 contents 불러오기
+    loadContentsFromAPI: (planId: number) => Promise<Record<string, ItemContent>>;
 
     // localStorage 초기화
     clearStorage: () => void;

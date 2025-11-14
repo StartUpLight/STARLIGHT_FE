@@ -9,6 +9,7 @@ const TableToolbar = ({ editor }: { editor: Editor | null }) => {
         if (!isInTable) return false;
 
         const selection = editor.state.selection;
+        // 표 내부에 있고 선택이 있으면 표시
         return !selection.empty;
     };
 
@@ -53,16 +54,19 @@ const TableToolbar = ({ editor }: { editor: Editor | null }) => {
         >
             <div className="flex items-center gap-0.5 rounded-lg border border-gray-200 bg-white px-0.5 py-0.5 shadow-lg">
                 {/* 행 추가 */}
-                <div className="flex items-center gap-0.5 border-r border-gray-200 pr-0.5">
-                    <Btn label="↑" onClick={() => editor.chain().focus().addRowBefore().run()} icon />
-                    <Btn label="↓" onClick={() => editor.chain().focus().addRowAfter().run()} icon />
-                </div>
-                {/* 열 추가 */}
                 <div className="flex items-center gap-0.5 border-r border-gray-200 px-0.5">
-                    <Btn label="←" onClick={() => editor.chain().focus().addColumnBefore().run()} icon />
-                    <Btn label="→" onClick={() => editor.chain().focus().addColumnAfter().run()} icon />
+                    <Btn
+                        label="행추가"
+                        onClick={() => editor.chain().focus().addRowAfter().run()}
+                        disabled={!can.addRowAfter?.()}
+                    />
+                    <Btn
+                        label="열추가"
+                        onClick={() => editor.chain().focus().addColumnAfter().run()}
+                        disabled={!can.addColumnAfter?.()}
+                    />
+
                 </div>
-                {/* 삭제 */}
                 <div className="flex items-center gap-0.5 border-r border-gray-200 px-0.5">
                     <Btn
                         label="행삭제"

@@ -1,5 +1,7 @@
+import { SubSectionType } from '@/types/business/business.type';
+
 // 문항 번호를 서버 스펙의 subSectionType 문자열로 매핑합니다.
-export const getSubSectionTypeFromNumber = (number: string): string => {
+export const getSubSectionTypeFromNumber = (number: string): SubSectionType => {
     switch (number) {
         case '0':
             return 'OVERVIEW_BASIC';

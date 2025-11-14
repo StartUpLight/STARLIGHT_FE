@@ -80,7 +80,7 @@ const OverviewSection = ({
           관련 보유 기술
         </label>
         <div
-          className="min-h-[252px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2 text-gray-900"
+          className="min-h-[126px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2 text-gray-900"
           onClick={() => {
             if (editorSkills && !editorSkills.isDestroyed) {
               editorSkills.commands.focus();
@@ -106,7 +106,7 @@ const OverviewSection = ({
           창업 목표
         </label>
         <div
-          className="min-h-[252px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2 text-gray-900"
+          className="min-h-[126px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2 text-gray-900"
           onClick={() => {
             if (editorGoals && !editorGoals.isDestroyed) {
               editorGoals.commands.focus();

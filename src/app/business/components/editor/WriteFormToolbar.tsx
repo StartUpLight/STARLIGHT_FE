@@ -1,4 +1,5 @@
 import { Editor } from '@tiptap/core';
+import { useState, useRef } from 'react';
 import ToolButton from './ToolButton';
 import BoldIcon from '@/assets/icons/write-icons/bold.svg';
 import HighlightIcon from '@/assets/icons/write-icons/highlight.svg';
@@ -8,6 +9,7 @@ import TableIcon from '@/assets/icons/write-icons/table.svg';
 import ImageIcon from '@/assets/icons/write-icons/image.svg';
 import GrammerIcon from '@/assets/icons/write-icons/grammer.svg';
 import GrammerActiveIcon from '@/assets/icons/write-icons/grammer-active.svg';
+import TableGridSelector from './TableGridSelector';
 
 interface WriteFormToolbarProps {
     activeEditor: Editor | null;
@@ -28,7 +30,14 @@ const WriteFormToolbar = ({
     isSaving,
     lastSavedTime,
 }: WriteFormToolbarProps) => {
+    const [showTableGrid, setShowTableGrid] = useState(false);
+    const tableButtonRef = useRef<HTMLButtonElement>(null);
+
     const handleTableClick = () => {
+        setShowTableGrid(!showTableGrid);
+    };
+
+    const handleTableSelect = (rows: number, cols: number) => {
         if (!activeEditor) return;
         const { state } = activeEditor;
         const $from = state.selection.$from;
@@ -49,7 +58,7 @@ const WriteFormToolbar = ({
                 .chain()
                 .focus()
                 .setTextSelection(afterTablePos)
-                .insertTable({ rows: 3, cols: 2, withHeaderRow: true })
+                .insertTable({ rows, cols, withHeaderRow: true })
                 .run();
         } else {
             // 2) 빈 문단(예: 표 아래 한 줄)에서 클릭: 그 자리를 표로 대체
@@ -64,14 +73,14 @@ const WriteFormToolbar = ({
                         from: state.selection.from,
                         to: state.selection.to,
                     })
-                    .insertTable({ rows: 3, cols: 2, withHeaderRow: true })
+                    .insertTable({ rows, cols, withHeaderRow: true })
                     .run();
             } else {
                 // 3) 그 외 위치: 현재 커서 위치에 표 추가 (여러 개 삽입 가능)
                 activeEditor
                     .chain()
                     .focus()
-                    .insertTable({ rows: 3, cols: 2, withHeaderRow: true })
+                    .insertTable({ rows, cols, withHeaderRow: true })
                     .run();
             }
         }
@@ -124,7 +133,20 @@ const WriteFormToolbar = ({
                 }}
             />
             <div className="mx-2 h-5 w-px bg-gray-200" />
-            <ToolButton label={<TableIcon />} onClick={handleTableClick} />
+            <div className="relative flex items-center">
+                <ToolButton
+                    ref={tableButtonRef}
+                    label={<TableIcon />}
+                    onClick={handleTableClick}
+                />
+                {showTableGrid && (
+                    <TableGridSelector
+                        onSelect={handleTableSelect}
+                        onClose={() => setShowTableGrid(false)}
+                        buttonRef={tableButtonRef}
+                    />
+                )}
+            </div>
             <ToolButton label={<ImageIcon />} onClick={onImageClick} />
             <button
                 type="button"

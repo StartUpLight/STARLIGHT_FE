@@ -1,33 +1,13 @@
 "use client";
 import { create } from 'zustand';
 import { buildSubsectionRequest } from '@/lib/business/requestBuilder';
-import { postBusinessPlan, postBusinessPlanSubsections } from '@/api/business';
+import { postBusinessPlan, postBusinessPlanSubsections, getBusinessPlanSubsection } from '@/api/business';
 import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
+import { convertResponseToItemContent } from '@/lib/business/converter/responseMapper';
+import { getSubSectionTypeFromNumber } from '@/lib/business/getSubsection';
 
-const STORAGE_KEY = 'businessPlanContents';
 const PLAN_ID_KEY = 'businessPlanId';
-
-// localStorage에서 contents 복원
-const loadContentsFromStorage = (): Record<string, ItemContent> => {
-    if (typeof window === 'undefined') return {};
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : {};
-    } catch {
-        return {};
-    }
-};
-
-// localStorage에 contents 저장
-const saveContentsToStorage = (contents: Record<string, ItemContent>) => {
-    if (typeof window === 'undefined') return;
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(contents));
-    } catch (error) {
-        console.error('localStorage 저장 실패:', error);
-    }
-};
 
 // localStorage에서 planId 복원
 const loadPlanIdFromStorage = (): number | null => {
@@ -77,23 +57,45 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         })();
         return initializingPlanPromise;
     },
-    // localStorage에서 contents 복원
-    restoreContentsFromStorage: () => {
-        const contents = loadContentsFromStorage();
+    // API에서 모든 섹션 데이터 불러오기
+    loadContentsFromAPI: async (planId: number) => {
+        type SidebarItem = { name: string; number: string; title: string; subtitle: string };
+        type SidebarSection = { title: string; items: SidebarItem[] };
+        const allItems = (sections as SidebarSection[]).flatMap((section) => section.items);
+
+        const contents: Record<string, ItemContent> = {};
+
+        // 모든 섹션을 병렬로 불러오기
+        const requests = allItems.map(async (item: SidebarItem) => {
+            try {
+                const subSectionType = getSubSectionTypeFromNumber(item.number);
+                const response = await getBusinessPlanSubsection(planId, subSectionType);
+                if (response.result === 'SUCCESS' && response.data?.content) {
+                    const content = response.data.content;
+                    const itemContent = convertResponseToItemContent(
+                        content.blocks || [],
+                        content.checks
+                    );
+                    contents[item.number] = itemContent;
+                }
+            } catch (error) {
+                console.error(`[${item.number}] 데이터 불러오기 실패:`, error);
+            }
+        });
+
+        await Promise.allSettled(requests);
         set({ contents });
         return contents;
     },
     // localStorage 초기화
     clearStorage: () => {
         if (typeof window !== 'undefined') {
-            localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(PLAN_ID_KEY);
             localStorage.removeItem('businessPlanTitle');
         }
     },
     resetDraft: () => {
         if (typeof window !== 'undefined') {
-            localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(PLAN_ID_KEY);
             localStorage.removeItem('businessPlanTitle');
         }
@@ -114,7 +116,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     },
     setSelectedItem: (item) => set({ selectedItem: item }),
 
-    contents: loadContentsFromStorage(),
+    contents: {},
 
     updateItemContent: (number: string, content: Partial<ItemContent>) => {
         set((state) => {
@@ -125,8 +127,6 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                     ...content,
                 },
             };
-            // localStorage에 자동 저장
-            saveContentsToStorage(newContents);
             return { contents: newContents };
         });
     },

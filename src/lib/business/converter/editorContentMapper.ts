@@ -22,9 +22,19 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
                     text = `==${text}==`;
                     break;
                 case 'textStyle':
+                    {
+                        const color = mark.attrs?.color as string | undefined;
+                        if (color) {
+                            text = `<span style="color:${color}">${text}</span>`;
+                        }
+                    }
                     break;
                 case 'code':
                     text = `\`${text}\``;
+                    break;
+                case 'spellError':
+                    // 맞춤법 오류 마크는 클래스 기반 span으로 래핑하여 보존
+                    text = `<span class="spell-error">${text}</span>`;
                     break;
                 default:
                     break;
@@ -33,9 +43,14 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
         return text;
     }
 
+    if (node.type === 'hardBreak') {
+        // hardBreak는 paragraph 내부의 줄바꿈 (엔터 1회)
+        return '\n';
+    }
+
     if (node.type === 'paragraph') {
         const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
-        return content ? `${content}\n\n` : '';
+        return content;
     }
 
     if (node.type === 'heading') {
@@ -82,7 +97,7 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
     if (node.type === 'image') {
         const src = node.attrs?.src || '';
         const alt = node.attrs?.alt || node.attrs?.title || '';
-        return src ? `![${alt}](${src})\n\n` : '';
+        return src ? `![${alt}](${src})` : '';
     }
 
     if (node.content && Array.isArray(node.content)) {
@@ -122,35 +137,55 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
         return { columns, rows };
     };
 
-    const textNodes: JSONNode[] = [];
-    const tables: JSONNode[] = [];
-    const images: JSONNode[] = [];
+    // 노드의 순서를 유지하면서 처리
+    let currentTextNodes: JSONNode[] = [];
+
+    const flushTextNodes = () => {
+        if (currentTextNodes.length > 0) {
+            const markdownParts: string[] = [];
+            currentTextNodes.forEach((node, index) => {
+                const content = convertToMarkdown(node);
+                markdownParts.push(content);
+
+                // 노드 사이에 줄바꿈 추가
+                if (index < currentTextNodes.length - 1) {
+                    markdownParts.push('\n');
+                }
+            });
+
+            const markdown = markdownParts.join('');
+            if (markdown) {
+                contents.push({ type: 'text', value: markdown } as TextContentItem);
+            }
+            currentTextNodes = [];
+        }
+    };
 
     (editorJson.content || []).forEach((node) => {
-        if (node.type === 'table') tables.push(node);
-        else if (node.type === 'image') images.push(node);
-        else textNodes.push(node);
+        if (node.type === 'table') {
+            // 텍스트 노드들을 먼저 처리
+            flushTextNodes();
+            const tableData = extractTableData(node);
+            if (tableData.rows.length > 0) {
+                contents.push({ type: 'table', columns: tableData.columns, rows: tableData.rows });
+            }
+        } else if (node.type === 'image') {
+            // 텍스트 노드들을 먼저 처리
+            flushTextNodes();
+            // 최상위 레벨의 독립적인 이미지
+            contents.push({
+                type: 'image',
+                src: (node.attrs?.src as string) || '',
+                caption: (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
+            });
+        } else {
+            // 텍스트 노드 (paragraph, heading 등) - 나중에 한번에 처리
+            currentTextNodes.push(node);
+        }
     });
 
-    if (textNodes.length > 0) {
-        const markdown = textNodes.map((node) => convertToMarkdown(node)).join('').trim();
-        if (markdown) contents.push({ type: 'text', value: markdown } as TextContentItem);
-    }
-
-    tables.forEach((tableNode) => {
-        const tableData = extractTableData(tableNode);
-        if (tableData.rows.length > 0) contents.push({ type: 'table', columns: tableData.columns, rows: tableData.rows });
-    });
-
-    images.forEach((imageNode) => {
-        contents.push({
-            type: 'image',
-            src: (imageNode.attrs?.src as string) || '',
-            caption: (imageNode.attrs?.alt as string) || (imageNode.attrs?.title as string) || '',
-        });
-    });
+    // 마지막 텍스트 노드들 처리
+    flushTextNodes();
 
     return contents.length > 0 ? contents : [{ type: 'text', value: '' } as TextContentItem];
 };
-
-
