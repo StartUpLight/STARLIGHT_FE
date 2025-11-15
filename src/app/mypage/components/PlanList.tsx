@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import PlanCard from './PlanCard';
-import Pagination from './Pagination';
+import Pagination from '../../_components/common/Pagination';
 import { useGetMyBusinessPlans } from '@/hooks/queries/useMy';
 import { BusinessPlanItem } from '@/types/my/my.type';
 
@@ -29,14 +29,14 @@ export default function PlanList() {
 
     if (isLoading) {
         return (
-            <div className="p-6 bg-gray-80 rounded-[12px]">
+            <div className="mt-6 w-full p-6 bg-gray-80 rounded-[12px]">
                 <div className="ds-text text-gray-500">로딩 중...</div>
             </div>
         );
     }
 
     return (
-        <div className="p-6 bg-gray-80 rounded-[12px] space-y-6">
+        <div className="mt-6 w-full p-6 bg-gray-80 rounded-[12px] space-y-6">
             <div className="flex items-center gap-2">
                 <h2 className="ds-subtitle font-medium text-black">사업계획서 목록</h2>
                 <span className="ds-subtitle text-primary-500 font-medium">{items.length}</span>
@@ -47,8 +47,8 @@ export default function PlanList() {
                     title={item.title || '제목을 입력하세요'}
                     currentStageIndex={getStageIndexFromStatus(item.planStatus)}
                     lastSavedAt={item.lastSavedAt}
-                    aiReportTitle="[파일명]_AI 리포트"
-                    expertReportTitle="[파일명]_전문가 리포트"
+                    aiReportTitle="AI 리포트 보러가기"
+                    expertReportTitle="전문가 리포트 보러가기"
                 />
             ))}
             <Pagination current={page} total={6} onChange={setPage} />
