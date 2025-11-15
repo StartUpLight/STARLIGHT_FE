@@ -1,11 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Logo from '@/assets/icons/logo.svg';
 import React, { useState, useEffect } from 'react';
 import UploadReportModal from './UploadReportModal';
 import LoginModal from './LoginModal';
 import { useAuthStore } from '@/store/auth.store';
+import { useUserStore } from '@/store/user.store';
+import Image from 'next/image';
 
 const Header = () => {
   const pathname = usePathname();
@@ -14,11 +16,21 @@ const Header = () => {
   const [openUpload, setOpenUpload] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
+  const router = useRouter();
+  const { user, fetchUser, clearUser } = useUserStore();
 
   useEffect(() => {
     setMounted(true);
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUser();
+    } else {
+      clearUser();
+    }
+  }, [isAuthenticated, fetchUser, clearUser]);
 
   // 프로필 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
@@ -70,6 +82,9 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
+    clearUser();
+    router.push('/');
+
     setIsProfileOpen(false);
   };
 
@@ -169,9 +184,22 @@ const Header = () => {
             <div className="profile-dropdown relative">
               <div
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-gray-400"
+                className="flex cursor-pointer items-center justify-center rounded-full"
               >
-                <span className="ds-text font-medium text-white">홍</span>
+                {user?.profileImageUrl ? (
+                  <Image
+                    src={user.profileImageUrl}
+                    alt={user.name}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 rounded-full object-cover"
+                    priority
+                  />
+                ) : (
+                  <span className="ds-text flex h-9 w-9 items-center justify-center rounded-full bg-gray-400 font-medium">
+                    {user?.name?.charAt(0)}
+                  </span>
+                )}
               </div>
 
               {isProfileOpen && (
