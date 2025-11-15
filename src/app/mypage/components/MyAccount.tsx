@@ -56,7 +56,7 @@ const MyAccount = () => {
           </div>
         </div>
       </div>
-      {isModal && <PayHistoryModal />}
+      {isModal && <PayHistoryModal onClose={() => setIsModal(false)} />}
     </div>
   );
 };

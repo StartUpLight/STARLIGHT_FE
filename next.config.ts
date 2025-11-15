@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['kr.object.ncloudstorage.com', 'k.kakaocdn.net'],
+    domains: [
+      'kr.object.ncloudstorage.com',
+      'k.kakaocdn.net',
+      'img1.kakaocdn.net',
+    ],
   },
 
   turbopack: {
