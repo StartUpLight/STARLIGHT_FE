@@ -39,7 +39,7 @@ export default function PlanCard({
                     onClick={handleTitleClick}
                     className="ds-text font-medium text-gray-900 hover:text-primary-500 cursor-pointer flex items-center gap-1"
                 >
-                    {title}
+                    {title || '이름 없는 사업계획서'}
                     <ArrowRightIcon />
                 </button>
                 {lastSavedAt && (

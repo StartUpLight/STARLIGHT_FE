@@ -44,7 +44,7 @@ export default function PlanList() {
             {items.map((item) => (
                 <PlanCard
                     key={item.businessPlanId}
-                    title={item.title || '제목을 입력하세요'}
+                    title={item.title}
                     currentStageIndex={getStageIndexFromStatus(item.planStatus)}
                     lastSavedAt={item.lastSavedAt}
                     businessPlanId={item.businessPlanId}
