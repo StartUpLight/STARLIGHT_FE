@@ -2,6 +2,8 @@ import React from 'react';
 import DoneIcon from '@/assets/icons/done.svg';
 import DoiningIcon from '@/assets/icons/doing.svg';
 import TodoIcon from '@/assets/icons/todo.svg';
+import ArrowRightIcon from '@/assets/icons/arrow_right.svg';
+import { formatDate } from '@/util/formatDate';
 
 type Stage = {
     key: string;
@@ -13,8 +15,6 @@ interface PlanCardProps {
     stages?: Stage[];
     currentStageIndex: number; // 0-based
     lastSavedAt?: string;
-    aiReportTitle?: string;
-    expertReportTitle?: string;
 }
 
 const defaultStages: Stage[] = [
@@ -30,75 +30,78 @@ export default function PlanCard({
     stages = defaultStages,
     currentStageIndex,
     lastSavedAt,
-    aiReportTitle = '',
-    expertReportTitle = '',
 }: PlanCardProps) {
-    const progressPercent =
-        stages.length > 1
-            ? (Math.min(currentStageIndex, stages.length - 1) / (stages.length - 1)) * 100
-            : 0;
+    const aiStageIndex = stages.findIndex(stage => stage.key === 'ai');
+    const expertStageIndex = stages.findIndex(stage => stage.key === 'expert');
+    const isAiReportEnabled = aiStageIndex >= 0 && currentStageIndex >= aiStageIndex;
+    const isExpertReportEnabled = expertStageIndex >= 0 && currentStageIndex >= expertStageIndex;
 
     return (
-        <div className="w-full rounded-[12px] bg-white p-6 space-y-4">
+        <div className="w-full rounded-[12px] bg-white px-6 pt-6 pb-4 space-y-6">
             <div className="flex items-center justify-between">
-                <div className="ds-text font-medium text-gray-900 hover:text-primary-500 cursor-pointer">{title}</div>
+                <div className="ds-text font-medium text-gray-900 hover:text-primary-500 cursor-pointer flex items-center gap-1">
+                    {title}
+                    <ArrowRightIcon />
+                </div>
                 {lastSavedAt && (
-                    <div className="ds-caption font-medium text-gray-500 ">최종 저장 날짜: {lastSavedAt}</div>
+                    <div className="ds-caption font-medium text-gray-500 ">최종 저장 날짜: {formatDate(lastSavedAt)}</div>
                 )}
             </div>
-            <div className="px-6 py-4 bg-gray-80 rounded-[12px] space-y-4">
-                <p className="ds-subtext font-medium text-gray-900">현황</p>
-                <div className="relative w-full">
-                    <div className="mx-3">
-                        <div className="h-[4px] w-full bg-gray-300 rounded-full overflow-hidden">
-                            <div
-                                className="h-[4px] bg-primary-500 rounded-full"
-                                style={{ width: `${progressPercent}%` }}
-                            />
-                        </div>
-                    </div>
-                    {/* 마커(아이콘) */}
-                    <div className="relative z-[1] flex items-center justify-between -mt-[12px]">
-                        {stages.map((stage, idx) => {
-                            const done = idx < currentStageIndex;
-                            const doing = idx === currentStageIndex;
-                            return (
-                                <div key={stage.key} className="flex flex-col items-center gap-2">
-                                    {done ? <DoneIcon />
-                                        : doing ? <DoiningIcon />
-                                            : <TodoIcon />}
-                                    <span className={`ds-caption font-semibold ${done || doing ? 'text-gray-900' : 'text-gray-500'}`}>
+            <div className="w-full">
+                <div className="flex items-start gap-2">
+                    {stages.map((stage, idx) => {
+                        const done = idx < currentStageIndex;
+                        const doing = idx === currentStageIndex;
+                        const lineColor = done ? 'bg-gray-600' : doing ? 'bg-primary-500' : 'bg-gray-200';
+                        return (
+                            <div key={stage.key} className="flex flex-col flex-1">
+                                <div className="flex items-center w-full">
+                                    <div className={`flex-1 h-[4px] rounded-full ${lineColor}`} />
+                                </div>
+                                <div className="flex items-center gap-2 mt-[6px]">
+                                    <div className="flex-shrink-0">
+                                        {done ? <DoneIcon />
+                                            : doing ? <DoiningIcon />
+                                                : <TodoIcon />}
+                                    </div>
+                                    <span className={`ds-caption font-semibold whitespace-nowrap text-gray-900`}>
                                         {stage.label}
                                     </span>
                                 </div>
-                            );
-                        })}
-                    </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
-
-            <div className="flex items-center gap-4">
-                <div className="flex items-center w-full bg-gray-80 rounded-[8px] px-6 py-3 justify-between">
-                    <div className="flex items-center gap-4">
-                        <span className="ds-subtext font-semibold text-gray-900">AI 리포트</span>
-                        <button type="button" className="cursor-pointer ds-caption font-medium text-gray-600 underline underline-offset-2">
-                            {aiReportTitle}
-                        </button>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="ds-caption text-gray-500 font-medium">남은 채점 수: 5</span>
-                        <button
-                            type="button"
-                            className="h-[28px] cursor-pointer whitespace-nowrap flex items-center justify-center rounded-[4px] bg-primary-500 text-white hover:bg-primary-600 transition ds-caption font-medium p-2"
-                        >
-                            재채점하기
-                        </button>
-                    </div>
-                </div>
-                <div className="flex items-center w-full bg-gray-80 rounded-[8px] px-6 py-4 gap-4">
-                    <span className="ds-subtext font-semibold text-gray-900">전문가 리포트</span>
-                    <button type="button" className="flex-1 cursor-pointer ds-caption font-medium text-gray-600 underline underline-offset-2 text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                        {expertReportTitle}
+            <div className='flex items-center'>
+                <button
+                    disabled={!isAiReportEnabled}
+                    className={`mr-auto ds-subtext font-semibold flex items-center py-2 px-3 gap-4 ${isAiReportEnabled
+                        ? 'cursor-pointer text-gray-900'
+                        : 'cursor-not-allowed text-gray-400'
+                        }`}
+                >
+                    AI 리포트 보러가기
+                    <ArrowRightIcon />
+                </button>
+                <div className='w-[1px] h-[24px] bg-gray-300 mx-[33px]'></div>
+                <div className='flex items-center gap-[167px]'>
+                    <button
+                        disabled={!isExpertReportEnabled}
+                        className={`ds-subtext font-semibold flex items-center py-2 px-3 gap-4 
+                            ${isExpertReportEnabled
+                                ? 'cursor-pointer text-gray-900 hover:bg-gray-100 rounded-[4px]'
+                                : 'cursor-not-allowed text-gray-400'
+                            }`}
+                    >
+                        전문가 리포트 보러가기
+                        <ArrowRightIcon />
+                    </button>
+                    <button
+                        type="button"
+                        className="h-[28px] border-gray-300 border-[1px] text-gray-900 cursor-pointer whitespace-nowrap flex items-center justify-center rounded-[4px] transition ds-caption font-medium p-2"
+                    >
+                        새로운 전문가 연결
                     </button>
                 </div>
             </div>

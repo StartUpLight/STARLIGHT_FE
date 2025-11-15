@@ -47,8 +47,6 @@ export default function PlanList() {
                     title={item.title || '제목을 입력하세요'}
                     currentStageIndex={getStageIndexFromStatus(item.planStatus)}
                     lastSavedAt={item.lastSavedAt}
-                    aiReportTitle="AI 리포트 보러가기"
-                    expertReportTitle="전문가 리포트 보러가기"
                 />
             ))}
             <Pagination current={page} total={6} onChange={setPage} />
