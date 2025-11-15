@@ -1,27 +1,43 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import WriteForm from './components/WriteForm';
 import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
 import CreateModal from './components/CreateModal';
 
 const Page = () => {
+  const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
-  const { initializePlan, loadContentsFromAPI, clearStorage, resetDraft, isPreview, setPreview, planId } = useBusinessStore();
+  const { initializePlan, loadContentsFromAPI, clearStorage, resetDraft, isPreview, setPreview, planId, setPlanId } = useBusinessStore();
 
   // 페이지 진입 시 모달 표시 여부 확인 및 데이터 불러오기
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // URL 쿼리 파라미터에서 planId 확인
+    const planIdParam = searchParams.get('planId');
     // 새로고침인지 확인
     const isRefreshing = sessionStorage.getItem('isRefreshing') === 'true';
     const previousUrl = sessionStorage.getItem('previousUrl');
     const currentUrl = window.location.href;
-
     // 같은 URL이고 플래그가 있으면 새로고침
     const isRefresh = isRefreshing && previousUrl === currentUrl;
+    if (planIdParam) {
+      // planId가 URL에 있으면: 기존 사업계획서 로드
+      const parsedPlanId = parseInt(planIdParam, 10);
+      if (!isNaN(parsedPlanId)) {
+        setPlanId(parsedPlanId);
+        setIsModalOpen(false);
+        // API에서 데이터 불러오기
+        loadContentsFromAPI(parsedPlanId).catch((error) => {
+          console.error('데이터 불러오기 실패:', error);
+        });
+        return;
+      }
+    }
 
     if (isRefresh) {
       // 새로고침: 모달 표시 안 함, API에서 데이터 불러오기
@@ -44,7 +60,7 @@ const Page = () => {
       clearStorage();
       resetDraft();
     }
-  }, []);
+  }, [searchParams, setPlanId, planId, loadContentsFromAPI, clearStorage, resetDraft]);
 
   // 새로고침 감지 및 다른 페이지 이동 감지
   useEffect(() => {

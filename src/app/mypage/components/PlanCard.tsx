@@ -1,21 +1,11 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import DoneIcon from '@/assets/icons/done.svg';
 import DoiningIcon from '@/assets/icons/doing.svg';
 import TodoIcon from '@/assets/icons/todo.svg';
 import ArrowRightIcon from '@/assets/icons/arrow_right.svg';
 import { formatDate } from '@/util/formatDate';
-
-type Stage = {
-    key: string;
-    label: string;
-};
-
-interface PlanCardProps {
-    title: string;
-    stages?: Stage[];
-    currentStageIndex: number; // 0-based
-    lastSavedAt?: string;
-}
+import { PlanCardProps, Stage } from '@/types/mypage/my.props';
 
 const defaultStages: Stage[] = [
     { key: 'start', label: '시작' },
@@ -30,19 +20,28 @@ export default function PlanCard({
     stages = defaultStages,
     currentStageIndex,
     lastSavedAt,
+    businessPlanId,
 }: PlanCardProps) {
+    const router = useRouter();
     const aiStageIndex = stages.findIndex(stage => stage.key === 'ai');
     const expertStageIndex = stages.findIndex(stage => stage.key === 'expert');
     const isAiReportEnabled = aiStageIndex >= 0 && currentStageIndex >= aiStageIndex;
     const isExpertReportEnabled = expertStageIndex >= 0 && currentStageIndex >= expertStageIndex;
 
+    const handleTitleClick = () => {
+        router.push(`/business?planId=${businessPlanId}`);
+    };
+
     return (
         <div className="w-full rounded-[12px] bg-white px-6 pt-6 pb-4 space-y-6">
             <div className="flex items-center justify-between">
-                <div className="ds-text font-medium text-gray-900 hover:text-primary-500 cursor-pointer flex items-center gap-1">
+                <button
+                    onClick={handleTitleClick}
+                    className="ds-text font-medium text-gray-900 hover:text-primary-500 cursor-pointer flex items-center gap-1"
+                >
                     {title}
                     <ArrowRightIcon />
-                </div>
+                </button>
                 {lastSavedAt && (
                     <div className="ds-caption font-medium text-gray-500 ">최종 저장 날짜: {formatDate(lastSavedAt)}</div>
                 )}

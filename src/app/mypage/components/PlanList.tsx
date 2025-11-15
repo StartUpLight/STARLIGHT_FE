@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import PlanCard from './PlanCard';
 import Pagination from '../../_components/common/Pagination';
 import { useGetMyBusinessPlans } from '@/hooks/queries/useMy';
-import { BusinessPlanItem } from '@/types/my/my.type';
+import { BusinessPlanItem } from '@/types/mypage/mypage.type';
 
 const getStageIndexFromStatus = (planStatus: string): number => {
     switch (planStatus) {
@@ -47,6 +47,7 @@ export default function PlanList() {
                     title={item.title || '제목을 입력하세요'}
                     currentStageIndex={getStageIndexFromStatus(item.planStatus)}
                     lastSavedAt={item.lastSavedAt}
+                    businessPlanId={item.businessPlanId}
                 />
             ))}
             <Pagination current={page} total={6} onChange={setPage} />

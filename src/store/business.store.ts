@@ -34,6 +34,10 @@ let initializingPlanPromise: Promise<number> | null = null;
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
     planId: loadPlanIdFromStorage(),
+    setPlanId: (planId: number) => {
+        set({ planId });
+        savePlanIdToStorage(planId);
+    },
     initializePlan: async () => {
         const current = get().planId;
         if (typeof current === 'number' && current > 0) return current;
