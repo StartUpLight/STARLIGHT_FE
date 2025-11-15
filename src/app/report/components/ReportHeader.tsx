@@ -6,12 +6,14 @@ import Close from '@/assets/icons/white_close.svg';
 import Button from '@/app/_components/common/Button';
 import { useRouter } from 'next/navigation';
 import { useEvaluationStore } from '@/store/report.store';
+import EvaluateModal from './EvaluateModal';
 
 const ReportHeader = () => {
   const router = useRouter();
   const totalScore = useEvaluationStore((s) => s.totalScore);
   const canUseExpert = totalScore >= 70;
   const [dismissed, setDismissed] = useState(false);
+  const [isModal, setIsModal] = useState(false);
 
   return (
     <div className="flex flex-row items-center justify-between">
@@ -19,7 +21,9 @@ const ReportHeader = () => {
         <div className="ds-title font-semibold text-gray-900">
           사업계획서 AI 리포트
         </div>
-        <Info />
+        <div className="cursor-pointer" onClick={() => setIsModal(true)}>
+          <Info />
+        </div>
       </div>
 
       <div className="group relative">
@@ -65,6 +69,8 @@ const ReportHeader = () => {
           </div>
         </div>
       </div>
+
+      {isModal && <EvaluateModal onClose={() => setIsModal(false)} />}
     </div>
   );
 };
