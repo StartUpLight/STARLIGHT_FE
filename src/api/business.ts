@@ -52,7 +52,7 @@ export async function postSpellCheck(body: BusinessSpellCheckRequest) {
 }
 
 export async function postGrade(planId: number) {
-  const res = await api.post(`/v1/ai-reports/${planId}/grade`);
+  const res = await api.post(`/v1/ai-reports/evaluation/${planId}`);
 
   return res.data;
 }
