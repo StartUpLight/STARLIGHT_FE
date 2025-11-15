@@ -280,8 +280,14 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             });
 
             // 다음 줄이 존재하고 비어있지 않다면 'hardBreak' 추가 (Enter 1회 -> 줄바꿈)
+            // 단, 다음 줄이 리스트(bulletList 또는 orderedList)인 경우 제외
             if (nextLine !== null && nextLine.trim() !== '') {
-                if (currentBlock && currentBlock.content) {
+                const trimmedNextLine = nextLine.trim();
+                const isNextLineList =
+                    /^[-*]\s+/.test(trimmedNextLine) ||  // bulletList: - 또는 *로 시작
+                    /^\d+\.\s+/.test(trimmedNextLine);   // orderedList: 숫자. 로 시작
+
+                if (!isNextLineList && currentBlock && currentBlock.content) {
                     currentBlock.content.push({ type: 'hardBreak' });
                 }
             } else {
