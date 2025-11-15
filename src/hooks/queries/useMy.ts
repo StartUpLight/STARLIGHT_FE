@@ -1,4 +1,4 @@
-import { getMyBusinessPlans } from '@/api/my';
+import { getMyBusinessPlans } from '@/api/mypage';
 import { useQuery } from '@tanstack/react-query';
 
 export function useGetMyBusinessPlans() {
