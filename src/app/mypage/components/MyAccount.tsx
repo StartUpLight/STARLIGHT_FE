@@ -1,0 +1,64 @@
+'use client';
+import Image from 'next/image';
+import React, { useState } from 'react';
+import PayHistoryModal from './PayHistoryModal';
+import { useUserStore } from '@/store/user.store';
+import Naver from '@/assets/icons/naver_profile.svg';
+import KaKao from '@/assets/icons/kakao_profile.svg';
+
+const MyAccount = () => {
+  const [isModal, setIsModal] = useState(false);
+  const { user } = useUserStore();
+
+  return (
+    <div className="bg-gray-80 mt-6 flex w-full flex-col items-start gap-6 rounded-[12px] p-6">
+      <div className="flex w-full flex-row items-start justify-between">
+        <div className="ds-subtitle font-medium text-black">내 계정 </div>
+        <button
+          className="ds-caption cursor-pointer items-center rounded-[4px] bg-gray-200 p-2 font-medium text-gray-900"
+          onClick={() => setIsModal(true)}
+        >
+          {' '}
+          이용권 구매 내역
+        </button>
+      </div>
+
+      <div className="h-px w-full bg-gray-200" />
+
+      <div className="flex flex-row gap-4">
+        {user?.profileImageUrl ? (
+          <Image
+            src={user.profileImageUrl}
+            alt="멤버 이미지"
+            width={52}
+            height={52}
+            className="h-[52px] w-[52px] rounded-full object-cover"
+            priority
+          />
+        ) : (
+          <div className="ds-text flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gray-400 font-medium">
+            {user?.name.charAt(0)}
+          </div>
+        )}
+
+        <div className="flex flex-col items-start">
+          <div className="ds-text font-medium text-gray-900">
+            {' '}
+            {user?.name}{' '}
+          </div>
+          <div className="mt-1 flex flex-row items-center gap-2">
+            {user?.provider == 'kakao' && <KaKao />}
+            {user?.provider == 'naver' && <Naver />}
+
+            <div className="ds-subtext font-medium text-gray-900">
+              {user?.email}
+            </div>
+          </div>
+        </div>
+      </div>
+      {isModal && <PayHistoryModal onClose={() => setIsModal(false)} />}
+    </div>
+  );
+};
+
+export default MyAccount;
