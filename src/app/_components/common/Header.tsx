@@ -106,13 +106,12 @@ const Header = () => {
           <nav className="ml-[100px] flex items-center gap-12 text-nowrap">
             <Link
               href="/"
-              className={`${navLink} ${
-                isActive('/')
+              className={`${navLink} ${isActive('/')
                   ? 'text-primary-500 font-semibold'
                   : isHomePage
                     ? 'text-white'
                     : 'text-gray-900'
-              }`}
+                }`}
             >
               홈
             </Link>
@@ -120,13 +119,12 @@ const Header = () => {
             <div className={menuWrapper}>
               <button
                 type="button"
-                className={`${menuButton} ${
-                  isBusinessActive
+                className={`${menuButton} ${isBusinessActive
                     ? 'text-primary-500 font-semibold'
                     : isHomePage
                       ? 'text-white'
                       : 'text-gray-900'
-                }`}
+                  }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -154,25 +152,23 @@ const Header = () => {
 
             <Link
               href="/expert"
-              className={`${navLink} ${
-                isActive('/expert')
+              className={`${navLink} ${isActive('/expert')
                   ? 'text-primary-500 font-semibold'
                   : isHomePage
                     ? 'text-white'
                     : 'text-gray-900'
-              }`}
+                }`}
             >
               전문가
             </Link>
             <Link
               href="/price"
-              className={`${navLink} ${
-                isActive('/price')
+              className={`${navLink} ${isActive('/price')
                   ? 'text-primary-500 font-semibold'
                   : isHomePage
                     ? 'text-white'
                     : 'text-gray-900'
-              }`}
+                }`}
             >
               요금제
             </Link>

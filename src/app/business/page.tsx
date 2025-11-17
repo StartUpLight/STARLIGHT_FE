@@ -64,13 +64,18 @@ const Page = () => {
     }
   }, [searchParams, setPlanId, planId, loadContentsFromAPI, clearStorage, resetDraft]);
 
+  // 페이지를 떠날 때 planId 및 임시 저장 데이터 초기화
+  useEffect(() => {
+    return () => {
+      clearStorage();
+      resetDraft();
+    };
+  }, [clearStorage, resetDraft]);
+
   // 새로고침 감지 및 다른 페이지 이동 감지
   useEffect(() => {
-    // 현재 URL 저장
     const currentUrl = window.location.href;
-
     const handleBeforeUnload = () => {
-      // 새로고침 플래그 설정 (나중에 같은 URL인지 확인)
       sessionStorage.setItem('isRefreshing', 'true');
       sessionStorage.setItem('previousUrl', currentUrl);
     };
@@ -82,15 +87,12 @@ const Page = () => {
     };
   }, []);
 
-  // 모달 닫기 (X 버튼 클릭 시)
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
-  // 모달 버튼 클릭 시 plan 생성
   const handleCreatePlan = async () => {
     try {
-      // 사업계획서 생성 (이미 planId가 있으면 새로 생성하지 않음)
       await initializePlan();
       setIsModalOpen(false);
     } catch (error) {
