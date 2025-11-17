@@ -5,6 +5,8 @@ import Pagination from '../../_components/common/Pagination';
 import { useGetMyBusinessPlans } from '@/hooks/queries/useMy';
 import { BusinessPlanItem } from '@/types/mypage/mypage.type';
 
+const PAGE_SIZE = 3;
+
 const getStageIndexFromStatus = (planStatus: string): number => {
     switch (planStatus) {
         case 'STARTED':
@@ -23,9 +25,15 @@ const getStageIndexFromStatus = (planStatus: string): number => {
 };
 
 export default function PlanList() {
-    const { data: myBusinessPlans, isLoading } = useGetMyBusinessPlans();
     const [page, setPage] = useState(1);
-    const items: BusinessPlanItem[] = Array.isArray(myBusinessPlans?.data) ? myBusinessPlans?.data : [];
+    const { data: myBusinessPlans, isLoading, isError } = useGetMyBusinessPlans({
+        page: page,
+        size: PAGE_SIZE,
+    });
+    const pageData = myBusinessPlans?.data;
+    const items: BusinessPlanItem[] = Array.isArray(pageData?.content) ? pageData?.content : [];
+    const totalPages = pageData?.totalPages ?? 1;
+    const totalCount = pageData?.totalElements ?? items.length;
 
     if (isLoading) {
         return (
@@ -35,11 +43,19 @@ export default function PlanList() {
         );
     }
 
+    if (isError) {
+        return (
+            <div className="mt-6 w-full p-6 bg-gray-80 rounded-[12px]">
+                <div className="ds-text text-red-500">데이터를 불러오지 못했습니다. 다시 시도해주세요.</div>
+            </div>
+        );
+    }
+
     return (
         <div className="mt-6 w-full p-6 bg-gray-80 rounded-[12px] space-y-6">
             <div className="flex items-center gap-2">
                 <h2 className="ds-subtitle font-medium text-black">사업계획서 목록</h2>
-                <span className="ds-subtitle text-primary-500 font-medium">{items.length}</span>
+                <span className="ds-subtitle text-primary-500 font-medium">{totalCount}</span>
             </div>
             {items.map((item) => (
                 <PlanCard
@@ -50,7 +66,7 @@ export default function PlanList() {
                     businessPlanId={item.businessPlanId}
                 />
             ))}
-            <Pagination current={page} total={6} onChange={setPage} />
+            <Pagination current={page} total={totalPages} onChange={setPage} />
         </div>
     );
 }

@@ -7,7 +7,14 @@ export async function getMember(): Promise<getMemberResponse> {
   return res.data;
 }
 
-export async function getMyBusinessPlans(): Promise<GetMyBusinessPlansResponse> {
-  const response = await api.get<GetMyBusinessPlansResponse>('/v1/business-plans');
+export interface GetMyBusinessPlansParams {
+  page?: number;
+  size?: number;
+}
+
+export async function getMyBusinessPlans(params: GetMyBusinessPlansParams): Promise<GetMyBusinessPlansResponse> {
+  const response = await api.get<GetMyBusinessPlansResponse>('/v1/business-plans', {
+    params,
+  });
   return response.data;
 }

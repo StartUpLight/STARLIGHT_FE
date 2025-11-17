@@ -1,10 +1,10 @@
-import { getMyBusinessPlans } from '@/api/mypage';
+import { getMyBusinessPlans, GetMyBusinessPlansParams } from '@/api/mypage';
 import { useQuery } from '@tanstack/react-query';
 
-export function useGetMyBusinessPlans() {
+export function useGetMyBusinessPlans(params: GetMyBusinessPlansParams) {
     return useQuery({
-        queryKey: ['GetMyBusinessPlans'],
-        queryFn: () => getMyBusinessPlans(),
+        queryKey: ['GetMyBusinessPlans', params],
+        queryFn: () => getMyBusinessPlans(params),
     });
 }
 

@@ -7,8 +7,22 @@ interface PaginationProps {
     onChange?: (page: number) => void;
 }
 
+const MAX_VISIBLE_PAGES = 6;
+
 export default function Pagination({ current, total, onChange }: PaginationProps) {
-    const pages = Array.from({ length: total }, (_, i) => i + 1);
+    const totalPages = Math.max(1, total);
+    const visibleCount = Math.min(totalPages, MAX_VISIBLE_PAGES);
+    const half = Math.floor(visibleCount / 2);
+
+    let start = Math.max(1, current - half);
+    let end = start + visibleCount - 1;
+
+    if (end > totalPages) {
+        end = totalPages;
+        start = Math.max(1, end - visibleCount + 1);
+    }
+
+    const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
 
     const go = (p: number) => {
         if (p < 1 || p > total) return;
