@@ -22,16 +22,14 @@ export default function PricingItem({
 }: PricingItemProps) {
   return (
     <div
-      className={`flex w-[376px] flex-col items-start gap-6 rounded-[12px] border border-gray-300 px-6 pt-6 pb-8 ${
+      className={`flex w-full flex-col items-start gap-6 rounded-xl border border-gray-300 px-6 pt-6 pb-8 ${
         background ? background : 'bg-white'
       }`}
     >
       <div className="flex flex-col items-start text-gray-900">
         <div className="ds-heading font-semibold">{title}</div>
 
-        <span className="ds-subtext mt-1 font-medium whitespace-nowrap">
-          {description}
-        </span>
+        <span className="ds-subtext mt-1 font-medium">{description}</span>
 
         <div className="ds-title mt-4 font-semibold">
           {price}
@@ -46,7 +44,7 @@ export default function PricingItem({
         text="가입하기"
         size="L"
         color="primary"
-        className="ds-text h-11 w-full rounded-[8px] px-8 py-[10px]"
+        className="ds-text h-11 w-full rounded-lg px-8 py-2.5"
       />
 
       <div className="flex w-full flex-col items-start gap-2">
