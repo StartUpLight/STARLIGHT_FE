@@ -2,13 +2,12 @@ import React from 'react';
 import EvaluationScoreBoard from './components/EvaluationScoreBoard';
 import ChartCard from './components/ChartCard';
 import TotalEvaluation from './components/TotalEvaluation';
+import ReportHeader from './components/ReportHeader';
 
 const page = () => {
   return (
     <div className="mt-[30px] flex w-full flex-col bg-white px-8">
-      <div className="ds-title font-semibold text-gray-900">
-        사업계획서 AI 리포트
-      </div>
+      <ReportHeader />
 
       <div className="mt-6 flex w-full flex-row gap-6">
         <div className="flex-1">
