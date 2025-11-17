@@ -107,10 +107,10 @@ const Header = () => {
             <Link
               href="/"
               className={`${navLink} ${isActive('/')
-                  ? 'text-primary-500 font-semibold'
-                  : isHomePage
-                    ? 'text-white'
-                    : 'text-gray-900'
+                ? 'text-primary-500 font-semibold'
+                : isHomePage
+                  ? 'text-white'
+                  : 'text-gray-900'
                 }`}
             >
               홈
@@ -120,10 +120,10 @@ const Header = () => {
               <button
                 type="button"
                 className={`${menuButton} ${isBusinessActive
-                    ? 'text-primary-500 font-semibold'
-                    : isHomePage
-                      ? 'text-white'
-                      : 'text-gray-900'
+                  ? 'text-primary-500 font-semibold'
+                  : isHomePage
+                    ? 'text-white'
+                    : 'text-gray-900'
                   }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
@@ -133,7 +133,7 @@ const Header = () => {
 
               <div className={menuList} role="menu">
                 <Link
-                  href="/business?create=true"
+                  href="/business"
                   className={dropdownItem}
                   role="menuitem"
                 >
@@ -153,10 +153,10 @@ const Header = () => {
             <Link
               href="/expert"
               className={`${navLink} ${isActive('/expert')
-                  ? 'text-primary-500 font-semibold'
-                  : isHomePage
-                    ? 'text-white'
-                    : 'text-gray-900'
+                ? 'text-primary-500 font-semibold'
+                : isHomePage
+                  ? 'text-white'
+                  : 'text-gray-900'
                 }`}
             >
               전문가
@@ -164,10 +164,10 @@ const Header = () => {
             <Link
               href="/price"
               className={`${navLink} ${isActive('/price')
-                  ? 'text-primary-500 font-semibold'
-                  : isHomePage
-                    ? 'text-white'
-                    : 'text-gray-900'
+                ? 'text-primary-500 font-semibold'
+                : isHomePage
+                  ? 'text-white'
+                  : 'text-gray-900'
                 }`}
             >
               요금제
