@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import WriteForm from './components/WriteForm';
 import Preview from './components/Preview';
@@ -8,7 +8,7 @@ import CreateModal from './components/CreateModal';
 
 const WRITE_MODAL_KEY = 'writeModalShown';
 
-const Page = () => {
+const BusinessPageContent = () => {
   const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMember, setIsMember] = useState(false);
@@ -203,6 +203,14 @@ const Page = () => {
         </div>
       )}
     </>
+  );
+};
+
+const Page = () => {
+  return (
+    <Suspense fallback={<div className="min-h-[calc(100vh-60px)] w-full bg-gray-100" />}>
+      <BusinessPageContent />
+    </Suspense>
   );
 };
 
