@@ -12,7 +12,6 @@ import Image from 'next/image';
 const Header = () => {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [openUpload, setOpenUpload] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
@@ -20,7 +19,6 @@ const Header = () => {
   const { user, fetchUser, clearUser } = useUserStore();
 
   useEffect(() => {
-    setMounted(true);
     checkAuth();
   }, [checkAuth]);
 
@@ -58,7 +56,7 @@ const Header = () => {
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`);
 
-  const isHomePage = mounted && pathname === '/';
+  const isHomePage = pathname === '/';
 
   const navLink =
     'ds-text px-2 font-medium transition-colors hover:text-primary-500 hover:font-semibold';
