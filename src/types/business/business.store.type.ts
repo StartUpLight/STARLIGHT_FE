@@ -27,6 +27,7 @@ export interface ItemContent {
 
 export interface BusinessStore {
     planId: number | null;
+    setPlanId: (planId: number) => void;
     initializePlan: () => Promise<number>;
     resetDraft: () => void;
     selectedItem: SelectedItem;

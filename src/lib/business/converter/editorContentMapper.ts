@@ -56,18 +56,20 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
     if (node.type === 'heading') {
         const level = (node.attrs?.level as number) || 1;
         const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
-        return content ? `${'#'.repeat(level)} ${content.trim()}\n\n` : '';
+        return content ? `${'#'.repeat(level)} ${content.trim()}` : '';
     }
 
     if (node.type === 'bulletList' || node.type === 'orderedList') {
-        const items = (node.content || [])
+        const contentArray = node.content || [];
+        const items = contentArray
             .map((item, index: number) => {
                 const itemContent = (item.content || []).map((child) => convertToMarkdown(child)).join('').trim();
                 const prefix = node.type === 'orderedList' ? `${index + 1}. ` : '- ';
-                return itemContent ? `${prefix}${itemContent}\n` : '';
+                const isLast = index === contentArray.length - 1;
+                return itemContent ? `${prefix}${itemContent}${isLast ? '' : '\n'}` : '';
             })
             .join('');
-        return items ? `${items}\n` : '';
+        return items ? `${items}` : '';
     }
 
     if (node.type === 'table') {

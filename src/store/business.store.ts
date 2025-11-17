@@ -34,6 +34,10 @@ let initializingPlanPromise: Promise<number> | null = null;
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
     planId: loadPlanIdFromStorage(),
+    setPlanId: (planId: number) => {
+        set({ planId });
+        savePlanIdToStorage(planId);
+    },
     initializePlan: async () => {
         const current = get().planId;
         if (typeof current === 'number' && current > 0) return current;
@@ -153,9 +157,15 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
             const requestBody = buildSubsectionRequest(item.number, item.title, content);
             //console.log(`[${item.number}] requestBody:`, JSON.stringify(requestBody, null, 2));
 
+            // contents에 해당 항목이 존재하면(한 번이라도 작성한 적이 있으면) 빈 값이어도 저장 요청 전송
+            const hasContentHistory = item.number in contents;
+
             if (!requestBody.blocks || requestBody.blocks.length === 0) {
-                //console.log(`[${item.number}] 스킵: 빈 블록`);
-                return;
+                if (!hasContentHistory) {
+                    //console.log(`[${item.number}] 스킵: 빈 블록이고 작성 이력 없음`);
+                    return;
+                }
+                //console.log(`[${item.number}] 빈 값이지만 저장 요청 전송 (작성 이력 있음)`);
             }
 
             const req = postBusinessPlanSubsections(targetPlanId as number, requestBody)

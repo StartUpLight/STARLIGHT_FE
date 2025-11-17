@@ -197,70 +197,70 @@ const WriteForm = ({
   // 에디터 업데이트 핸들러 생성
   const createUpdateHandler = useCallback((timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
     return () => {
+      // 저장 전 커서 위치 저장
+      const saveSelection = (editor: Editor | null) => {
+        if (!editor || editor.isDestroyed) return null;
+        return {
+          from: editor.state.selection.from,
+          to: editor.state.selection.to,
+        };
+      };
+
+      const mainSelection = saveSelection(editorFeatures);
+      const skillsSelection = saveSelection(editorSkills);
+      const goalsSelection = saveSelection(editorGoals);
+
+      // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
+      if (isOverview) {
+        updateItemContent(number, {
+          itemName,
+          oneLineIntro,
+          editorFeatures: editorFeatures?.getJSON() || null,
+          editorSkills: editorSkills?.getJSON() || null,
+          editorGoals: editorGoals?.getJSON() || null,
+        });
+      } else {
+        updateItemContent(number, {
+          editorContent: editorFeatures?.getJSON() || null,
+        });
+      }
+
+      // 커서 위치 복원 로직
+      requestAnimationFrame(() => {
+        const currentActiveEditor = activeEditor || editorFeatures;
+        if (currentActiveEditor && !currentActiveEditor.isDestroyed) {
+          let selectionToRestore = null;
+          if (currentActiveEditor === editorFeatures && mainSelection) {
+            selectionToRestore = mainSelection;
+          } else if (currentActiveEditor === editorSkills && skillsSelection) {
+            selectionToRestore = skillsSelection;
+          } else if (currentActiveEditor === editorGoals && goalsSelection) {
+            selectionToRestore = goalsSelection;
+          }
+          if (selectionToRestore) {
+            try {
+              currentActiveEditor
+                .chain()
+                .focus()
+                .setTextSelection({ from: selectionToRestore.from, to: selectionToRestore.to })
+                .run();
+            } catch (e) {
+              // 커서 위치 복원 실패 시 무시
+            }
+          }
+        }
+      });
+
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       timeoutRef.current = setTimeout(() => {
-        // 저장 전 커서 위치 저장
-        const saveSelection = (editor: Editor | null) => {
-          if (!editor || editor.isDestroyed) return null;
-          return {
-            from: editor.state.selection.from,
-            to: editor.state.selection.to,
-          };
-        };
-
-        const mainSelection = saveSelection(editorFeatures);
-        const skillsSelection = saveSelection(editorSkills);
-        const goalsSelection = saveSelection(editorGoals);
-
-        // 저장 로직 실행
-        if (isOverview) {
-          updateItemContent(number, {
-            itemName,
-            oneLineIntro,
-            editorFeatures: editorFeatures?.getJSON() || null,
-            editorSkills: editorSkills?.getJSON() || null,
-            editorGoals: editorGoals?.getJSON() || null,
-          });
-        } else {
-          updateItemContent(number, {
-            editorContent: editorFeatures?.getJSON() || null,
-          });
-        }
-
-        // 커서 위치 복원 로직
-        requestAnimationFrame(() => {
-          const currentActiveEditor = activeEditor || editorFeatures;
-          if (currentActiveEditor && !currentActiveEditor.isDestroyed) {
-            let selectionToRestore = null;
-            if (currentActiveEditor === editorFeatures && mainSelection) {
-              selectionToRestore = mainSelection;
-            } else if (currentActiveEditor === editorSkills && skillsSelection) {
-              selectionToRestore = skillsSelection;
-            } else if (currentActiveEditor === editorGoals && goalsSelection) {
-              selectionToRestore = goalsSelection;
-            }
-            if (selectionToRestore) {
-              try {
-                currentActiveEditor
-                  .chain()
-                  .focus()
-                  .setTextSelection({ from: selectionToRestore.from, to: selectionToRestore.to })
-                  .run();
-              } catch (e) {
-                // 커서 위치 복원 실패 시 무시
-              }
-            }
-          }
-        });
-
         debouncedSave();
-      }, 500);
+      }, 300);
     };
   }, [isOverview, number, itemName, oneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave, activeEditor]);
 
-  // 에디터에 onChange 이벤트 리스너 추가 (디바운스 적용하여 저장)
+  // 에디터에 onChange 이벤트 리스너 추가 (store는 즉시 저장, API만 디바운스)
   const mainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const skillsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const goalsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -308,10 +308,11 @@ const WriteForm = ({
     createUpdateHandler,
   ]);
 
-  // TextInput 값 변경 시 store에 저장 (debounce 적용)
+  // TextInput 값 변경 시 store에 즉시 저장, API 저장만 디바운스 적용
   const textInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleTextInputChange = useCallback((field: 'itemName' | 'oneLineIntro', value: string) => {
+    // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
     if (field === 'itemName') {
       setItemName(value);
       updateItemContent(number, { itemName: value });
@@ -320,6 +321,7 @@ const WriteForm = ({
       updateItemContent(number, { oneLineIntro: value });
     }
 
+    // API 저장만 디바운스 적용 (네트워크 요청이므로)
     if (textInputTimeoutRef.current) {
       clearTimeout(textInputTimeoutRef.current);
     }

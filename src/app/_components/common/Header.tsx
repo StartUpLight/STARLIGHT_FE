@@ -12,7 +12,6 @@ import Image from 'next/image';
 const Header = () => {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [openUpload, setOpenUpload] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
@@ -20,7 +19,6 @@ const Header = () => {
   const { user, fetchUser, clearUser } = useUserStore();
 
   useEffect(() => {
-    setMounted(true);
     checkAuth();
   }, [checkAuth]);
 
@@ -58,7 +56,7 @@ const Header = () => {
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`);
 
-  const isHomePage = mounted && pathname === '/';
+  const isHomePage = pathname === '/';
 
   const navLink =
     'ds-text px-2 font-medium transition-colors hover:text-primary-500 hover:font-semibold';
@@ -106,13 +104,12 @@ const Header = () => {
           <nav className="ml-[100px] flex items-center gap-12 text-nowrap">
             <Link
               href="/"
-              className={`${navLink} ${
-                isActive('/')
-                  ? 'text-primary-500 font-semibold'
-                  : isHomePage
-                    ? 'text-white'
-                    : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/')
+                ? 'text-primary-500 font-semibold'
+                : isHomePage
+                  ? 'text-white'
+                  : 'text-gray-900'
+                }`}
             >
               홈
             </Link>
@@ -120,13 +117,12 @@ const Header = () => {
             <div className={menuWrapper}>
               <button
                 type="button"
-                className={`${menuButton} ${
-                  isBusinessActive
-                    ? 'text-primary-500 font-semibold'
-                    : isHomePage
-                      ? 'text-white'
-                      : 'text-gray-900'
-                }`}
+                className={`${menuButton} ${isBusinessActive
+                  ? 'text-primary-500 font-semibold'
+                  : isHomePage
+                    ? 'text-white'
+                    : 'text-gray-900'
+                  }`}
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -135,7 +131,7 @@ const Header = () => {
 
               <div className={menuList} role="menu">
                 <Link
-                  href="/business?create=true"
+                  href="/business"
                   className={dropdownItem}
                   role="menuitem"
                 >
@@ -154,25 +150,23 @@ const Header = () => {
 
             <Link
               href="/expert"
-              className={`${navLink} ${
-                isActive('/expert')
-                  ? 'text-primary-500 font-semibold'
-                  : isHomePage
-                    ? 'text-white'
-                    : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/expert')
+                ? 'text-primary-500 font-semibold'
+                : isHomePage
+                  ? 'text-white'
+                  : 'text-gray-900'
+                }`}
             >
               전문가
             </Link>
             <Link
               href="/price"
-              className={`${navLink} ${
-                isActive('/price')
-                  ? 'text-primary-500 font-semibold'
-                  : isHomePage
-                    ? 'text-white'
-                    : 'text-gray-900'
-              }`}
+              className={`${navLink} ${isActive('/price')
+                ? 'text-primary-500 font-semibold'
+                : isHomePage
+                  ? 'text-white'
+                  : 'text-gray-900'
+                }`}
             >
               요금제
             </Link>
