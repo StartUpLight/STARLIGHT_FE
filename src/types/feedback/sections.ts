@@ -17,3 +17,7 @@ export const sections = [
 ] as const;
 
 export type SectionKey = (typeof sections)[number]['key'];
+
+export type FeedBackFormHandle = {
+    getFeedback: () => Record<SectionKey, string>;
+};
