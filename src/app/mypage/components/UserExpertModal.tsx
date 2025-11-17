@@ -31,7 +31,7 @@ const UserExpertModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="flex h-[422px] w-[800px] flex-col overflow-hidden rounded-[12px] bg-white">
+      <div className="flex h-[422px] w-[800px] flex-col overflow-hidden rounded-xl bg-white">
         <div className="flex w-full items-center justify-between border-b border-gray-200 bg-white px-6 py-5">
           <div className="flex items-center">
             <UserExpertHeader
@@ -55,10 +55,10 @@ const UserExpertModal = ({
 
         <div className="relative flex flex-1 flex-col gap-6 overflow-auto p-6">
           <div className="flex w-full flex-row gap-4">
-            <div className="h-[115px] w-[103px] rounded-[12px] bg-gray-100" />
+            <div className="h-[115px] w-[103px] rounded-xl bg-gray-100" />
 
             <div className="flex w-full flex-col">
-              <div className="flex w-full flex-row gap-[10px]">
+              <div className="flex w-full flex-row gap-2.5">
                 <div className="ds-text font-medium text-gray-800">
                   {selectedExpert} 전문가_ 피드백 보고서
                 </div>
@@ -81,16 +81,16 @@ const UserExpertModal = ({
             </div>
           </div>
 
-          <div className="flex w-full flex-col gap-4 rounded-[12px] border border-[#DADFE7] px-6 py-4">
+          <div className="flex w-full flex-col gap-4 rounded-xl border border-[#DADFE7] px-6 py-4">
             <div className="ds-subtitle font-semibold text-gray-900">총평</div>
-            <div className="ds-text bg-primary-50 text-primary-500 rounded-[12px] px-[10px] py-5 text-center font-semibold">
+            <div className="ds-text bg-primary-50 text-primary-500 rounded-xl px-2.5 py-5 text-center font-semibold">
               “전체적으로 밸런스가 잘 잡힌 사업계획서이지만, 수익성 부분 보완이
               필요해보입니다.”
             </div>
           </div>
 
           <div className="flex flex-row gap-4">
-            <div className="flex w-[368px] flex-col items-start gap-5 rounded-[12px] border border-gray-300 px-6 py-4">
+            <div className="flex w-[368px] flex-col items-start gap-5 rounded-xl border border-gray-300 px-6 py-4">
               <div className="flex flex-row items-center gap-1">
                 <Strength />
                 <div className="ds-subtitle text-primary-500 font-semibold">
@@ -112,7 +112,7 @@ const UserExpertModal = ({
               </div>
             </div>
 
-            <div className="flex w-[368px] flex-col items-start gap-5 rounded-[12px] border border-gray-300 px-6 py-4">
+            <div className="flex w-[368px] flex-col items-start gap-5 rounded-xl border border-gray-300 px-6 py-4">
               <div className="flex flex-row items-center gap-1">
                 <Weak />
                 <div className="ds-subtitle text-warning-400 font-semibold">
