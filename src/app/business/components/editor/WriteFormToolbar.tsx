@@ -7,6 +7,9 @@ import HighlightActiveIcon from '@/assets/icons/write-icons/highlight-active.svg
 import ColorIcon from '@/assets/icons/write-icons/color.svg';
 import TableIcon from '@/assets/icons/write-icons/table.svg';
 import ImageIcon from '@/assets/icons/write-icons/image.svg';
+import Heading1Icon from '@/assets/icons/write-icons/heading1.svg';
+import Heading2Icon from '@/assets/icons/write-icons/heading2.svg';
+import Heading3Icon from '@/assets/icons/write-icons/heading3.svg';
 import GrammerIcon from '@/assets/icons/write-icons/grammer.svg';
 import GrammerActiveIcon from '@/assets/icons/write-icons/grammer-active.svg';
 import TableGridSelector from './TableGridSelector';
@@ -131,6 +134,22 @@ const WriteFormToolbar = ({
                         activeEditor.chain().focus().setColor('#FF3B57').run();
                     }
                 }}
+            />
+            <div className="mx-2 h-5 w-px bg-gray-200" />
+            <ToolButton
+                label={<Heading1Icon />}
+                active={!!activeEditor?.isActive('heading', { level: 1 })}
+                onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 1 }).run()}
+            />
+            <ToolButton
+                label={<Heading2Icon />}
+                active={!!activeEditor?.isActive('heading', { level: 2 })}
+                onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 2 }).run()}
+            />
+            <ToolButton
+                label={<Heading3Icon />}
+                active={!!activeEditor?.isActive('heading', { level: 3 })}
+                onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 3 }).run()}
             />
             <div className="mx-2 h-5 w-px bg-gray-200" />
             <div className="relative flex items-center">

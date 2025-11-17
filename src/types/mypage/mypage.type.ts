@@ -14,3 +14,31 @@ export interface getMemberResponse {
     message: string;
   };
 }
+
+export interface BusinessPlanItem {
+  businessPlanId: number;
+  title: string;
+  lastSavedAt: string;
+  planStatus: string;
+  pdfUrl: string;
+}
+
+export interface BusinessPlansPage {
+  content: BusinessPlanItem[];
+  page: number;
+  size: number;
+  totalPages: number;
+  totalElements: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface GetMyBusinessPlansResponse {
+  result: 'SUCCESS';
+  data: BusinessPlansPage;
+  error: {
+    code: string;
+    message: string;
+  } | null;
+}

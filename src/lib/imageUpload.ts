@@ -5,17 +5,19 @@ export const uploadImage = async (file: File): Promise<string> => {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_BASE_URL;
         const accessToken = localStorage.getItem('accessToken');
-        const fileName = file.name;
+        // const fileName = file.name;
 
+        const fileExtension = file.name.split('.').pop() || '';
+        const newFileName = `${generateShortId()}.${fileExtension}`;
         // 한글 파일명의 경우 인코딩을 한 번 더 적용
-        const encodedFileName = encodeURIComponent(fileName);
+        // const encodedFileName = encodeURIComponent(fileName);
 
         const uploadUrlResponse = await axios.get(`${apiUrl}/v1/images/upload-url`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
             },
             params: {
-                fileName: encodedFileName,
+                fileName: newFileName,
             },
         });
 
@@ -62,4 +64,19 @@ export const uploadImage = async (file: File): Promise<string> => {
         }
         throw error;
     }
+};
+
+/**
+ * 짧은 고유 ID 생성 함수 (Nanoid 스타일)
+ * 영문 대소문자 + 숫자로 구성된 랜덤 문자열 반환
+ * @param length 생성할 문자열 길이 (기본값 10자)
+ */
+const generateShortId = (length: number = 10): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return result;
 };

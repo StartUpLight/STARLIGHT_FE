@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { downloadPDF } from '@/lib/pdfDownload';
-import { patchBusinessPlanTitle } from '@/api/business';
+import { getBusinessPlanTitle, patchBusinessPlanTitle } from '@/api/business';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
 const BusinessHeader = () => {
@@ -24,30 +24,39 @@ const BusinessHeader = () => {
   } = useBusinessStore();
   const [title, setTitle] = useState('');
 
-  // localStorage에서 제목 불러오기 (planId가 있을 때만)
+  // planId 변경 시 서버에서 제목 조회
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedTitle = localStorage.getItem('businessPlanTitle');
-      if (storedTitle && planId) {
-        setTitle(storedTitle);
-      } else if (!planId) {
-        // planId가 없으면 제목 초기화
+    let cancelled = false;
+
+    const fetchTitle = async () => {
+      if (!planId) {
         setTitle('');
+        return;
       }
-    }
+      try {
+        const response = await getBusinessPlanTitle(planId);
+        if (!cancelled && response.result === 'SUCCESS') {
+          setTitle(response.data ?? '');
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('제목 불러오기 실패:', error);
+          setTitle('');
+        }
+      }
+    };
+
+    fetchTitle();
+
+    return () => {
+      cancelled = true;
+    };
   }, [planId]);
 
   // 제목 변경 시 localStorage에 저장 및 API 요청 (debounce 적용)
   useEffect(() => {
     const trimmedTitle = title.trim();
 
-    // planId가 있을 때만 localStorage에 저장 (공백이 아닐 때만)
-    if (typeof window !== 'undefined' && trimmedTitle && planId) {
-      localStorage.setItem('businessPlanTitle', trimmedTitle);
-    } else if (typeof window !== 'undefined' && !planId) {
-      // planId가 없으면 localStorage에서 제목 제거
-      localStorage.removeItem('businessPlanTitle');
-    }
     if (!planId || !trimmedTitle) return;
     const timeoutId = setTimeout(() => {
       const updateTitle = async () => {

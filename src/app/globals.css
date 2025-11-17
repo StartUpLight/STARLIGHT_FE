@@ -147,6 +147,59 @@
   outline: none;
 }
 
+/* TipTap heading styles */
+.ProseMirror h1 {
+  font-size: var(--text-3xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0.5em 0;
+  white-space: pre-wrap; /* 줄바꿈 지원 */
+}
+
+.ProseMirror h2 {
+  font-size: var(--text-2xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0.5em 0;
+  white-space: pre-wrap; /* 줄바꿈 지원 */
+}
+
+.ProseMirror h3 {
+  font-size: var(--text-xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0.5em 0;
+  white-space: pre-wrap; /* 줄바꿈 지원 */
+}
+
+/* TipTap list styles */
+.ProseMirror ul,
+.ProseMirror ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  margin: 0.25em 0;
+  line-height: 150%;
+}
+
+.ProseMirror li p {
+  margin: 0;
+  display: inline;
+}
+
 /* TipTap table */
 .ProseMirror table {
   table-layout: fixed;

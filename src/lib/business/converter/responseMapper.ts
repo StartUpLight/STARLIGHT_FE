@@ -131,50 +131,181 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         }
 
         const lines = text.split('\n');
-        const paragraphs: JSONNode[] = [];
-        let currentParagraph: JSONNode = { type: 'paragraph', content: [] };
+        const nodes: JSONNode[] = [];
+        let currentBlock: JSONNode | null = null;
+        let currentList: JSONNode | null = null;
+        let currentListType: 'bulletList' | 'orderedList' | null = null;
+
+        const hasContent = (block: JSONNode | null): block is JSONNode => {
+            return block !== null &&
+                block.content !== undefined &&
+                Array.isArray(block.content) &&
+                block.content.length > 0;
+        };
+
+        const flushList = () => {
+            if (hasContent(currentList)) {
+                nodes.push(currentList!);
+            }
+            currentList = null;
+            currentListType = null;
+        };
 
         lines.forEach((line, index) => {
             const isLastLine = index === lines.length - 1;
             const nextLine = !isLastLine ? lines[index + 1] : null;
+            const trimmedLine = line.trim();
 
-            if (line.trim() === '') {
-                // 빈 줄: 현재 paragraph 저장(내용이 있으면) 후 새 paragraph 추가
-                if (currentParagraph.content && currentParagraph.content.length > 0) {
-                    paragraphs.push(currentParagraph);
-                    currentParagraph = { type: 'paragraph', content: [] };
+            if (trimmedLine === '') {
+                // 빈 줄: 현재 블록과 리스트 저장 후 새 paragraph 추가
+                if (hasContent(currentBlock)) {
+                    nodes.push(currentBlock);
+                    currentBlock = null;
                 }
-                // 빈 줄 자체도 문단 구분으로 남기고 싶으면 빈 paragraph 추가
-                paragraphs.push({ type: 'paragraph', content: [] });
+                flushList();
+                nodes.push({ type: 'paragraph', content: [] });
                 return;
             }
 
-            // 비어있지 않은 줄: 마크다운/인라인 HTML 파싱
-            const parsedNodes = parseMarkdownText(line);
-            if (!currentParagraph.content) currentParagraph.content = [];
+            // Heading 마크다운 체크 (#, ##, ###)
+            const headingMatch = trimmedLine.match(/^(#{1,3})\s+(.+)$/);
+            if (headingMatch) {
+                // 이전 블록과 리스트 저장
+                if (hasContent(currentBlock)) {
+                    nodes.push(currentBlock);
+                    currentBlock = null;
+                }
+                flushList();
 
-            // 파싱된 노드들을 paragraph에 추가
-            // 이미지 노드가 있으면 그대로 추가, 텍스트 노드도 그대로 추가
+                const level = headingMatch[1].length;
+                const headingText = headingMatch[2];
+                const parsedNodes = parseMarkdownText(headingText);
+
+                // heading 노드 생성 (heading은 블록 레벨 요소이므로 hardBreak 추가하지 않음)
+                currentBlock = {
+                    type: 'heading',
+                    attrs: { level },
+                    content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
+                };
+
+                // heading은 바로 저장 (다음 줄이 있으면 다음 반복에서 처리)
+                nodes.push(currentBlock);
+                currentBlock = null;
+                return;
+            }
+
+            // OrderedList 마크다운 체크 (1. 2. 3. 등)
+            const orderedListMatch = trimmedLine.match(/^(\d+)\.\s+(.+)$/);
+            if (orderedListMatch) {
+                // 이전 블록 저장
+                if (hasContent(currentBlock)) {
+                    nodes.push(currentBlock);
+                    currentBlock = null;
+                }
+
+                // 리스트 타입이 다르면 이전 리스트 저장
+                if (currentListType !== 'orderedList') {
+                    flushList();
+                    currentListType = 'orderedList';
+                    currentList = { type: 'orderedList', content: [] };
+                }
+
+                const itemText = orderedListMatch[2];
+                const parsedNodes = parseMarkdownText(itemText);
+                const listItem: JSONNode = {
+                    type: 'listItem',
+                    content: [{
+                        type: 'paragraph',
+                        content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }]
+                    }],
+                };
+
+                if (currentList && currentList.content) {
+                    currentList.content.push(listItem);
+                }
+                return;
+            }
+
+            // BulletList 마크다운 체크 (- 또는 *)
+            const bulletListMatch = trimmedLine.match(/^[-*]\s+(.+)$/);
+            if (bulletListMatch) {
+                // 이전 블록 저장
+                if (hasContent(currentBlock)) {
+                    nodes.push(currentBlock);
+                    currentBlock = null;
+                }
+
+                // 리스트 타입이 다르면 이전 리스트 저장
+                if (currentListType !== 'bulletList') {
+                    flushList();
+                    currentListType = 'bulletList';
+                    currentList = { type: 'bulletList', content: [] };
+                }
+
+                const itemText = bulletListMatch[1];
+                const parsedNodes = parseMarkdownText(itemText);
+                const listItem: JSONNode = {
+                    type: 'listItem',
+                    content: [{
+                        type: 'paragraph',
+                        content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }]
+                    }],
+                };
+
+                if (currentList && currentList.content) {
+                    currentList.content.push(listItem);
+                }
+                return;
+            }
+
+            // 리스트가 진행 중이면 리스트 종료
+            flushList();
+
+            // 일반 텍스트 줄: paragraph에 추가
+            const parsedNodes = parseMarkdownText(line);
+
+            if (!currentBlock) {
+                currentBlock = { type: 'paragraph', content: [] };
+            }
+
+            if (!currentBlock.content) {
+                currentBlock.content = [];
+            }
+
+            // 파싱된 노드들을 현재 블록에 추가
             parsedNodes.forEach((node) => {
-                if (currentParagraph.content) {
-                    currentParagraph.content.push(node);
+                if (currentBlock && currentBlock.content) {
+                    currentBlock.content.push(node);
                 }
             });
 
             // 다음 줄이 존재하고 비어있지 않다면 'hardBreak' 추가 (Enter 1회 -> 줄바꿈)
+            // 단, 다음 줄이 리스트(bulletList 또는 orderedList)인 경우 제외
             if (nextLine !== null && nextLine.trim() !== '') {
-                currentParagraph.content.push({ type: 'hardBreak' });
-            }
+                const trimmedNextLine = nextLine.trim();
+                const isNextLineList =
+                    /^[-*]\s+/.test(trimmedNextLine) ||  // bulletList: - 또는 *로 시작
+                    /^\d+\.\s+/.test(trimmedNextLine);   // orderedList: 숫자. 로 시작
 
-            // 다음 줄이 빈 줄이면 paragraph는 빈 줄 처리 시 저장되므로 여기선 아무것도 하지 않음
+                if (!isNextLineList && currentBlock && currentBlock.content) {
+                    currentBlock.content.push({ type: 'hardBreak' });
+                }
+            } else {
+                // 다음 줄이 없거나 빈 줄이면 현재 블록 저장
+                if (hasContent(currentBlock)) {
+                    nodes.push(currentBlock);
+                }
+                currentBlock = null;
+            }
         });
 
-        // 마지막 paragraph 처리: 내용이 있으면 추가
-        if (currentParagraph.content && currentParagraph.content.length > 0) {
-            paragraphs.push(currentParagraph);
+        // 마지막 블록과 리스트 처리: 내용이 있으면 추가
+        if (hasContent(currentBlock)) {
+            nodes.push(currentBlock);
         }
+        flushList();
 
-        return paragraphs.length > 0 ? paragraphs : [{ type: 'paragraph' }];
+        return nodes.length > 0 ? nodes : [{ type: 'paragraph' }];
     }
     else if (item.type === 'table') {
         const tableItem = item as TableContentItem;
