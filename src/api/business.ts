@@ -34,6 +34,11 @@ export async function getBusinessPlanSubsection(
   return res.data as BusinessPlanSubsectionResponse;
 }
 
+export async function getBusinessPlanTitle(planId: number): Promise<BusinessPlanTitleResponse> {
+  const res = await api.get(`/v1/business-plans/${planId}/titles`);
+  return res.data as BusinessPlanTitleResponse;
+}
+
 export async function patchBusinessPlanTitle(
   planId: number,
   title: string
