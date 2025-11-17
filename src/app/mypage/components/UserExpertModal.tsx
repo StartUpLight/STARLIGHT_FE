@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import Close from '@/assets/icons/close.svg';
 import Strength from '@/assets/icons/strength_graph.svg';
@@ -17,9 +18,8 @@ const UserExpertModal = ({
   experts = ['홍길동', '호성정'],
   fileName = '파일명',
 }: ExportModalProps) => {
-  if (!open) return null;
-
   const [selectedExpert, setSelectedExpert] = useState(experts[0] ?? '');
+  if (!open) return null;
 
   const historyItems = [
     `${selectedExpert}님의 이력`,

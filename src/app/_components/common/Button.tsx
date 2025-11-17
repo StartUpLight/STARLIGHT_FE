@@ -1,5 +1,8 @@
+import React from 'react';
+
 interface ButtonProps {
   text: string;
+  icon?: React.ReactNode; // ← 아이콘 추가
   size?: 'S' | 'M' | 'L';
   color?: 'primary' | 'secondary' | string;
   rounded?: string;
@@ -11,6 +14,7 @@ interface ButtonProps {
 
 function Button({
   text,
+  icon,
   size = 'M',
   color = 'primary',
   rounded = '',
@@ -53,9 +57,10 @@ function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`flex items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} `}
     >
-      {text}
+      <span>{text}</span>
+      {icon && <span className="flex items-center">{icon}</span>}
     </button>
   );
 }
