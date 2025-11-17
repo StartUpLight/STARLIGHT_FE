@@ -111,7 +111,7 @@ const MentorCard = ({
         }
       >
         {isDone ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-        {isDone ? '신청 완료' : uploading ? '신청 중' : '비대면 평가'}
+        {isDone ? '신청 완료' : uploading ? '신청 중' : '전문가 연결'}
       </button>
     </div>
   );

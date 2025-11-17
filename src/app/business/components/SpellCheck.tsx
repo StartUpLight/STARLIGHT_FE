@@ -185,7 +185,7 @@ const SpellCheck = () => {
                       <button
                         type="button"
                         onClick={() => handleApply(item.id)}
-                        className="bg-primary-500 ds-subtext hover:bg-primary-700 cursor-pointer rounded-[4px] px-[10px] py-[2px] font-medium text-white"
+                        className="bg-primary-500 ds-subtext hover:bg-primary-700 cursor-pointer rounded-[4px] px-[10px] py-[2px] font-medium whitespace-nowrap text-white"
                       >
                         적용
                       </button>
