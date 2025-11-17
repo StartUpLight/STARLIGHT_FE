@@ -21,6 +21,8 @@ const UserExpertModal = ({
   const [selectedExpert, setSelectedExpert] = useState(experts[0] ?? '');
   if (!open) return null;
 
+  if (!open) return null;
+
   const historyItems = [
     `${selectedExpert}님의 이력`,
     '최근 활동',
