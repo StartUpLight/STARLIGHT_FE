@@ -51,7 +51,7 @@ const Page = () => {
           console.error('데이터 불러오기 실패:', error);
         });
       }
-    } else {
+    } else if (!planId) {
       // 다른 페이지에서 진입: 모달 표시, 새로운 사업계획서 생성 준비
       sessionStorage.removeItem('isRefreshing');
       sessionStorage.removeItem('previousUrl');
@@ -59,6 +59,8 @@ const Page = () => {
       // 기존 작성 내용 및 planId 초기화 (새로운 사업계획서이므로)
       clearStorage();
       resetDraft();
+    } else {
+      setIsModalOpen(false);
     }
   }, [searchParams, setPlanId, planId, loadContentsFromAPI, clearStorage, resetDraft]);
 

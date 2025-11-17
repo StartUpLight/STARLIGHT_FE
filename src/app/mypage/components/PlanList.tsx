@@ -25,7 +25,7 @@ const getStageIndexFromStatus = (planStatus: string): number => {
 export default function PlanList() {
     const { data: myBusinessPlans, isLoading } = useGetMyBusinessPlans();
     const [page, setPage] = useState(1);
-    const items: BusinessPlanItem[] = myBusinessPlans?.data || [];
+    const items: BusinessPlanItem[] = Array.isArray(myBusinessPlans?.data) ? myBusinessPlans?.data : [];
 
     if (isLoading) {
         return (
