@@ -109,7 +109,6 @@ const BusinessHeader = () => {
     }
   };
 
-
   useEffect(() => {
     if (spanRef.current) {
       const textWidth = spanRef.current.offsetWidth;
@@ -248,8 +247,11 @@ const BusinessHeader = () => {
         {isModalOpen && (
           <CreateModal
             title="AI로 사업계획서 채점하기"
-            subtitle={`방금 작성하신 사업계획서를 항목별로 분석해 점수·강점·리스크를 즉시 제공해드려요.
-    70점 이상이면, 아이템에 맞는 전문가 추천까지 제공해드려요.`}
+            imageSrc="/images/grading_Image.png"
+            imageAlt="채점하기 안내 이미지"
+            imageWidth={336}
+            imageHeight={202}
+            subtitle={`방금 작성하신 사업계획서를 항목별로 분석해 점수·강점·리스크를 즉시 제공해드려요.\n70점 이상이면, 아이템에 맞는 전문가 추천까지 제공해드려요.`}
             onClose={handleCloseModal}
             buttonText={isGrading ? '채점 중...' : '결과 보기'}
             onClick={() => {

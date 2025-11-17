@@ -197,6 +197,14 @@
     #9370ff 60.46%,
     #d2caff 134.33%
   );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradation2 {
+  background: linear-gradient(284deg, #663aff 35.74%, #c0b2ff 117.35%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

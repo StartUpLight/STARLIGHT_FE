@@ -90,14 +90,14 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
                 </p>
                 {agreeToTerms1 ? (
                   <div
-                    className="bg-primary-500 flex h-[18px] w-[18px] flex-shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
+                    className="bg-primary-500 flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
                     onClick={() => setAgreeToTerms1(!agreeToTerms1)}
                   >
                     <Check />
                   </div>
                 ) : (
                   <div
-                    className="h-[18px] w-[18px] flex-shrink-0 cursor-pointer rounded-[4px] border-[1px] border-gray-300"
+                    className="h-5 w-5 flex-shrink-0 cursor-pointer rounded-[4px] border-[1.2px] border-gray-400"
                     onClick={() => setAgreeToTerms1(!agreeToTerms1)}
                   />
                 )}
@@ -117,14 +117,14 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
                 </p>
                 {agreeToTerms2 ? (
                   <div
-                    className="bg-primary-500 flex h-[18px] w-[18px] flex-shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
+                    className="bg-primary-500 flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-[4px]"
                     onClick={() => setAgreeToTerms2(!agreeToTerms2)}
                   >
                     <Check />
                   </div>
                 ) : (
                   <div
-                    className="h-[18px] w-[18px] flex-shrink-0 cursor-pointer rounded-[4px] border-[1px] border-gray-300"
+                    className="h-5 w-5 flex-shrink-0 cursor-pointer rounded-[4px] border-[1.2px] border-gray-400"
                     onClick={() => setAgreeToTerms2(!agreeToTerms2)}
                   />
                 )}

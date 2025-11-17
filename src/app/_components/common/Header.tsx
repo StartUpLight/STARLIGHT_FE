@@ -165,9 +165,9 @@ const Header = () => {
               전문가
             </Link>
             <Link
-              href="/pricing"
+              href="/price"
               className={`${navLink} ${
-                isActive('/pricing')
+                isActive('/price')
                   ? 'text-primary-500 font-semibold'
                   : isHomePage
                     ? 'text-white'

@@ -9,7 +9,15 @@ const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
-  const { initializePlan, loadContentsFromAPI, clearStorage, resetDraft, isPreview, setPreview, planId } = useBusinessStore();
+  const {
+    initializePlan,
+    loadContentsFromAPI,
+    clearStorage,
+    resetDraft,
+    isPreview,
+    setPreview,
+    planId,
+  } = useBusinessStore();
 
   // 페이지 진입 시 모달 표시 여부 확인 및 데이터 불러오기
   useEffect(() => {
@@ -127,8 +135,9 @@ const Page = () => {
           {isModalOpen && (
             <CreateModal
               title="사업계획서 쉽게 생성하기"
-              subtitle={`사업계획서 초안을 체크리스트로 쉽게 작성해 보세요.
-앞으로 사업계획서의 작성 효율과 퀄리티를 높여주는 자료가 될 거예요.`}
+              subtitle={`사업계획서 초안을 체크리스트로 쉽게 작성해 보세요.\n앞으로 사업계획서의 작성 효율과 퀄리티를 높여주는 자료가 될 거예요.`}
+              imageSrc="/images/bussinessModal_Image.png"
+              imageAlt="사업계획서 생성 안내 이미지"
               onClose={handleCloseModal}
               onClick={handleCreatePlan}
               buttonText="생성하기"
