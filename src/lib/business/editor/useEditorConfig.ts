@@ -17,11 +17,11 @@ export const createPasteHandler = () => {
             const file = imageItem.getAsFile();
             if (file) {
                 // 파일 크기 제한 (5MB)
-                const maxSize = 5 * 1024 * 1024;
-                if (file.size > maxSize) {
-                    alert('이미지 크기는 5MB 이하여야 합니다.');
-                    return true;
-                }
+                // const maxSize = 5 * 1024 * 1024;
+                // if (file.size > maxSize) {
+                //     alert('이미지 크기는 5MB 이하여야 합니다.');
+                //     return true;
+                // }
 
                 // 비동기로 업로드 처리
                 uploadImage(file)

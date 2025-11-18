@@ -353,11 +353,11 @@ const WriteForm = ({
     }
 
     // 파일 크기 제한 (예: 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      alert('이미지 크기는 5MB 이하여야 합니다.');
-      return;
-    }
+    // const maxSize = 5 * 1024 * 1024; // 5MB
+    // if (file.size > maxSize) {
+    //   alert('이미지 크기는 5MB 이하여야 합니다.');
+    //   return;
+    // }
 
     try {
       // 서버에 이미지 업로드 및 공개 URL 받기
