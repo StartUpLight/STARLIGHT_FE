@@ -111,7 +111,76 @@ const convertImageToBase64 = async (img: HTMLImageElement): Promise<void> => {
     }
 };
 
-// Preview와 동일한 HTML 생성 (Tailwind 클래스 사용)
+// 아이템 렌더링 함수 (Preview.tsx와 동일)
+const renderItemHtml = (
+    item: SidebarItem,
+    content: ReturnType<typeof convertResponseToItemContent>
+): string => {
+    if (item.number === '0') {
+        let html = `
+            <div class="mb-4">
+                <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
+                ${content.itemName
+                ? `<p class="ds-text text-gray-700">${content.itemName}</p>`
+                : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
+            </div>
+            <div class="mb-4">
+                <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
+                ${content.oneLineIntro
+                ? `<p class="ds-text text-gray-700">${content.oneLineIntro}</p>`
+                : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
+            </div>
+        `;
+
+        if (content.editorFeatures) {
+            html += `
+                <div class="mb-4">
+                    <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                    <div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
+                        ${convertEditorJsonToHtml(content.editorFeatures)}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (content.editorSkills) {
+            html += `
+                <div class="mb-4">
+                    <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                    <div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
+                        ${convertEditorJsonToHtml(content.editorSkills)}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (content.editorGoals) {
+            html += `
+                <div class="mb-4">
+                    <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                    <div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
+                        ${convertEditorJsonToHtml(content.editorGoals)}
+                    </div>
+                </div>
+            `;
+        }
+
+        return html;
+    }
+
+    return `
+        <div class="mb-4">
+            <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">${item.title}</h3>
+            ${content.editorContent
+            ? `<div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
+                        ${convertEditorJsonToHtml(content.editorContent)}
+                    </div>`
+            : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
+        </div>
+    `;
+};
+
+// Preview와 동일한 HTML 생성 (측정용)
 const renderPreviewHtml = (
     response: BusinessPlanSubsectionsResponse,
     title?: string
@@ -134,7 +203,7 @@ const renderPreviewHtml = (
         });
     }
 
-    // Preview와 동일한 구조로 HTML 생성
+    // Preview와 동일한 구조로 HTML 생성 (측정용)
     let html = `
         <!DOCTYPE html>
         <html>
@@ -159,33 +228,14 @@ const renderPreviewHtml = (
             </style>
         </head>
         <body>
-            <div data-preview-content class="flex flex-col" style="gap: ${PAGE_GAP}px; width: ${A4_WIDTH}px;">
+            <div id="measure-content" style="width: ${A4_WIDTH - 96}px; padding: 24px; visibility: hidden; position: absolute; top: -9999px;">
     `;
 
-    // 각 페이지 렌더링 (Preview와 동일한 로직)
+    // 섹션별로 렌더링 (측정용)
     allSections.forEach((section, sectionIndex) => {
         const sectionNumber = sectionIndex + 1;
         const sectionTitle = section.title.replace(/^\d+\.\s*/, '');
-        const isFirstSection = sectionIndex === 0;
 
-        html += `
-            <div class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
-        `;
-
-        // 첫 페이지에만 헤더 표시
-        if (isFirstSection) {
-            html += `
-                <div class="px-12 pt-10 pb-6 border-b border-gray-200 flex-shrink-0">
-                    <h1 class="ds-subtitle font-semibold text-gray-900 text-center">${finalTitle}</h1>
-                </div>
-            `;
-        }
-
-        html += `
-            <div class="px-12 py-6" style="height: ${isFirstSection ? MAX_CONTENT_HEIGHT : A4_HEIGHT - 48}px; overflow: hidden;">
-        `;
-
-        // 섹션 헤더
         html += `
             <div class="mb-[42px]">
                 <div class="px-3 py-1 bg-gray-100 mb-3 flex items-center gap-3">
@@ -198,76 +248,12 @@ const renderPreviewHtml = (
                 </div>
         `;
 
-        // 아이템 렌더링
         section.items.forEach((item) => {
             const content = contentMap[item.number] || {};
-
-            if (item.number === '0') {
-                html += `
-                    <div class="mb-4">
-                        <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
-                        ${content.itemName
-                        ? `<p class="ds-text text-gray-700">${content.itemName}</p>`
-                        : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
-                    </div>
-                    <div class="mb-4">
-                        <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
-                        ${content.oneLineIntro
-                        ? `<p class="ds-text text-gray-700">${content.oneLineIntro}</p>`
-                        : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
-                    </div>
-                `;
-
-                if (content.editorFeatures) {
-                    html += `
-                        <div class="mb-4">
-                            <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
-                            <div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
-                                ${convertEditorJsonToHtml(content.editorFeatures)}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (content.editorSkills) {
-                    html += `
-                        <div class="mb-4">
-                            <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
-                            <div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
-                                ${convertEditorJsonToHtml(content.editorSkills)}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (content.editorGoals) {
-                    html += `
-                        <div class="mb-4">
-                            <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
-                            <div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
-                                ${convertEditorJsonToHtml(content.editorGoals)}
-                            </div>
-                        </div>
-                    `;
-                }
-            } else {
-                html += `
-                    <div class="mb-4">
-                        <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">${item.title}</h3>
-                        ${content.editorContent
-                        ? `<div class="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block">
-                                ${convertEditorJsonToHtml(content.editorContent)}
-                            </div>`
-                        : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
-                    </div>
-                `;
-            }
+            html += renderItemHtml(item, content);
         });
 
-        html += `
-            </div>
-            </div>
-        `;
+        html += `</div>`;
     });
 
     html += `
@@ -279,72 +265,217 @@ const renderPreviewHtml = (
     return html;
 };
 
-// PDF 생성 함수 (Preview와 동일한 방식)
+// 페이지 HTML 생성 함수
+const renderPageHtml = (
+    pageContent: string,
+    showHeader: boolean,
+    title: string
+): string => {
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap');
+                * {
+                    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                }
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: white;
+                }
+                .ds-caption { font-size: 12px; line-height: 16px; }
+                .ds-subtext { font-size: 13px; line-height: 18px; }
+                .ds-text { font-size: 14px; line-height: 20px; }
+                .ds-subtitle { font-size: 16px; line-height: 24px; }
+                .prose img { display: block; margin: 0 auto; }
+            </style>
+        </head>
+        <body>
+            <div class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
+                ${showHeader
+            ? `<div class="px-12 pt-10 pb-6 border-b border-gray-200 flex-shrink-0">
+                        <h1 class="ds-subtitle font-semibold text-gray-900 text-center">${title}</h1>
+                    </div>`
+            : ''}
+                <div class="px-12 py-6" style="height: ${showHeader ? MAX_CONTENT_HEIGHT : A4_HEIGHT - 48}px; overflow: hidden;">
+                    ${pageContent}
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+};
+
+// PDF 생성 함수 (Preview와 동일한 페이지 분할 로직)
 export const generatePdfFromSubsections = async (
     response: BusinessPlanSubsectionsResponse,
     title?: string
 ): Promise<File> => {
     return new Promise((resolve, reject) => {
         try {
-            // iframe 생성 및 화면 밖으로 이동
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'fixed';
-            iframe.style.top = '-9999px';
-            iframe.style.left = '-9999px';
-            iframe.style.width = `${A4_WIDTH}px`;
-            iframe.style.height = `${A4_HEIGHT * 10}px`; // 충분한 높이
-            iframe.style.border = 'none';
-            document.body.appendChild(iframe);
+            const allSections = sections as SidebarSection[];
+            const contentMap: Record<string, ReturnType<typeof convertResponseToItemContent>> = {};
+            const finalTitle = title || response.data?.title || '스타라이트의 사업계획서';
 
-            const htmlContent = renderPreviewHtml(response, title);
+            // API 응답을 contentMap으로 변환
+            if (response.result === 'SUCCESS' && response.data?.subSectionDetailList) {
+                response.data.subSectionDetailList.forEach((detail) => {
+                    const subSectionType = detail.subSectionType;
+                    const number = getNumberFromSubSectionType(subSectionType);
+                    const itemContent = convertResponseToItemContent(
+                        detail.content.blocks,
+                        detail.content.checks
+                    );
+                    contentMap[number] = itemContent;
+                });
+            }
 
-            iframe.onload = async () => {
+            // 측정용 iframe 생성
+            const measureIframe = document.createElement('iframe');
+            measureIframe.style.position = 'fixed';
+            measureIframe.style.top = '-9999px';
+            measureIframe.style.left = '-9999px';
+            measureIframe.style.width = `${A4_WIDTH}px`;
+            measureIframe.style.height = `${A4_HEIGHT * 10}px`;
+            measureIframe.style.border = 'none';
+            document.body.appendChild(measureIframe);
+
+            const measureHtml = renderPreviewHtml(response, title);
+
+            measureIframe.onload = async () => {
                 try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                    if (!iframeDoc) {
+                    const measureDoc = measureIframe.contentDocument || measureIframe.contentWindow?.document;
+                    if (!measureDoc) {
                         throw new Error('iframe document not accessible');
                     }
 
-                    iframeDoc.open();
-                    iframeDoc.write(htmlContent);
-                    iframeDoc.close();
+                    measureDoc.open();
+                    measureDoc.write(measureHtml);
+                    measureDoc.close();
 
-                    // 이미지 로드 및 base64 변환 (pdfDownload.ts와 동일한 방식)
-                    const images = Array.from(iframeDoc.querySelectorAll('img')) as HTMLImageElement[];
-                    const imagePromises = images.map((img) => convertImageToBase64(img));
-                    await Promise.all(imagePromises);
+                    // 이미지 로드 대기
+                    await new Promise((resolve) => {
+                        const images = measureDoc.querySelectorAll('img');
+                        let loadedCount = 0;
+                        const totalImages = images.length;
 
-                    // 추가 대기 시간 (이미지 렌더링 완료)
-                    await new Promise((resolve) => setTimeout(resolve, 500));
+                        if (totalImages === 0) {
+                            resolve(undefined);
+                            return;
+                        }
 
-                    const previewContent = iframeDoc.querySelector('[data-preview-content]') as HTMLElement;
-                    if (!previewContent) {
-                        throw new Error('Preview content not found');
-                    }
-
-                    // html2canvas로 캔버스 생성 (pdfDownload.ts와 동일한 옵션)
-                    const canvas = await html2canvas(previewContent, {
-                        scale: 1.5,
-                        useCORS: true,
-                        allowTaint: false,
-                        logging: false,
-                        backgroundColor: '#ffffff',
-                        scrollX: 0,
-                        scrollY: 0,
-                        imageTimeout: 15000,
-                        removeContainer: true,
-                        foreignObjectRendering: false,
-                        onclone: (clonedDoc) => {
-                            const clonedPreview = clonedDoc.querySelector('[data-preview-content]') as HTMLElement;
-                            if (clonedPreview) {
-                                clonedPreview.style.height = 'auto';
-                                clonedPreview.style.maxHeight = 'none';
+                        images.forEach((img) => {
+                            if (img.complete) {
+                                loadedCount++;
+                                if (loadedCount === totalImages) resolve(undefined);
+                            } else {
+                                img.onload = () => {
+                                    loadedCount++;
+                                    if (loadedCount === totalImages) resolve(undefined);
+                                };
+                                img.onerror = () => {
+                                    loadedCount++;
+                                    if (loadedCount === totalImages) resolve(undefined);
+                                };
                             }
-                        },
+                        });
                     });
 
-                    // jsPDF로 PDF 생성 (pdfDownload.ts와 동일한 방식)
-                    const imgData = canvas.toDataURL('image/jpeg', 0.85);
+                    // DOM 렌더링 완료 대기
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+
+                    // Preview.tsx와 동일한 페이지 분할 로직
+                    const measureContent = measureDoc.getElementById('measure-content');
+                    if (!measureContent) {
+                        throw new Error('Measure content not found');
+                    }
+
+                    const sectionElements = Array.from(measureContent.children);
+                    const pages: Array<{ content: string; showHeader: boolean }> = [];
+                    let currentPageContent: string[] = [];
+                    let currentPageHeight = 0;
+                    let isFirstPage = true;
+                    const shownSections = new Set<number>();
+
+                    allSections.forEach((section, sectionIndex) => {
+                        const sectionElement = sectionElements[sectionIndex] as HTMLElement;
+                        if (!sectionElement) return;
+
+                        const sectionNumber = sectionIndex + 1;
+                        const sectionTitle = section.title.replace(/^\d+\.\s*/, '');
+
+                        const sectionHeader = sectionElement.firstElementChild as HTMLElement;
+                        const sectionHeaderHeight = sectionHeader?.offsetHeight || 0;
+                        const SECTION_HEADER_MARGIN = 12; // mb-3 = 12px
+                        const SECTION_BOTTOM_MARGIN = 42; // mb-[42px]
+
+                        const itemElements = Array.from(sectionElement.children).slice(1);
+
+                        section.items.forEach((item, itemIndex) => {
+                            const content = contentMap[item.number] || {};
+                            const itemElement = itemElements[itemIndex] as HTMLElement;
+                            if (!itemElement) return;
+
+                            const itemHeight = itemElement.offsetHeight;
+                            const ITEM_MARGIN = 16; // mb-4 = 16px
+
+                            const needsSectionHeader = !shownSections.has(sectionNumber);
+                            const totalItemHeight = needsSectionHeader
+                                ? sectionHeaderHeight + SECTION_HEADER_MARGIN + itemHeight + ITEM_MARGIN
+                                : itemHeight + ITEM_MARGIN;
+
+                            const PAGE_BUFFER = 50;
+                            if (currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER && currentPageContent.length > 0) {
+                                pages.push({
+                                    content: currentPageContent.join(''),
+                                    showHeader: isFirstPage,
+                                });
+                                currentPageContent = [];
+                                currentPageHeight = 0;
+                                isFirstPage = false;
+                            }
+
+                            if (needsSectionHeader) {
+                                currentPageContent.push(`
+                                    <div class="mb-3">
+                                        <div class="px-3 py-1 bg-gray-100 flex items-center gap-3">
+                                            <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
+                                                ${sectionNumber}
+                                            </div>
+                                            <h2 class="ds-subtitle font-semibold text-gray-900">
+                                                ${sectionTitle}
+                                            </h2>
+                                        </div>
+                                    </div>
+                                `);
+                                currentPageHeight += sectionHeaderHeight + SECTION_HEADER_MARGIN;
+                                shownSections.add(sectionNumber);
+                            }
+
+                            currentPageContent.push(renderItemHtml(item, content));
+                            currentPageHeight += itemHeight + ITEM_MARGIN;
+                        });
+
+                        if (sectionIndex < allSections.length - 1) {
+                            currentPageHeight += SECTION_BOTTOM_MARGIN - 16;
+                        }
+                    });
+
+                    if (currentPageContent.length > 0) {
+                        pages.push({
+                            content: currentPageContent.join(''),
+                            showHeader: isFirstPage,
+                        });
+                    }
+
+                    // 측정용 iframe 제거
+                    document.body.removeChild(measureIframe);
+
+                    // 각 페이지를 개별적으로 렌더링하고 PDF에 추가
                     const pdf = new jsPDF({
                         orientation: 'portrait',
                         unit: 'mm',
@@ -352,49 +483,113 @@ export const generatePdfFromSubsections = async (
                         compress: true,
                     });
 
-                    const imgWidth = 210;
-                    const pageHeight = 297;
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                    let heightLeft = imgHeight;
-                    let position = 0;
+                    const renderPage = async (pageIndex: number): Promise<void> => {
+                        return new Promise((resolve, reject) => {
+                            const pageIframe = document.createElement('iframe');
+                            pageIframe.style.position = 'fixed';
+                            pageIframe.style.top = '-9999px';
+                            pageIframe.style.left = '-9999px';
+                            pageIframe.style.width = `${A4_WIDTH}px`;
+                            pageIframe.style.height = `${A4_HEIGHT}px`;
+                            pageIframe.style.border = 'none';
+                            document.body.appendChild(pageIframe);
 
-                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+                            const pageHtml = renderPageHtml(
+                                pages[pageIndex].content,
+                                pages[pageIndex].showHeader,
+                                finalTitle
+                            );
 
-                    while (heightLeft > 0) {
-                        position = heightLeft - imgHeight;
-                        pdf.addPage();
-                        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
+                            pageIframe.onload = async () => {
+                                try {
+                                    const pageDoc = pageIframe.contentDocument || pageIframe.contentWindow?.document;
+                                    if (!pageDoc) {
+                                        throw new Error('iframe document not accessible');
+                                    }
+
+                                    pageDoc.open();
+                                    pageDoc.write(pageHtml);
+                                    pageDoc.close();
+
+                                    // 이미지 로드 및 base64 변환
+                                    const images = Array.from(pageDoc.querySelectorAll('img')) as HTMLImageElement[];
+                                    await Promise.all(images.map((img) => convertImageToBase64(img)));
+
+                                    await new Promise((resolve) => setTimeout(resolve, 300));
+
+                                    const pageElement = pageDoc.body.firstElementChild as HTMLElement;
+                                    if (!pageElement) {
+                                        throw new Error('Page element not found');
+                                    }
+
+                                    const canvas = await html2canvas(pageElement, {
+                                        scale: 2,
+                                        useCORS: true,
+                                        allowTaint: false,
+                                        logging: false,
+                                        backgroundColor: '#ffffff',
+                                        width: A4_WIDTH,
+                                        height: A4_HEIGHT,
+                                    });
+
+                                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                                    const imgWidth = 210; // A4 width in mm
+                                    const imgHeight = 297; // A4 height in mm
+
+                                    if (pageIndex > 0) {
+                                        pdf.addPage();
+                                    }
+
+                                    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+
+                                    document.body.removeChild(pageIframe);
+                                    resolve();
+                                } catch (error) {
+                                    if (document.body.contains(pageIframe)) {
+                                        document.body.removeChild(pageIframe);
+                                    }
+                                    reject(error);
+                                }
+                            };
+
+                            pageIframe.onerror = () => {
+                                if (document.body.contains(pageIframe)) {
+                                    document.body.removeChild(pageIframe);
+                                }
+                                reject(new Error('Failed to load iframe'));
+                            };
+
+                            pageIframe.src = 'about:blank';
+                        });
+                    };
+
+                    // 모든 페이지를 순차적으로 렌더링
+                    for (let i = 0; i < pages.length; i++) {
+                        await renderPage(i);
                     }
 
-                    // PDF를 Blob으로 변환
                     const pdfBlob = pdf.output('blob');
                     const pdfFile = new File([pdfBlob], 'business-plan.pdf', {
                         type: 'application/pdf',
                     });
 
-                    // iframe 제거
-                    document.body.removeChild(iframe);
-
                     resolve(pdfFile);
                 } catch (error) {
-                    if (document.body.contains(iframe)) {
-                        document.body.removeChild(iframe);
+                    if (document.body.contains(measureIframe)) {
+                        document.body.removeChild(measureIframe);
                     }
                     reject(error);
                 }
             };
 
-            iframe.onerror = () => {
-                if (document.body.contains(iframe)) {
-                    document.body.removeChild(iframe);
+            measureIframe.onerror = () => {
+                if (document.body.contains(measureIframe)) {
+                    document.body.removeChild(measureIframe);
                 }
                 reject(new Error('Failed to load iframe'));
             };
 
-            // iframe에 HTML 로드
-            iframe.src = 'about:blank';
+            measureIframe.src = 'about:blank';
         } catch (error) {
             reject(error);
         }
