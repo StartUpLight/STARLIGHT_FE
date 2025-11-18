@@ -1,6 +1,7 @@
-import { BusinessPlanSubsectionsResponse, SubSectionType } from '@/types/business/business.type';
+import { BusinessPlanSubsectionsResponse } from '@/types/business/business.type';
 import { convertEditorJsonToHtml } from './converter/editorToHtml';
 import { convertResponseToItemContent } from './converter/responseMapper';
+import { getNumberFromSubSectionType } from './getNumber';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import sections from '@/data/sidebar.json';
@@ -13,102 +14,6 @@ const A4_HEIGHT = 1123;
 const HEADER_HEIGHT = 80;
 const CONTENT_PADDING = 48;
 const MAX_CONTENT_HEIGHT = A4_HEIGHT - HEADER_HEIGHT - CONTENT_PADDING;
-
-// subSectionType을 number로 매핑
-const getNumberFromSubSectionType = (subSectionType: SubSectionType): string => {
-    switch (subSectionType) {
-        case 'OVERVIEW_BASIC':
-            return '0';
-        case 'PROBLEM_BACKGROUND':
-            return '1-1';
-        case 'PROBLEM_PURPOSE':
-            return '1-2';
-        case 'PROBLEM_MARKET':
-            return '1-3';
-        case 'FEASIBILITY_STRATEGY':
-            return '2-1';
-        case 'FEASIBILITY_MARKET':
-            return '2-2';
-        case 'GROWTH_MODEL':
-            return '3-1';
-        case 'GROWTH_FUNDING':
-            return '3-2';
-        case 'GROWTH_ENTRY':
-            return '3-3';
-        case 'TEAM_FOUNDER':
-            return '4-1';
-        case 'TEAM_MEMBERS':
-            return '4-2';
-        default:
-            return '0';
-    }
-};
-
-// 이미지를 base64로 변환 (pdfDownload.ts와 동일한 방식)
-const convertImageToBase64 = async (img: HTMLImageElement): Promise<void> => {
-    if (!img.src || img.src.startsWith('data:')) {
-        return;
-    }
-
-    try {
-        // fetch를 사용하여 이미지를 blob으로 가져오기
-        const separator = img.src.includes('?') ? '&' : '?';
-        const imageUrl = img.src + separator + '_t=' + new Date().getTime();
-
-        const response = await fetch(imageUrl, {
-            mode: 'cors',
-            credentials: 'omit',
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-
-            // blob URL을 사용하여 이미지 로드
-            const imgElement = new Image();
-            imgElement.crossOrigin = 'anonymous';
-
-            await new Promise<void>((resolve, reject) => {
-                imgElement.onload = () => {
-                    try {
-                        // 이미지를 base64로 변환하여 CORS 문제 완전히 우회
-                        const canvas = document.createElement('canvas');
-                        canvas.width = imgElement.width;
-                        canvas.height = imgElement.height;
-                        const ctx = canvas.getContext('2d');
-                        if (ctx) {
-                            ctx.drawImage(imgElement, 0, 0);
-                            const dataUrl = canvas.toDataURL('image/png');
-                            img.src = dataUrl;
-                            URL.revokeObjectURL(blobUrl);
-                        }
-                    } catch (e) {
-                        console.warn('이미지 변환 실패:', e);
-                    }
-                    resolve();
-                };
-
-                imgElement.onerror = () => {
-                    URL.revokeObjectURL(blobUrl);
-                    reject(new Error('이미지 로드 실패'));
-                };
-
-                imgElement.src = blobUrl;
-            });
-        } else {
-            // fetch 실패 시 원본 이미지에 crossOrigin 설정만 추가
-            img.crossOrigin = 'anonymous';
-            const separator2 = img.src.includes('?') ? '&' : '?';
-            img.src = img.src + separator2 + '_t=' + new Date().getTime();
-        }
-    } catch (e) {
-        // fetch 실패 시 원본 이미지에 crossOrigin 설정만 추가
-        console.warn('이미지 fetch 실패, 원본 URL 사용:', e);
-        img.crossOrigin = 'anonymous';
-        const separator = img.src.includes('?') ? '&' : '?';
-        img.src = img.src + separator + '_t=' + new Date().getTime();
-    }
-};
 
 // 아이템 렌더링 함수 (Preview.tsx와 동일)
 const renderItemHtml = (
@@ -181,13 +86,10 @@ const renderItemHtml = (
 
 // Preview와 동일한 HTML 생성 (측정용)
 const renderPreviewHtml = (
-    response: BusinessPlanSubsectionsResponse,
-    title?: string
+    response: BusinessPlanSubsectionsResponse
 ): string => {
     const allSections = sections as SidebarSection[];
     const contentMap: Record<string, ReturnType<typeof convertResponseToItemContent>> = {};
-
-    const finalTitle = title || response.data?.title || '스타라이트의 사업계획서';
 
     // API 응답을 contentMap으로 변환
     if (response.result === 'SUCCESS' && response.data?.subSectionDetailList) {
@@ -343,7 +245,7 @@ export const generatePdfFromSubsections = async (
             measureIframe.style.border = 'none';
             document.body.appendChild(measureIframe);
 
-            const measureHtml = renderPreviewHtml(response, title);
+            const measureHtml = renderPreviewHtml(response);
 
             measureIframe.onload = async () => {
                 try {
@@ -635,7 +537,14 @@ export const generatePdfFromSubsections = async (
                     }
 
                     const pdfBlob = pdf.output('blob');
-                    const pdfFile = new File([pdfBlob], 'business-plan.pdf', {
+
+                    // 파일 이름에서 특수문자 제거 (파일 시스템에서 허용되지 않는 문자)
+                    const sanitizedTitle = finalTitle
+                        .replace(/[<>:"/\\|?*]/g, '') // 파일명에 사용할 수 없는 문자 제거
+                        .replace(/\s+/g, '_') // 공백을 언더스코어로 변경
+                        .trim() || '사업계획서'; // 빈 문자열이면 기본값 사용
+
+                    const pdfFile = new File([pdfBlob], `${sanitizedTitle}.pdf`, {
                         type: 'application/pdf',
                     });
 
