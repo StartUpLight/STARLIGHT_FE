@@ -11,7 +11,7 @@ const FeedBackHeader = ({ onComplete, disabled }: FeedBackHeaderProps) => {
           type="button"
           onClick={onComplete}
           disabled={disabled}
-          className="ds-subtext bg-primary-500 hover:bg-primary-600 flex h-[33px] cursor-pointer items-center justify-center rounded-lg px-4 py-1.5 font-medium text-white transition"
+          className="ds-subtext bg-primary-500 hover:bg-primary-600 flex h-[33px] cursor-pointer items-center justify-center rounded-lg px-4 py-1.5 font-medium text-white transition disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-900"
         >
           완료하기
         </button>

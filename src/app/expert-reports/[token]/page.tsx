@@ -29,7 +29,7 @@ const ExpertWritePage = () => {
         ?.content ?? '',
   };
 
-  const isCompleteDisabled = data?.canEdit === true;
+  const isCompleteDisabled = data?.canEdit === false;
 
   const handleComplete = () => {
     if (!formRef.current || !token) return;
