@@ -10,7 +10,6 @@ type SidebarSection = { title: string; items: SidebarItem[] };
 
 const A4_WIDTH = 794; // 96 DPI 기준
 const A4_HEIGHT = 1123;
-const PAGE_GAP = 24;
 const HEADER_HEIGHT = 80;
 const CONTENT_PADDING = 48;
 const MAX_CONTENT_HEIGHT = A4_HEIGHT - HEADER_HEIGHT - CONTENT_PADDING;
@@ -511,10 +510,77 @@ export const generatePdfFromSubsections = async (
                                     pageDoc.write(pageHtml);
                                     pageDoc.close();
 
-                                    // 이미지 로드 및 base64 변환
+                                    // 이미지를 미리 로드하여 CORS 문제 해결 (pdfDownload.ts와 동일한 방식)
                                     const images = Array.from(pageDoc.querySelectorAll('img')) as HTMLImageElement[];
-                                    await Promise.all(images.map((img) => convertImageToBase64(img)));
+                                    const imagePromises = images.map(async (img) => {
+                                        if (!img.src || img.src.startsWith('data:')) {
+                                            return;
+                                        }
 
+                                        try {
+                                            // fetch를 사용하여 이미지를 blob으로 가져오기 (CORS 헤더가 있는 경우)
+                                            const separator = img.src.includes('?') ? '&' : '?';
+                                            const imageUrl = img.src + separator + '_t=' + new Date().getTime();
+
+                                            const response = await fetch(imageUrl, {
+                                                mode: 'cors',
+                                                credentials: 'omit',
+                                            });
+
+                                            if (response.ok) {
+                                                const blob = await response.blob();
+                                                const blobUrl = URL.createObjectURL(blob);
+
+                                                // blob URL을 사용하여 이미지 로드
+                                                const imgElement = new Image();
+                                                imgElement.crossOrigin = 'anonymous';
+
+                                                await new Promise<void>((resolve, reject) => {
+                                                    imgElement.onload = () => {
+                                                        try {
+                                                            // 이미지를 base64로 변환하여 CORS 문제 완전히 우회
+                                                            const canvas = document.createElement('canvas');
+                                                            canvas.width = imgElement.width;
+                                                            canvas.height = imgElement.height;
+                                                            const ctx = canvas.getContext('2d');
+                                                            if (ctx) {
+                                                                ctx.drawImage(imgElement, 0, 0);
+                                                                const dataUrl = canvas.toDataURL('image/png');
+                                                                img.src = dataUrl;
+                                                                URL.revokeObjectURL(blobUrl);
+                                                            }
+                                                        } catch (e) {
+                                                            console.warn('이미지 변환 실패:', e);
+                                                        }
+                                                        resolve();
+                                                    };
+
+                                                    imgElement.onerror = () => {
+                                                        URL.revokeObjectURL(blobUrl);
+                                                        reject(new Error('이미지 로드 실패'));
+                                                    };
+
+                                                    imgElement.src = blobUrl;
+                                                });
+                                            } else {
+                                                // fetch 실패 시 원본 이미지에 crossOrigin 설정만 추가
+                                                img.crossOrigin = 'anonymous';
+                                                const separator2 = img.src.includes('?') ? '&' : '?';
+                                                img.src = img.src + separator2 + '_t=' + new Date().getTime();
+                                            }
+                                        } catch (e) {
+                                            // fetch 실패 시 원본 이미지에 crossOrigin 설정만 추가
+                                            console.warn('이미지 fetch 실패, 원본 URL 사용:', e);
+                                            img.crossOrigin = 'anonymous';
+                                            const separator = img.src.includes('?') ? '&' : '?';
+                                            img.src = img.src + separator + '_t=' + new Date().getTime();
+                                        }
+                                    });
+
+                                    // 모든 이미지 로드 완료 대기
+                                    await Promise.all(imagePromises);
+
+                                    // 이미지 변환 후 추가 대기
                                     await new Promise((resolve) => setTimeout(resolve, 300));
 
                                     const pageElement = pageDoc.body.firstElementChild as HTMLElement;
