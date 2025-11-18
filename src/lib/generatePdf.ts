@@ -325,21 +325,28 @@ export const generatePdfFromSubsections = async (
                             const ITEM_MARGIN = 16; // mb-4 = 16px
 
                             const needsSectionHeader = !shownSections.has(sectionNumber);
+
+                            // 섹션 헤더를 포함한 전체 아이템 높이 계산
                             const totalItemHeight = needsSectionHeader
                                 ? sectionHeaderHeight + SECTION_HEADER_MARGIN + itemHeight + ITEM_MARGIN
                                 : itemHeight + ITEM_MARGIN;
 
-                            const PAGE_BUFFER = 50;
-                            if (currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER && currentPageContent.length > 0) {
+                            // 아이템이 현재 페이지에 들어가지 않으면 다음 페이지로 넘기기
+                            // 단, 현재 페이지에 내용이 있을 때만 (빈 페이지에서 시작하는 경우는 허용)
+                            if (currentPageContent.length > 0 && currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT) {
+                                // 현재 페이지 저장
                                 pages.push({
                                     content: currentPageContent.join(''),
                                     showHeader: isFirstPage,
                                 });
+                                // 새 페이지 시작
                                 currentPageContent = [];
                                 currentPageHeight = 0;
                                 isFirstPage = false;
+                                // 새 페이지에서도 섹션 헤더는 다시 표시하지 않음 (이미 표시된 섹션이면)
                             }
 
+                            // 섹션 헤더 추가 (처음 한 번만)
                             if (needsSectionHeader) {
                                 currentPageContent.push(`
                                     <div class="mb-3">
@@ -357,6 +364,7 @@ export const generatePdfFromSubsections = async (
                                 shownSections.add(sectionNumber);
                             }
 
+                            // 아이템 추가
                             currentPageContent.push(renderItemHtml(item, content));
                             currentPageHeight += itemHeight + ITEM_MARGIN;
                         });
