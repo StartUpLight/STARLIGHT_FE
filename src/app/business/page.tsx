@@ -38,55 +38,65 @@ const BusinessPageContent = () => {
   // 페이지 진입 시 모달 표시 여부 확인 및 데이터 불러오기
   useEffect(() => {
     if (typeof window === 'undefined' || !modalReady) return;
-    // URL 쿼리 파라미터에서 planId 확인
+
     const planIdParam = searchParams.get('planId');
-    // 새로고침인지 확인
     const isRefreshing = sessionStorage.getItem('isRefreshing') === 'true';
     const previousUrl = sessionStorage.getItem('previousUrl');
     const currentUrl = window.location.href;
-    // 같은 URL이고 플래그가 있으면 새로고침
     const isRefresh = isRefreshing && previousUrl === currentUrl;
-    if (planIdParam) {
-      // planId가 URL에 있으면: 기존 사업계획서 로드
-      const parsedPlanId = parseInt(planIdParam, 10);
-      if (!isNaN(parsedPlanId)) {
-        setPlanId(parsedPlanId);
-        setIsModalOpen(false);
-        // API에서 데이터 불러오기
-        loadContentsFromAPI(parsedPlanId).catch((error) => {
-          console.error('데이터 불러오기 실패:', error);
-        });
-        return;
-      }
+    const shouldResetDraft = sessionStorage.getItem('shouldResetBusinessDraft') === 'true';
+
+    const clearRefreshFlags = () => {
+      sessionStorage.removeItem('isRefreshing');
+      sessionStorage.removeItem('previousUrl');
+    };
+
+    const resetDraftState = () => {
+      clearStorage();
+      resetDraft();
+    };
+
+    const loadPlan = (id: number) => {
+      setPlanId(id);
+      setIsModalOpen(false);
+      loadContentsFromAPI(id).catch((error) => {
+        console.error('데이터 불러오기 실패:', error);
+      });
+    };
+
+    if (!isRefresh && shouldResetDraft) {
+      sessionStorage.removeItem('shouldResetBusinessDraft');
+      resetDraftState();
+    }
+
+    const parsedPlanId = planIdParam ? parseInt(planIdParam, 10) : NaN;
+    if (!isNaN(parsedPlanId)) {
+      loadPlan(parsedPlanId);
+      return;
     }
 
     if (isRefresh) {
-      // 새로고침: 모달 표시 안 함, API에서 데이터 불러오기
-      sessionStorage.removeItem('isRefreshing');
-      sessionStorage.removeItem('previousUrl');
+      clearRefreshFlags();
       setIsModalOpen(false);
-
-      // planId가 있으면 API에서 데이터 불러오기
       if (planId) {
-        loadContentsFromAPI(planId).catch((error) => {
-          console.error('데이터 불러오기 실패:', error);
-        });
+        loadPlan(planId);
       }
-    } else if (!planId) {
-      // 다른 페이지에서 진입: 모달 표시, 새로운 사업계획서 생성 준비
-      sessionStorage.removeItem('isRefreshing');
-      sessionStorage.removeItem('previousUrl');
-      const shouldShowModal = isMember ? !hasSeenModal : true;
-      setIsModalOpen(shouldShowModal);
-      // 기존 작성 내용 및 planId 초기화 (새로운 사업계획서이므로)
-      clearStorage();
-      resetDraft();
-      if (isMember && !hasInitializedPlanRef.current) {
-        hasInitializedPlanRef.current = true;
-        initializePlan().catch((error) => {
-          console.error('사업계획서 생성 실패:', error);
-        });
-      }
+      return;
+    }
+
+    if (planId) {
+      return;
+    }
+
+    clearRefreshFlags();
+    setIsModalOpen(isMember ? !hasSeenModal : true);
+    resetDraftState();
+
+    if (isMember && !hasInitializedPlanRef.current) {
+      hasInitializedPlanRef.current = true;
+      initializePlan().catch((error) => {
+        console.error('사업계획서 생성 실패:', error);
+      });
     }
   }, [
     searchParams,
@@ -101,13 +111,14 @@ const BusinessPageContent = () => {
     initializePlan,
   ]);
 
-  // 페이지를 떠날 때 planId 및 임시 저장 데이터 초기화
+  // 페이지를 떠났음을 표시 (실제 초기화는 다음 진입 시점에 수행)
   useEffect(() => {
     return () => {
-      clearStorage();
-      resetDraft();
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('shouldResetBusinessDraft', 'true');
+      }
     };
-  }, [clearStorage, resetDraft]);
+  }, []);
 
   // 새로고침 감지 및 다른 페이지 이동 감지
   useEffect(() => {
