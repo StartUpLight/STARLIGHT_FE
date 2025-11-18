@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { MentorCardProps } from '@/types/expert/expert.props';
 import { ApplyFeedback } from '@/api/expert';
 import { getBusinessPlanSubsections, getBusinessPlanTitle } from '@/api/business';
-import { generatePdfFromSubsections } from '@/lib/business/generatePdf';
+import { generatePdfFromSubsections } from '@/lib/generatePdf';
 import Image from 'next/image';
 import Check from '@/assets/icons/gray_check.svg';
 import Plus from '@/assets/icons/white_plus.svg';
@@ -139,7 +139,7 @@ const MentorCard = ({
         }
       >
         {isDone ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-        {isDone ? '신청 완료' : uploading ? '신청 중' : '전문가 연결'}
+        {isDone ? '신청 완료' : uploading ? '신청 중..' : '전문가 연결'}
       </button>
     </div>
   );

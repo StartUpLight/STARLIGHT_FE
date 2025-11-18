@@ -1,7 +1,7 @@
 import { BusinessPlanSubsectionsResponse } from '@/types/business/business.type';
-import { convertEditorJsonToHtml } from './converter/editorToHtml';
-import { convertResponseToItemContent } from './converter/responseMapper';
-import { getNumberFromSubSectionType } from './mappers/getNumber';
+import { convertEditorJsonToHtml } from './business/converter/editorToHtml';
+import { convertResponseToItemContent } from './business/converter/responseMapper';
+import { getNumberFromSubSectionType } from './business/mappers/getNumber';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import sections from '@/data/sidebar.json';
