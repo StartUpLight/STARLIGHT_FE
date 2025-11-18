@@ -39,8 +39,8 @@ const ExpertWritePage = () => {
       onSuccess: (data) => {
         console.log(data); //수정예정
       },
-      onError: (error: any) => {
-        console.log('실패', error?.response?.status, error?.response?.data);
+      onError: (error) => {
+        console.error(error);
       },
     });
   };
