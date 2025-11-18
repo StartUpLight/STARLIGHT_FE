@@ -39,3 +39,33 @@ export interface expertReportsResponse {
 export interface expertReportProps {
   token: string;
 }
+
+export interface getExpertReportsResponse {
+  result: string;
+  data: getExpertReportsData;
+  status: string;
+  canEdit: boolean;
+  overallComment: string;
+  details: {
+    commentType: string;
+    content: string;
+  }[];
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+export interface getExpertReportsData {
+  expertDetailResponse: {
+    id: number;
+    name: string;
+    profileImageUrl: string;
+    workedPeriod: number;
+    email: string;
+    mentoringPriceWon: number;
+    careers: string[];
+    tags: string[];
+    categories: string[];
+  };
+}
