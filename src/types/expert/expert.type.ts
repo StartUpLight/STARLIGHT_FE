@@ -26,3 +26,16 @@ export interface applyFeedBackResponse {
   result: string;
   data: string;
 }
+
+export interface expertReportsResponse {
+  saveType: 'FINAL';
+  overallComment: string;
+  details: {
+    commentType: string;
+    content: string;
+  }[];
+}
+
+export interface expertReportProps {
+  token: string;
+}
