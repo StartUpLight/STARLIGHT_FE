@@ -6,17 +6,15 @@ import sections from '@/data/sidebar.json';
 import { ItemContent } from '@/types/business/business.store.type';
 
 const Preview = () => {
-    const { contents } = useBusinessStore();
-    const [title, setTitle] = useState('스타라이트의 사업계획서');
+    const { contents, planId, title, loadTitleFromAPI } = useBusinessStore();
     const [pages, setPages] = useState<Array<{ content: React.ReactNode; showHeader: boolean }>>([]);
     const measureRef = useRef<HTMLDivElement>(null);
 
+    // planId 변경 시 서버에서 제목 조회
     useEffect(() => {
-        const storedTitle = localStorage.getItem('businessPlanTitle');
-        if (storedTitle) {
-            setTitle(storedTitle);
-        }
-    }, []);
+        if (!planId) return;
+        loadTitleFromAPI(planId);
+    }, [planId, loadTitleFromAPI]);
 
     // 섹션 데이터 가져오기
     type SidebarItem = { name: string; number: string; title: string; subtitle: string };

@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { downloadPDF } from '@/lib/pdfDownload';
-import { getBusinessPlanTitle, patchBusinessPlanTitle } from '@/api/business';
+import { patchBusinessPlanTitle } from '@/api/business';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
 const BusinessHeader = () => {
@@ -21,39 +21,21 @@ const BusinessHeader = () => {
     isPreview,
     setPreview,
     setIsSaving,
+    title,
+    setTitle,
+    loadTitleFromAPI,
   } = useBusinessStore();
-  const [title, setTitle] = useState('');
 
   // planId 변경 시 서버에서 제목 조회
   useEffect(() => {
-    let cancelled = false;
+    if (!planId) {
+      setTitle('');
+      return;
+    }
+    loadTitleFromAPI(planId);
+  }, [planId, loadTitleFromAPI, setTitle]);
 
-    const fetchTitle = async () => {
-      if (!planId) {
-        setTitle('');
-        return;
-      }
-      try {
-        const response = await getBusinessPlanTitle(planId);
-        if (!cancelled && response.result === 'SUCCESS') {
-          setTitle(response.data ?? '');
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error('제목 불러오기 실패:', error);
-          setTitle('');
-        }
-      }
-    };
-
-    fetchTitle();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [planId]);
-
-  // 제목 변경 시 localStorage에 저장 및 API 요청 (debounce 적용)
+  // 제목 변경 시 API 요청 (debounce 적용)
   useEffect(() => {
     const trimmedTitle = title.trim();
 
