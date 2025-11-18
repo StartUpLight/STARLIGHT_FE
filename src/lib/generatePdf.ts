@@ -326,19 +326,24 @@ export const generatePdfFromSubsections = async (
 
                             const needsSectionHeader = !shownSections.has(sectionNumber);
 
-                            // 섹션 헤더를 포함한 전체 아이템 높이 계산
+                            // 개요(sectionNumber 1) 또는 개요 다음 영역(sectionNumber 2, "1. 문제 인식")이 시작될 때는 무조건 새 페이지에서 시작
+                            const shouldForceNewPage = needsSectionHeader && (sectionNumber === 1 || sectionNumber === 2);
+
+                            // 섹션 제목 높이 계산
                             const totalItemHeight = needsSectionHeader
                                 ? sectionHeaderHeight + SECTION_HEADER_MARGIN + itemHeight + ITEM_MARGIN
                                 : itemHeight + ITEM_MARGIN;
 
-                            // 아이템이 현재 페이지에 들어가지 않으면 다음 페이지로 넘기기
-                            // 단, 현재 페이지에 내용이 있을 때만 (빈 페이지에서 시작하는 경우는 허용)
-                            if (currentPageContent.length > 0 && currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT) {
+                            // 페이지 분할: 특정 섹션은 강제로 새 페이지, 나머지는 여유 공간 고려
+                            const PAGE_BUFFER = 50; // 약간의 여유 공간
+                            if (shouldForceNewPage || (currentPageContent.length > 0 && currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER)) {
                                 // 현재 페이지 저장
-                                pages.push({
-                                    content: currentPageContent.join(''),
-                                    showHeader: isFirstPage,
-                                });
+                                if (currentPageContent.length > 0) {
+                                    pages.push({
+                                        content: currentPageContent.join(''),
+                                        showHeader: isFirstPage,
+                                    });
+                                }
                                 // 새 페이지 시작
                                 currentPageContent = [];
                                 currentPageHeight = 0;
@@ -369,8 +374,10 @@ export const generatePdfFromSubsections = async (
                             currentPageHeight += itemHeight + ITEM_MARGIN;
                         });
 
+                        // 섹션 끝에 여백 추가 (마지막 섹션이 아니면) - Preview.tsx와 동일
                         if (sectionIndex < allSections.length - 1) {
-                            currentPageHeight += SECTION_BOTTOM_MARGIN - 16;
+                            const ITEM_MARGIN = 16; // mb-4 = 16px
+                            currentPageHeight += SECTION_BOTTOM_MARGIN - ITEM_MARGIN; // 마지막 아이템의 mb-4를 제외하고 섹션 여백 추가
                         }
                     });
 
