@@ -56,14 +56,14 @@ const MentorCard = ({
       const pdfFile = await generatePdfFromSubsections(response, title);
 
       // PDF 다운로드
-      const pdfUrl = URL.createObjectURL(pdfFile);
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = `사업계획서_${title || '스타라이트'}_${new Date().getTime()}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(pdfUrl);
+      // const pdfUrl = URL.createObjectURL(pdfFile);
+      // const link = document.createElement('a');
+      // link.href = pdfUrl;
+      // link.download = `사업계획서_${title || '스타라이트'}_${new Date().getTime()}.pdf`;
+      // document.body.appendChild(link);
+      // link.click();
+      // document.body.removeChild(link);
+      // URL.revokeObjectURL(pdfUrl);
 
       // 전문가 연결 요청
       await ApplyFeedback({
