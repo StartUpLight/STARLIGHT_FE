@@ -1,6 +1,8 @@
 import {
   applyFeedBackProps,
   applyFeedBackResponse,
+  expertReportProps,
+  expertReportsResponse,
   getExpertResponse,
   getFeedBackExpertResponse,
 } from '@/types/expert/expert.type';
@@ -41,5 +43,17 @@ export async function ApplyFeedback({
       headers: { 'Content-Type': 'multipart/form-data' },
     }
   );
+  return data;
+}
+
+export async function ExpertReporFeedback(
+  token: string,
+  body: expertReportsResponse
+): Promise<expertReportsResponse> {
+  const { data } = await api.post<expertReportsResponse>(
+    `/v1/expert-reports/${token}`,
+    body
+  );
+
   return data;
 }
