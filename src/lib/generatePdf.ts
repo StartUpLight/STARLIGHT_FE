@@ -286,8 +286,14 @@ export const generatePdfFromSubsections = async (
                         });
                     });
 
-                    // DOM 렌더링 완료 대기
-                    await new Promise((resolve) => setTimeout(resolve, 500));
+                    // DOM 렌더링 완료 대기 (requestAnimationFrame으로 최소화)
+                    await new Promise((resolve) => {
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                resolve(undefined);
+                            });
+                        });
+                    });
 
                     // Preview.tsx와 동일한 페이지 분할 로직
                     const measureContent = measureDoc.getElementById('measure-content');
@@ -347,7 +353,8 @@ export const generatePdfFromSubsections = async (
                                 // 새 페이지 시작
                                 currentPageContent = [];
                                 currentPageHeight = 0;
-                                isFirstPage = false;
+                                // 개요(sectionNumber 1)는 첫 페이지이므로 제목 표시, 그 외는 false
+                                isFirstPage = sectionNumber === 1;
                                 // 새 페이지에서도 섹션 헤더는 다시 표시하지 않음 (이미 표시된 섹션이면)
                             }
 
@@ -497,8 +504,14 @@ export const generatePdfFromSubsections = async (
                                     // 모든 이미지 로드 완료 대기
                                     await Promise.all(imagePromises);
 
-                                    // 이미지 변환 후 추가 대기
-                                    await new Promise((resolve) => setTimeout(resolve, 300));
+                                    // DOM 렌더링 완료 대기 (requestAnimationFrame으로 최소화)
+                                    await new Promise((resolve) => {
+                                        requestAnimationFrame(() => {
+                                            requestAnimationFrame(() => {
+                                                resolve(undefined);
+                                            });
+                                        });
+                                    });
 
                                     const pageElement = pageDoc.body.firstElementChild as HTMLElement;
                                     if (!pageElement) {
