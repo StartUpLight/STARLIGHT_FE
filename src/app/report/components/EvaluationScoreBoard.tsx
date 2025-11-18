@@ -83,10 +83,10 @@ const EvaluationScoreBoard = () => {
     setTotalScoreToStore(s.totalScore ?? 0);
 
     setCategories([
-      { title: '문제 정의', score: s.problemRecognitionScore ?? 0, total: 30 },
+      { title: '문제 정의', score: s.problemRecognitionScore ?? 0, total: 20 },
       { title: '실현 가능성', score: s.feasibilityScore ?? 0, total: 30 },
       { title: '성장 전략', score: s.growthStrategyScore ?? 0, total: 30 },
-      { title: '팀 역량', score: s.teamCompetenceScore ?? 0, total: 30 },
+      { title: '팀 역량', score: s.teamCompetenceScore ?? 0, total: 20 },
     ]);
   }, [evaluateScore, setTotalScoreToStore]);
 

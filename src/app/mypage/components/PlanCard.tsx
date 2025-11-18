@@ -6,6 +6,7 @@ import TodoIcon from '@/assets/icons/todo.svg';
 import ArrowRightIcon from '@/assets/icons/arrow_right.svg';
 import { formatDate } from '@/util/formatDate';
 import { PlanCardProps, Stage } from '@/types/mypage/my.props';
+import { useBusinessStore } from '@/store/business.store';
 
 const defaultStages: Stage[] = [
     { key: 'start', label: '시작' },
@@ -27,9 +28,14 @@ export default function PlanCard({
     const expertStageIndex = stages.findIndex(stage => stage.key === 'expert');
     const isAiReportEnabled = aiStageIndex >= 0 && currentStageIndex >= aiStageIndex;
     const isExpertReportEnabled = expertStageIndex >= 0 && currentStageIndex >= expertStageIndex;
+    const setPlanId = useBusinessStore((s) => s.setPlanId);
 
     const handleTitleClick = () => {
         router.push(`/business?planId=${businessPlanId}`);
+    };
+    const handleAiReportClick = () => {
+        setPlanId(businessPlanId);
+        router.push(`/report`);
     };
 
     return (
@@ -74,6 +80,7 @@ export default function PlanCard({
             </div>
             <div className='flex items-center'>
                 <button
+                    onClick={handleAiReportClick}
                     disabled={!isAiReportEnabled}
                     className={`mr-auto ds-subtext font-semibold flex items-center py-2 px-3 gap-4 ${isAiReportEnabled
                         ? 'cursor-pointer text-gray-900'
