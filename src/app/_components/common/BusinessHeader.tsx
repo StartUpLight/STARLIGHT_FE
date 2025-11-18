@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Back from '@/assets/icons/back_icon.svg';
 import Eye from '@/assets/icons/eye.svg';
 import Button from './Button';
@@ -14,6 +14,7 @@ import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
 const BusinessHeader = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     saveAllItems,
     initializePlan,
@@ -26,14 +27,20 @@ const BusinessHeader = () => {
     loadTitleFromAPI,
   } = useBusinessStore();
 
-  // planId 변경 시 서버에서 제목 조회
+  // URL의 planId 또는 store의 planId로 제목 조회
   useEffect(() => {
-    if (!planId) {
+    const planIdParam = searchParams.get('planId');
+    const targetPlanId = planIdParam ? parseInt(planIdParam, 10) : planId;
+
+    if (!targetPlanId || isNaN(targetPlanId)) {
       setTitle('');
       return;
     }
-    loadTitleFromAPI(planId);
-  }, [planId, loadTitleFromAPI, setTitle]);
+
+    loadTitleFromAPI(targetPlanId).catch((error) => {
+      console.error('제목 불러오기 실패:', error);
+    });
+  }, [searchParams, planId, loadTitleFromAPI, setTitle]);
 
   // 제목 변경 시 API 요청 (debounce 적용)
   useEffect(() => {
