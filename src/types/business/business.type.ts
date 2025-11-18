@@ -79,6 +79,22 @@ export interface BusinessPlanSubsectionResponse {
     error: null;
 }
 
+export interface SubSectionDetail {
+    subSectionType: SubSectionType;
+    subSectionId: number;
+    content: BusinessPlanSubsectionRequest;
+}
+
+export interface BusinessPlanSubsectionsResponse {
+    result: 'SUCCESS';
+    data: {
+        businessPlanId: number;
+        title: string;
+        planStatus: string;
+        subSectionDetailList: SubSectionDetail[];
+    };
+    error: null;
+}
 export interface BusinessPlanTitleResponse {
     result: 'SUCCESS';
     data: string;

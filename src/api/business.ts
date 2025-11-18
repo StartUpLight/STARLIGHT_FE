@@ -9,6 +9,7 @@ import {
   BusinessPlanTitleResponse,
   SubSectionType,
   AiGradeResponse,
+  BusinessPlanSubsectionsResponse,
 } from '@/types/business/business.type';
 
 export async function postBusinessPlan(): Promise<BusinessPlanCreateResponse> {
@@ -32,6 +33,11 @@ export async function getBusinessPlanSubsection(
     `/v1/business-plans/${planId}/subsections/${subSectionType}`
   );
   return res.data as BusinessPlanSubsectionResponse;
+}
+
+export async function getBusinessPlanSubsections(planId: number): Promise<BusinessPlanSubsectionsResponse> {
+  const res = await api.get(`/v1/business-plans/${planId}/subsections`);
+  return res.data as BusinessPlanSubsectionsResponse;
 }
 
 export async function getBusinessPlanTitle(planId: number): Promise<BusinessPlanTitleResponse> {
