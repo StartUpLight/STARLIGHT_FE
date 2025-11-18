@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import WriteForm from './components/WriteForm';
 import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
+import { useEditorStore } from '@/store/editor.store';
 import CreateModal from './components/CreateModal';
 
 const WRITE_MODAL_KEY = 'writeModalShown';
@@ -17,6 +18,7 @@ const BusinessPageContent = () => {
   const selectedItem = useBusinessStore((state) => state.selectedItem);
   const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
   const { initializePlan, loadContentsFromAPI, clearStorage, resetDraft, isPreview, setPreview, planId, setPlanId } = useBusinessStore();
+  const registerEditor = useEditorStore((state) => state.register);
   const hasInitializedPlanRef = useRef(false);
 
   useEffect(() => {
@@ -54,6 +56,13 @@ const BusinessPageContent = () => {
     const resetDraftState = () => {
       clearStorage();
       resetDraft();
+      // 에디터 스토어도 초기화하여 이전 내용이 남지 않도록 함
+      registerEditor({
+        sectionNumber: '0',
+        features: null,
+        skills: null,
+        goals: null,
+      });
     };
 
     const loadPlan = (id: number) => {

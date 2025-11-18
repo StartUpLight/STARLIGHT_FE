@@ -140,9 +140,14 @@ const WriteForm = ({
 
   // 에디터 내용 복원 헬퍼 함수
   const restoreEditorContent = useCallback((editor: Editor | null, content: JSONContent | null | undefined) => {
-    if (!editor || editor.isDestroyed || !content) return;
+    if (!editor || editor.isDestroyed) return;
     try {
-      editor.commands.setContent(content);
+      if (content) {
+        editor.commands.setContent(content);
+      } else {
+        // content가 없으면 에디터를 빈 상태로 초기화
+        editor.commands.clearContent();
+      }
 
       // setTimeout(() => {
       //   if (!editor || editor.isDestroyed) return;
