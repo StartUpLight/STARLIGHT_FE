@@ -46,6 +46,14 @@ const BusinessPageContent = () => {
     const currentUrl = window.location.href;
     // 같은 URL이고 플래그가 있으면 새로고침
     const isRefresh = isRefreshing && previousUrl === currentUrl;
+    const shouldResetDraft = sessionStorage.getItem('shouldResetBusinessDraft') === 'true';
+
+    if (!isRefresh && shouldResetDraft) {
+      sessionStorage.removeItem('shouldResetBusinessDraft');
+      clearStorage();
+      resetDraft();
+    }
+
     if (planIdParam) {
       // planId가 URL에 있으면: 기존 사업계획서 로드
       const parsedPlanId = parseInt(planIdParam, 10);
@@ -101,13 +109,14 @@ const BusinessPageContent = () => {
     initializePlan,
   ]);
 
-  // 페이지를 떠날 때 planId 및 임시 저장 데이터 초기화
+  // 페이지를 떠났음을 표시 (실제 초기화는 다음 진입 시점에 수행)
   useEffect(() => {
     return () => {
-      clearStorage();
-      resetDraft();
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('shouldResetBusinessDraft', 'true');
+      }
     };
-  }, [clearStorage, resetDraft]);
+  }, []);
 
   // 새로고침 감지 및 다른 페이지 이동 감지
   useEffect(() => {
