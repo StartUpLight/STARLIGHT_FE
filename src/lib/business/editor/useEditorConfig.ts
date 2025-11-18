@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import type { EditorView } from '@tiptap/pm/view';
 import { uploadImage } from '@/lib/imageUpload';
+import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
 
 type EditorViewWithEditor = EditorView & { editor?: Editor };
 
@@ -24,13 +25,22 @@ export const createPasteHandler = () => {
 
                 // 비동기로 업로드 처리
                 uploadImage(file)
-                    .then((imageUrl) => {
+                    .then(async (imageUrl) => {
                         if (imageUrl) {
                             const editor = (view as EditorViewWithEditor).editor;
+                            const { width, height } = await getImageDimensions(imageUrl);
+                            const maxWidth = view.dom?.clientWidth ? view.dom.clientWidth - 48 : undefined;
+                            const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
                             editor
                                 ?.chain()
                                 .focus()
-                                .setImage({ src: imageUrl })
+                                .setImage(
+                                    {
+                                        src: imageUrl,
+                                        width: clampedWidth ?? undefined,
+                                        height: clampedHeight ?? undefined,
+                                    } as any
+                                )
                                 .run();
                         }
                     })

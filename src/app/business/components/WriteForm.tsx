@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
 import { useBusinessStore } from '@/store/business.store';
 import { uploadImage } from '@/lib/imageUpload';
+import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextStyle from '@tiptap/extension-text-style';
@@ -363,7 +364,21 @@ const WriteForm = ({
       const imageUrl = await uploadImage(file);
 
       if (imageUrl && activeEditor) {
-        activeEditor.chain().focus().setImage({ src: imageUrl }).run();
+        const { width, height } = await getImageDimensions(imageUrl);
+        const editorDom = activeEditor.view.dom as HTMLElement | null;
+        const maxWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
+        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
+        activeEditor
+          .chain()
+          .focus()
+          .setImage(
+            {
+              src: imageUrl,
+              width: clampedWidth ?? undefined,
+              height: clampedHeight ?? undefined,
+            } as any
+          )
+          .run();
       }
     } catch (error) {
       console.error('이미지 업로드 실패:', error);

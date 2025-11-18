@@ -1,10 +1,21 @@
-import { BlockContentItem, TextContentItem } from '@/types/business/business.type';
+import { BlockContentItem, TextContentItem, ImageContentItem } from '@/types/business/business.type';
 
 export type JSONAttrs = { [key: string]: string | number | boolean | null | undefined };
 export type JSONMark = { type: string; attrs?: JSONAttrs };
 export type JSONNode = { type?: string; text?: string; marks?: JSONMark[]; attrs?: JSONAttrs; content?: JSONNode[] };
 
 // TipTap JSON 노드를 마크다운 문자열로 변환합니다.
+const parseDimension = (value: unknown): number | null => {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+    }
+    if (typeof value === 'string') {
+        const parsed = parseFloat(value);
+        return Number.isNaN(parsed) ? null : parsed;
+    }
+    return null;
+};
+
 export const convertToMarkdown = (node: JSONNode | null | undefined): string => {
     if (!node) return '';
     if (node.type === 'text') {
@@ -99,6 +110,13 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
     if (node.type === 'image') {
         const src = node.attrs?.src || '';
         const alt = node.attrs?.alt || node.attrs?.title || '';
+        const width = parseDimension(node.attrs?.width);
+        const height = parseDimension(node.attrs?.height);
+        node.attrs = {
+            ...node.attrs,
+            width: width ?? undefined,
+            height: height ?? undefined,
+        };
         return src ? `![${alt}](${src})` : '';
     }
 
@@ -109,6 +127,66 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
 };
 
 // TipTap 문서(JSON)를 API 전송용 BlockContentItem 배열로 변환합니다.
+const collectInlineImages = (node: JSONNode | undefined, target: ImageContentItem[]) => {
+    if (!node || !Array.isArray(node.content)) return;
+    node.content.forEach((child) => {
+        if (child.type === 'image') {
+            const src = (child.attrs?.src as string) || '';
+            if (!src) return;
+            target.push({
+                type: 'image',
+                src,
+                caption: (child.attrs?.alt as string) || (child.attrs?.title as string) || '',
+                width: parseDimension(child.attrs?.width),
+                height: parseDimension(child.attrs?.height),
+            });
+        } else {
+            collectInlineImages(child, target);
+        }
+    });
+};
+
+const splitMarkdownByImages = (
+    markdown: string,
+    images: ImageContentItem[],
+    pushText: (text: string) => void,
+    pushImage: (image: ImageContentItem) => void
+) => {
+    if (!markdown) return;
+    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = imageRegex.exec(markdown)) !== null) {
+        const before = markdown.slice(lastIndex, match.index);
+        if (before) {
+            pushText(before);
+        }
+        const imageItem = images.shift();
+        if (imageItem) {
+            pushImage({
+                ...imageItem,
+                caption: imageItem.caption || match[1] || '',
+                src: imageItem.src || match[2],
+            });
+        } else {
+            pushImage({
+                type: 'image',
+                src: match[2],
+                caption: match[1] || '',
+                width: null,
+                height: null,
+            });
+        }
+        lastIndex = imageRegex.lastIndex;
+    }
+
+    const remaining = markdown.slice(lastIndex);
+    if (remaining) {
+        pushText(remaining);
+    }
+};
+
 export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } | null): BlockContentItem[] => {
     if (!editorJson || !Array.isArray(editorJson.content)) return [];
     const contents: BlockContentItem[] = [];
@@ -145,7 +223,9 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
     const flushTextNodes = () => {
         if (currentTextNodes.length > 0) {
             const markdownParts: string[] = [];
+            const inlineImages: ImageContentItem[] = [];
             currentTextNodes.forEach((node, index) => {
+                collectInlineImages(node, inlineImages);
                 const content = convertToMarkdown(node);
                 markdownParts.push(content);
 
@@ -156,9 +236,22 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
             });
 
             const markdown = markdownParts.join('');
-            if (markdown) {
-                contents.push({ type: 'text', value: markdown } as TextContentItem);
-            }
+            const pushText = (value: string) => {
+                if (!value) return;
+                contents.push({ type: 'text', value } as TextContentItem);
+            };
+            const pushImage = (image: ImageContentItem) => {
+                if (!image.src) return;
+                contents.push({
+                    type: 'image',
+                    src: image.src,
+                    caption: image.caption || '',
+                    width: image.width ?? null,
+                    height: image.height ?? null,
+                });
+            };
+
+            splitMarkdownByImages(markdown, inlineImages, pushText, pushImage);
             currentTextNodes = [];
         }
     };
@@ -175,10 +268,14 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
             // 텍스트 노드들을 먼저 처리
             flushTextNodes();
             // 최상위 레벨의 독립적인 이미지
+            const widthAttr = parseDimension(node.attrs?.width);
+            const heightAttr = parseDimension(node.attrs?.height);
             contents.push({
                 type: 'image',
                 src: (node.attrs?.src as string) || '',
                 caption: (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
+                width: widthAttr ?? null,
+                height: heightAttr ?? null,
             });
         } else {
             // 텍스트 노드 (paragraph, heading 등) - 나중에 한번에 처리

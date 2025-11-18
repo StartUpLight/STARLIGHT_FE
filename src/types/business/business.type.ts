@@ -10,6 +10,8 @@ export interface ImageContentItem {
     type: 'image';
     src: string;
     caption?: string;
+    width?: number | null;
+    height?: number | null;
 }
 
 export interface TableContentItem {
@@ -112,7 +114,7 @@ export type SpellContent =
         columns: string[];
         rows: (string | number | null)[][];
     }
-    | { type: 'image'; src: string; caption?: string };
+    | { type: 'image'; src: string; caption?: string; width?: number | null; height?: number | null };
 
 export interface BusinessSpellCheckRequest {
     subSectionType: string;
