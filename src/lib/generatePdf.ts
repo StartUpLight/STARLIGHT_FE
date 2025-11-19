@@ -14,6 +14,24 @@ const A4_HEIGHT = 1123;
 const HEADER_HEIGHT = 80;
 const CONTENT_PADDING = 48;
 const MAX_CONTENT_HEIGHT = A4_HEIGHT - HEADER_HEIGHT - CONTENT_PADDING;
+const waitForElement = async (doc: Document, id: string, timeout = 2000): Promise<HTMLElement> => {
+    const start = Date.now();
+    return new Promise((resolve, reject) => {
+        const check = () => {
+            const element = doc.getElementById(id) as HTMLElement | null;
+            if (element) {
+                resolve(element);
+                return;
+            }
+            if (Date.now() - start > timeout) {
+                reject(new Error(`Element with id "${id}" not found`));
+                return;
+            }
+            requestAnimationFrame(check);
+        };
+        check();
+    });
+};
 
 // 아이템 렌더링 함수 (Preview.tsx와 동일)
 const renderItemHtml = (
@@ -300,10 +318,7 @@ export const generatePdfFromSubsections = async (
                     });
 
                     // Preview.tsx와 동일한 페이지 분할 로직
-                    const measureContent = measureDoc.getElementById('measure-content');
-                    if (!measureContent) {
-                        throw new Error('Measure content not found');
-                    }
+                    const measureContent = await waitForElement(measureDoc, 'measure-content');
 
                     const sectionElements = Array.from(measureContent.children);
                     const pages: Array<{ content: string; showHeader: boolean }> = [];

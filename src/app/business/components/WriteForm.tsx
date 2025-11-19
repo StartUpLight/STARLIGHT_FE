@@ -23,6 +23,7 @@ import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
 import { DeleteTableOnDelete, ImageCutPaste, ResizableImage, SelectTableOnBorderClick } from '../../../lib/business/editor/extensions';
 import { createPasteHandler } from '../../../lib/business/editor/useEditorConfig';
+import { ImageCommandAttributes } from '@/lib/business/editor/types';
 import WriteFormHeader from './editor/WriteFormHeader';
 import WriteFormToolbar from './editor/WriteFormToolbar';
 import OverviewSection from './editor/OverviewSection';
@@ -373,16 +374,16 @@ const WriteForm = ({
         const editorDom = activeEditor.view.dom as HTMLElement | null;
         const maxWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
         const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
+        const imageAttributes: ImageCommandAttributes = {
+          src: imageUrl,
+          width: clampedWidth ?? undefined,
+          height: clampedHeight ?? undefined,
+        };
+
         activeEditor
           .chain()
           .focus()
-          .setImage(
-            {
-              src: imageUrl,
-              width: clampedWidth ?? undefined,
-              height: clampedHeight ?? undefined,
-            } as any
-          )
+          .setImage(imageAttributes)
           .run();
       }
     } catch (error) {
