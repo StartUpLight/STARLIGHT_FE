@@ -4,9 +4,12 @@ import { useRef } from 'react';
 import { useParams } from 'next/navigation';
 import FeedBackHeader from '../components/FeedBackHeader';
 import FeedBackForm from '../components/FeedBackForm';
-import { FeedBackFormHandle } from '@/types/feedback/sections';
+import { FeedBackFormHandle, SectionKey } from '@/types/feedback/sections';
 import { expertReportsResponse } from '@/types/expert/expert.type';
 import { useExpertReportFeedback } from '@/hooks/mutation/useExpertReportFeedback';
+import { useExpertReport } from '@/hooks/queries/useExpertReport';
+
+type FeedbackMap = Partial<Record<SectionKey, string>>;
 
 const ExpertWritePage = () => {
   const formRef = useRef<FeedBackFormHandle>(null);
@@ -14,6 +17,19 @@ const ExpertWritePage = () => {
   const token = params?.token ?? '';
 
   const { mutate } = useExpertReportFeedback(token);
+  const { data, isLoading } = useExpertReport(token);
+
+  const initialFeedback: FeedbackMap | undefined = data && {
+    summary: data.overallComment ?? '',
+    strength:
+      data.details.find((detail) => detail.commentType === 'STRENGTH')
+        ?.content ?? '',
+    weakness:
+      data.details.find((detail) => detail.commentType === 'WEAKNESS')
+        ?.content ?? '',
+  };
+
+  const isCompleteDisabled = data?.canEdit === false;
 
   const handleComplete = () => {
     if (!formRef.current || !token) return;
@@ -37,7 +53,7 @@ const ExpertWritePage = () => {
 
     mutate(body, {
       onSuccess: (data) => {
-        console.log(data); //수정예정
+        console.log(data);
       },
       onError: (error) => {
         console.error(error);
@@ -47,8 +63,15 @@ const ExpertWritePage = () => {
 
   return (
     <>
-      <FeedBackHeader onComplete={handleComplete} />
-      <FeedBackForm ref={formRef} />
+      <FeedBackHeader
+        onComplete={handleComplete}
+        disabled={isCompleteDisabled}
+      />
+      <FeedBackForm
+        ref={formRef}
+        initialFeedback={initialFeedback}
+        loading={isLoading}
+      />
     </>
   );
 };
