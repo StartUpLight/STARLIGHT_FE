@@ -1,7 +1,7 @@
 export type SpellContent =
   | { type: 'text'; value: string }
   | { type: 'table'; columns: string[]; rows: (string | number | null)[][] }
-  | { type: 'image'; src: string; caption?: string };
+  | { type: 'image'; src: string; caption?: string; width?: number | null; height?: number | null };
 
 export interface BusinessSpellCheckRequest {
   subSectionType: string;

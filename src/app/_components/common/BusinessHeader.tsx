@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Back from '@/assets/icons/back_icon.svg';
 import Eye from '@/assets/icons/eye.svg';
 import Button from './Button';
@@ -9,11 +9,12 @@ import Image from 'next/image';
 import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { downloadPDF } from '@/lib/pdfDownload';
-import { getBusinessPlanTitle, patchBusinessPlanTitle } from '@/api/business';
+import { patchBusinessPlanTitle } from '@/api/business';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
-const BusinessHeader = () => {
+const BusinessHeaderContent = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     saveAllItems,
     initializePlan,
@@ -21,39 +22,27 @@ const BusinessHeader = () => {
     isPreview,
     setPreview,
     setIsSaving,
+    title,
+    setTitle,
+    loadTitleFromAPI,
   } = useBusinessStore();
-  const [title, setTitle] = useState('');
 
-  // planId 변경 시 서버에서 제목 조회
+  // URL의 planId 또는 store의 planId로 제목 조회
   useEffect(() => {
-    let cancelled = false;
+    const planIdParam = searchParams.get('planId');
+    const targetPlanId = planIdParam ? parseInt(planIdParam, 10) : planId;
 
-    const fetchTitle = async () => {
-      if (!planId) {
-        setTitle('');
-        return;
-      }
-      try {
-        const response = await getBusinessPlanTitle(planId);
-        if (!cancelled && response.result === 'SUCCESS') {
-          setTitle(response.data ?? '');
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error('제목 불러오기 실패:', error);
-          setTitle('');
-        }
-      }
-    };
+    if (!targetPlanId || isNaN(targetPlanId)) {
+      setTitle('');
+      return;
+    }
 
-    fetchTitle();
+    loadTitleFromAPI(targetPlanId).catch((error) => {
+      console.error('제목 불러오기 실패:', error);
+    });
+  }, [searchParams, planId, loadTitleFromAPI, setTitle]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [planId]);
-
-  // 제목 변경 시 localStorage에 저장 및 API 요청 (debounce 적용)
+  // 제목 변경 시 API 요청 (debounce 적용)
   useEffect(() => {
     const trimmedTitle = title.trim();
 
@@ -272,5 +261,15 @@ const BusinessHeader = () => {
     </header>
   );
 };
+
+const BusinessHeader = () => (
+  <Suspense
+    fallback={
+      <header className="fixed top-0 right-0 bottom-0 z-[100] h-[60px] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]" />
+    }
+  >
+    <BusinessHeaderContent />
+  </Suspense>
+);
 
 export default BusinessHeader;

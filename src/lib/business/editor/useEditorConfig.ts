@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import type { EditorView } from '@tiptap/pm/view';
 import { uploadImage } from '@/lib/imageUpload';
+import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
 
 type EditorViewWithEditor = EditorView & { editor?: Editor };
 
@@ -16,21 +17,30 @@ export const createPasteHandler = () => {
             const file = imageItem.getAsFile();
             if (file) {
                 // 파일 크기 제한 (5MB)
-                const maxSize = 5 * 1024 * 1024;
-                if (file.size > maxSize) {
-                    alert('이미지 크기는 5MB 이하여야 합니다.');
-                    return true;
-                }
+                // const maxSize = 5 * 1024 * 1024;
+                // if (file.size > maxSize) {
+                //     alert('이미지 크기는 5MB 이하여야 합니다.');
+                //     return true;
+                // }
 
                 // 비동기로 업로드 처리
                 uploadImage(file)
-                    .then((imageUrl) => {
+                    .then(async (imageUrl) => {
                         if (imageUrl) {
                             const editor = (view as EditorViewWithEditor).editor;
+                            const { width, height } = await getImageDimensions(imageUrl);
+                            const maxWidth = view.dom?.clientWidth ? view.dom.clientWidth - 48 : undefined;
+                            const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
                             editor
                                 ?.chain()
                                 .focus()
-                                .setImage({ src: imageUrl })
+                                .setImage(
+                                    {
+                                        src: imageUrl,
+                                        width: clampedWidth ?? undefined,
+                                        height: clampedHeight ?? undefined,
+                                    } as any
+                                )
                                 .run();
                         }
                     })

@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { MentorCardProps } from '@/types/expert/expert.props';
 import { ApplyFeedback } from '@/api/expert';
+import { getBusinessPlanSubsections, getBusinessPlanTitle } from '@/api/business';
+import { generatePdfFromSubsections } from '@/lib/generatePdf';
 import Image from 'next/image';
 import Check from '@/assets/icons/gray_check.svg';
 import Plus from '@/assets/icons/white_plus.svg';
@@ -31,24 +33,50 @@ const MentorCard = ({
   const handleClick = async () => {
     if (disabled) return;
 
-    //수정예정
-    const tempPdf = new File(
-      [new Blob(['temp pdf content'], { type: 'application/pdf' })],
-      'business-plan.pdf',
-      { type: 'application/pdf' }
-    );
-
     try {
       setUploading(true);
+
+      // 모든 서브섹션 조회
+      const response = await getBusinessPlanSubsections(planId!);
+
+      // 제목 조회
+      let title = response.data?.title;
+      if (!title) {
+        try {
+          const titleResponse = await getBusinessPlanTitle(planId!);
+          if (titleResponse.result === 'SUCCESS' && titleResponse.data) {
+            title = titleResponse.data;
+          }
+        } catch (e) {
+          console.warn('제목 조회 실패:', e);
+        }
+      }
+
+      // PDF 생성 (Preview와 동일한 방식)
+      const pdfFile = await generatePdfFromSubsections(response, title);
+
+      // PDF 다운로드
+      // const pdfUrl = URL.createObjectURL(pdfFile);
+      // const link = document.createElement('a');
+      // link.href = pdfUrl;
+      // link.download = `사업계획서_${title || '스타라이트'}_${new Date().getTime()}.pdf`;
+      // document.body.appendChild(link);
+      // link.click();
+      // document.body.removeChild(link);
+      // URL.revokeObjectURL(pdfUrl);
+
+      // 전문가 연결 요청
       await ApplyFeedback({
         expertId: id,
         businessPlanId: planId!,
-        file: tempPdf,
+        file: pdfFile,
       });
+
       setDidApply(true);
       onApplied?.();
     } catch (e) {
-      console.error(e);
+      console.error('전문가 연결 실패:', e);
+      alert('전문가 연결에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setUploading(false);
     }
@@ -111,7 +139,7 @@ const MentorCard = ({
         }
       >
         {isDone ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-        {isDone ? '신청 완료' : uploading ? '신청 중' : '전문가 연결'}
+        {isDone ? '신청 완료' : uploading ? '신청 중..' : '전문가 연결'}
       </button>
     </div>
   );

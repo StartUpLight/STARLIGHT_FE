@@ -62,6 +62,11 @@ export interface BusinessStore {
     // 저장 중 상태
     isSaving: boolean;
     setIsSaving: (isSaving: boolean) => void;
+
+    // 제목 관리
+    title: string;
+    setTitle: (title: string) => void;
+    loadTitleFromAPI: (planId: number) => Promise<string | null>;
 }
 
 

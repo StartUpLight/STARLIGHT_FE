@@ -56,7 +56,8 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
                 return itemContent ? `<li>${itemContent}</li>` : '';
             })
             .filter(Boolean);
-        return items.length > 0 ? `<ul>${items.join('')}</ul>` : '';
+        const listStyle = 'list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0;';
+        return items.length > 0 ? `<ul style="${listStyle}">${items.join('')}</ul>` : '';
     }
 
     if (node.type === 'orderedList') {
@@ -66,7 +67,8 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
                 return itemContent ? `<li>${itemContent}</li>` : '';
             })
             .filter(Boolean);
-        return items.length > 0 ? `<ol>${items.join('')}</ol>` : '';
+        const listStyle = 'list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0;';
+        return items.length > 0 ? `<ol style="${listStyle}">${items.join('')}</ol>` : '';
     }
 
     if (node.type === 'listItem') {

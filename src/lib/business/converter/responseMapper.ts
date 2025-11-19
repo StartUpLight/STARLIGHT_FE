@@ -368,11 +368,17 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         }];
     } else if (item.type === 'image') {
         const imageItem = item as ImageContentItem;
+        const width = typeof imageItem.width === 'number' ? imageItem.width : null;
+        const height = typeof imageItem.height === 'number' ? imageItem.height : null;
+        const normalizedWidth = width && width > 0 ? width : null;
+        const normalizedHeight = height && height > 0 ? height : null;
         return [{
             type: 'image',
             attrs: {
                 src: imageItem.src || '',
                 alt: imageItem.caption || '',
+                width: normalizedWidth,
+                height: normalizedHeight,
             },
         }];
     }

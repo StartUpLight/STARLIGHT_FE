@@ -6,7 +6,7 @@ import { useBusinessStore } from '@/store/business.store';
 import sections from '@/data/sidebar.json';
 import { CheckListResponse, Section } from '@/types/business/checklist.type';
 import { usePostCheckList } from '@/hooks/mutation/usePostChecklist';
-import { getSubSectionTypeFromNumber } from '@/lib/business/getSubsection';
+import { getSubSectionTypeFromNumber } from '@/lib/business/mappers/getSubsection';
 
 const CheckList = () => {
   const selected = useBusinessStore((s) => s.selectedItem);
@@ -110,9 +110,8 @@ const CheckList = () => {
               >
                 {isChecked ? (
                   <div
-                    className={`flex h-[18px] w-[18px] items-center justify-center rounded-full ${
-                      isUserCheck ? 'bg-gray-900' : 'bg-primary-500'
-                    }`}
+                    className={`flex h-[18px] w-[18px] items-center justify-center rounded-full ${isUserCheck ? 'bg-gray-900' : 'bg-primary-500'
+                      }`}
                   >
                     <Check />
                   </div>

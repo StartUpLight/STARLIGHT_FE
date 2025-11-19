@@ -196,69 +196,8 @@ export const ResizableImage = Image.extend({
                     .setNodeSelection(pos)
                     .updateAttributes('image', { width, height })
                     .run();
-                try {
-                    const response = await fetch(node.attrs.src);
-                    if (!response.ok) {
-                        throw new Error('이미지 가져오기 실패');
-                    }
-
-                    const blob = await response.blob();
-                    const imageUrl = URL.createObjectURL(blob);
-
-                    const originalImg = document.createElement('img');
-                    await new Promise<void>((resolve, reject) => {
-                        originalImg.onload = () => {
-                            URL.revokeObjectURL(imageUrl);
-                            resolve();
-                        };
-                        originalImg.onerror = () => {
-                            URL.revokeObjectURL(imageUrl);
-                            reject(new Error('이미지 로드 실패'));
-                        };
-                        originalImg.src = imageUrl;
-                    });
-
-                    const originalWidth = originalImg.naturalWidth;
-                    const originalHeight = originalImg.naturalHeight;
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-
-                    if (!ctx) return;
-
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
-
-                    ctx.drawImage(originalImg, 0, 0, originalWidth, originalHeight, 0, 0, width, height);
-
-                    const isJpeg = /\.(jpe?g)$/i.test(node.attrs.src);
-                    const outputMimeType = isJpeg ? 'image/jpeg' : 'image/png';
-
-                    const resizedBlob = await new Promise<Blob | null>((resolve) => {
-                        canvas.toBlob((blob) => resolve(blob), outputMimeType, 1.0);
-                    });
-
-                    if (!resizedBlob) return;
-
-                    const fileExtension = isJpeg ? 'jpg' : 'png';
-                    const file = new File([resizedBlob], `resized-image.${fileExtension}`, { type: outputMimeType });
-                    const { uploadImage } = await import('@/lib/imageUpload');
-                    const newImageUrl = await uploadImage(file);
-
-                    editor
-                        .chain()
-                        .setNodeSelection(pos)
-                        .updateAttributes('image', {
-                            src: newImageUrl,
-                            width,
-                            height
-                        })
-                        .run();
-                } catch (error) {
-                    console.error('이미지 리사이즈 및 업로드 실패:', error);
-                }
+                const transaction = editor.state.tr;
+                editor.emit('update', { editor, transaction });
             };
 
             const handleMouseDown = (e: MouseEvent) => {

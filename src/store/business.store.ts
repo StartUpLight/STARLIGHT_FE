@@ -1,11 +1,11 @@
 "use client";
 import { create } from 'zustand';
 import { buildSubsectionRequest } from '@/lib/business/requestBuilder';
-import { postBusinessPlan, postBusinessPlanSubsections, getBusinessPlanSubsection } from '@/api/business';
+import { postBusinessPlan, postBusinessPlanSubsections, getBusinessPlanSubsection, getBusinessPlanTitle } from '@/api/business';
 import sections from '@/data/sidebar.json';
 import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
 import { convertResponseToItemContent } from '@/lib/business/converter/responseMapper';
-import { getSubSectionTypeFromNumber } from '@/lib/business/getSubsection';
+import { getSubSectionTypeFromNumber } from '@/lib/business/mappers/getSubsection';
 
 const PLAN_ID_KEY = 'businessPlanId';
 
@@ -111,6 +111,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                 subtitle: '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
             },
             contents: {},
+            title: '',
         });
     },
     selectedItem: {
@@ -191,5 +192,23 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     // 저장 중 상태
     isSaving: false,
     setIsSaving: (isSaving: boolean) => set({ isSaving }),
+
+    // 제목 관리
+    title: '',
+    setTitle: (title: string) => set({ title }),
+    loadTitleFromAPI: async (planId: number) => {
+        try {
+            const response = await getBusinessPlanTitle(planId);
+            if (response.result === 'SUCCESS' && response.data) {
+                const title = response.data;
+                set({ title });
+                return title;
+            }
+            return null;
+        } catch (error) {
+            console.error('제목 불러오기 실패:', error);
+            return null;
+        }
+    },
 }));
 

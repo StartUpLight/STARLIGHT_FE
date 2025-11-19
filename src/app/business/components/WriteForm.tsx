@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
 import { useBusinessStore } from '@/store/business.store';
 import { uploadImage } from '@/lib/imageUpload';
+import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextStyle from '@tiptap/extension-text-style';
@@ -139,9 +140,14 @@ const WriteForm = ({
 
   // 에디터 내용 복원 헬퍼 함수
   const restoreEditorContent = useCallback((editor: Editor | null, content: JSONContent | null | undefined) => {
-    if (!editor || editor.isDestroyed || !content) return;
+    if (!editor || editor.isDestroyed) return;
     try {
-      editor.commands.setContent(content);
+      if (content) {
+        editor.commands.setContent(content);
+      } else {
+        // content가 없으면 에디터를 빈 상태로 초기화
+        editor.commands.clearContent();
+      }
 
       // setTimeout(() => {
       //   if (!editor || editor.isDestroyed) return;
@@ -266,7 +272,7 @@ const WriteForm = ({
   const goalsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!editorFeatures || !planId) return;
+    if (!editorFeatures) return;
 
     const handleMainUpdate = createUpdateHandler(mainTimeoutRef);
     editorFeatures.on('update', handleMainUpdate);
@@ -352,18 +358,32 @@ const WriteForm = ({
     }
 
     // 파일 크기 제한 (예: 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      alert('이미지 크기는 5MB 이하여야 합니다.');
-      return;
-    }
+    // const maxSize = 5 * 1024 * 1024; // 5MB
+    // if (file.size > maxSize) {
+    //   alert('이미지 크기는 5MB 이하여야 합니다.');
+    //   return;
+    // }
 
     try {
       // 서버에 이미지 업로드 및 공개 URL 받기
       const imageUrl = await uploadImage(file);
 
       if (imageUrl && activeEditor) {
-        activeEditor.chain().focus().setImage({ src: imageUrl }).run();
+        const { width, height } = await getImageDimensions(imageUrl);
+        const editorDom = activeEditor.view.dom as HTMLElement | null;
+        const maxWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
+        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
+        activeEditor
+          .chain()
+          .focus()
+          .setImage(
+            {
+              src: imageUrl,
+              width: clampedWidth ?? undefined,
+              height: clampedHeight ?? undefined,
+            } as any
+          )
+          .run();
       }
     } catch (error) {
       console.error('이미지 업로드 실패:', error);

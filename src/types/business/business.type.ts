@@ -10,6 +10,8 @@ export interface ImageContentItem {
     type: 'image';
     src: string;
     caption?: string;
+    width?: number | null;
+    height?: number | null;
 }
 
 export interface TableContentItem {
@@ -77,6 +79,22 @@ export interface BusinessPlanSubsectionResponse {
     error: null;
 }
 
+export interface SubSectionDetail {
+    subSectionType: SubSectionType;
+    subSectionId: number;
+    content: BusinessPlanSubsectionRequest;
+}
+
+export interface BusinessPlanSubsectionsResponse {
+    result: 'SUCCESS';
+    data: {
+        businessPlanId: number;
+        title: string;
+        planStatus: string;
+        subSectionDetailList: SubSectionDetail[];
+    };
+    error: null;
+}
 export interface BusinessPlanTitleResponse {
     result: 'SUCCESS';
     data: string;
@@ -112,7 +130,7 @@ export type SpellContent =
         columns: string[];
         rows: (string | number | null)[][];
     }
-    | { type: 'image'; src: string; caption?: string };
+    | { type: 'image'; src: string; caption?: string; width?: number | null; height?: number | null };
 
 export interface BusinessSpellCheckRequest {
     subSectionType: string;

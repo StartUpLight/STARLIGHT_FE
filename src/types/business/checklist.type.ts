@@ -15,7 +15,7 @@ export type Section = { title: string; items: SectionItem[] };
 
 ///
 type Content =
-  | { type: 'image'; src: string; caption?: string }
+  | { type: 'image'; src: string; caption?: string; width?: number | null; height?: number | null }
   | { type: 'table'; columns: string[]; rows: string[][] }
   | { type: 'text'; value: string };
 
