@@ -126,6 +126,8 @@ const renderPreviewHtml = (
                 .ds-text { font-size: 14px; line-height: 20px; }
                 .ds-subtitle { font-size: 16px; line-height: 24px; }
                 .prose img { display: block; margin: 0 auto; }
+                .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
+                .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
             </style>
         </head>
         <body>
@@ -193,6 +195,8 @@ const renderPageHtml = (
                 .ds-text { font-size: 14px; line-height: 20px; }
                 .ds-subtitle { font-size: 16px; line-height: 24px; }
                 .prose img { display: block; margin: 0 auto; }
+                .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
+                .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
             </style>
         </head>
         <body>
