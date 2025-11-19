@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -6,10 +6,60 @@
 }
 
 @theme inline {
+  /* Colors */
+  --color-primary-50: #EAE5FF;
+  --color-primary-100: #d2caff;
+  --color-primary-200: #bdb1ff;
+  --color-primary-300: #9f8dff;
+  --color-primary-400: #8c77ff;
+  --color-primary-500: #6f55ff;
+  --color-primary-600: #654de8;
+  --color-primary-700: #4f3cb5;
+  --color-primary-800: #3d2f8c;
+
+  --color-secondary-500: #5415ff;
+  --color-secondary: #5415ff;
+
+  --color-dark-500: #010824;
+  --color-dark: #010824;
+
+  --color-gray-50: #fbfcfd;
+  --color-gray-80: #f8f9fc;
+  --color-gray-100: #f3f5f9;
+  --color-gray-200: #ebeef3;
+  --color-gray-300: #dadfe7;
+  --color-gray-400: #b4bbc7;
+  --color-gray-500: #949ba7;
+  --color-gray-600: #6c727e;
+  --color-gray-700: #585f69;
+  --color-gray-800: #3a404a;
+  --color-gray-900: #191f28;
+
+  --color-warning-50: #ffe9ee;
+  --color-warning-100: #ffc9d2;
+  --color-warning-200: #f99298;
+  --color-warning-300: #f3636f;
+  --color-warning-400: #ff334b;
+  --color-warning-500: #ff002d;
+  --color-warning-600: #f6002e;
+  --color-warning-700: #e40028;
+
+  --color-black: #000000;
+  --color-white: #ffffff;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Fonts */
+  --font-sans: var(--font-pretendard); /* 전역 기본 폰트 */
+
+  /* Type scale (px) */
+  --text-3xl: 28px; /* Heading */
+  --text-2xl: 20px; /* Title */
+  --text-xl: 18px; /* Sub Title */
+  --text-md: 16px; /* Text */
+  --text-sm: 14px; /* Sub Text */
+  --text-xs: 12px; /* Caption */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +69,246 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html,
+  body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+  }
+}
+
+@utility ds-heading {
+  font-size: var(--text-3xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+}
+
+@utility ds-title {
+  font-size: var(--text-2xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+}
+
+@utility ds-subtitle {
+  font-size: var(--text-xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+}
+
+@utility ds-text {
+  font-size: var(--text-md);
+  line-height: 150%;
+  letter-spacing: -0.01em;
+}
+
+@utility ds-subtext {
+  font-size: var(--text-sm);
+  line-height: 150%;
+  letter-spacing: 0;
+}
+
+@utility ds-caption {
+  font-size: var(--text-xs);
+  line-height: 150%;
+  letter-spacing: 0;
+}
+
+@utility bg-primary-gradient {
+  background-image: linear-gradient(
+    80deg,
+    #d2caff 0%,
+    #6235ff 36%,
+    #311f91 72%,
+    #010824 100%
+  );
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* TipTap placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #9ca3af; /* gray-400 */
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Remove blue focus ring from contenteditable (TipTap) */
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* TipTap heading styles */
+.ProseMirror h1 {
+  font-size: var(--text-3xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0.5em 0;
+  white-space: pre-wrap; /* 줄바꿈 지원 */
+}
+
+.ProseMirror h2 {
+  font-size: var(--text-2xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0.5em 0;
+  white-space: pre-wrap; /* 줄바꿈 지원 */
+}
+
+.ProseMirror h3 {
+  font-size: var(--text-xl);
+  line-height: 150%;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  margin: 0.5em 0;
+  white-space: pre-wrap; /* 줄바꿈 지원 */
+}
+
+/* TipTap list styles */
+.ProseMirror ul,
+.ProseMirror ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  margin: 0.25em 0;
+  line-height: 150%;
+}
+
+.ProseMirror li p {
+  margin: 0;
+  display: inline;
+}
+
+/* TipTap table */
+.ProseMirror table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 표 전체 선택 시 테두리 표시 */
+.ProseMirror table.table-selected {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  border: 1px solid var(--color-gray-300);
+  padding: 10px;
+  vertical-align: top;
+  position: relative;
+}
+
+.ProseMirror th {
+  text-align: left;
+  font-weight: normal;
+}
+
+.ProseMirror .selectedCell {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: -2px;
+}
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  user-select: none;
+  background: transparent;
+}
+
+.gradation {
+  background-image: linear-gradient(
+    89deg,
+    #5415ff -13.42%,
+    #9370ff 60.46%,
+    #d2caff 134.33%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradation2 {
+  background: linear-gradient(284deg, #663aff 35.74%, #c0b2ff 117.35%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ProseMirror span.spell-error {
+  color: #f6002e;
+}
+
+/* TipTap image */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+  position: relative;
+}
+
+.ProseMirror img.selected {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.ProseMirror .image-resize-handle {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 10px;
+  height: 10px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+  cursor: nwse-resize;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ProseMirror .image-wrapper {
+  position: relative;
+  text-align: center;
+}
+
+.ProseMirror .image-container {
+  position: relative;
+  display: inline-block;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }
