@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Back from '@/assets/icons/back_icon.svg';
 import Eye from '@/assets/icons/eye.svg';
@@ -12,7 +12,7 @@ import { downloadPDF } from '@/lib/pdfDownload';
 import { patchBusinessPlanTitle } from '@/api/business';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
-const BusinessHeader = () => {
+const BusinessHeaderContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -261,5 +261,15 @@ const BusinessHeader = () => {
     </header>
   );
 };
+
+const BusinessHeader = () => (
+  <Suspense
+    fallback={
+      <header className="fixed top-0 right-0 bottom-0 z-[100] h-[60px] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]" />
+    }
+  >
+    <BusinessHeaderContent />
+  </Suspense>
+);
 
 export default BusinessHeader;
