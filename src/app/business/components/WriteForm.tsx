@@ -272,7 +272,7 @@ const WriteForm = ({
   const goalsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!editorFeatures || !planId) return;
+    if (!editorFeatures) return;
 
     const handleMainUpdate = createUpdateHandler(mainTimeoutRef);
     editorFeatures.on('update', handleMainUpdate);

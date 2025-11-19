@@ -111,7 +111,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                 subtitle: '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
             },
             contents: {},
-            title: '스타라이트의 사업계획서',
+            title: '',
         });
     },
     selectedItem: {
@@ -194,7 +194,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     setIsSaving: (isSaving: boolean) => set({ isSaving }),
 
     // 제목 관리
-    title: '스타라이트의 사업계획서',
+    title: '',
     setTitle: (title: string) => set({ title }),
     loadTitleFromAPI: async (planId: number) => {
         try {

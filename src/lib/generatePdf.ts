@@ -220,7 +220,7 @@ export const generatePdfFromSubsections = async (
         try {
             const allSections = sections as SidebarSection[];
             const contentMap: Record<string, ReturnType<typeof convertResponseToItemContent>> = {};
-            const finalTitle = title || response.data?.title || '스타라이트의 사업계획서';
+            const finalTitle = title || response.data?.title || '사업계획서';
 
             // API 응답을 contentMap으로 변환
             if (response.result === 'SUCCESS' && response.data?.subSectionDetailList) {
