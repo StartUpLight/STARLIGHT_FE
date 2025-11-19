@@ -7,7 +7,7 @@ import FeedBackForm from '../components/FeedBackForm';
 import { FeedBackFormHandle, SectionKey } from '@/types/feedback/sections';
 import { expertReportsResponse } from '@/types/expert/expert.type';
 import { useExpertReportFeedback } from '@/hooks/mutation/useExpertReportFeedback';
-import { useExperReport } from '@/hooks/queries/useExpertReport';
+import { useExpertReport } from '@/hooks/queries/useExpertReport';
 
 type FeedbackMap = Partial<Record<SectionKey, string>>;
 
@@ -17,7 +17,7 @@ const ExpertWritePage = () => {
   const token = params?.token ?? '';
 
   const { mutate } = useExpertReportFeedback(token);
-  const { data, isLoading } = useExperReport(token);
+  const { data, isLoading } = useExpertReport(token);
 
   const initialFeedback: FeedbackMap | undefined = data && {
     summary: data.overallComment ?? '',
