@@ -1,6 +1,8 @@
 import {
   applyFeedBackProps,
   applyFeedBackResponse,
+  expertReportsResponse,
+  getExpertReportsResponse,
   getExpertResponse,
   getFeedBackExpertResponse,
 } from '@/types/expert/expert.type';
@@ -42,4 +44,26 @@ export async function ApplyFeedback({
     }
   );
   return data;
+}
+
+export async function ExpertReporFeedback(
+  token: string,
+  body: expertReportsResponse
+): Promise<expertReportsResponse> {
+  const { data } = await api.post<expertReportsResponse>(
+    `/v1/expert-reports/${token}`,
+    body
+  );
+
+  return data;
+}
+
+export async function GetExpertReport(
+  token: string
+): Promise<getExpertReportsResponse> {
+  const res = await api.get<{ data: getExpertReportsResponse }>(
+    `/v1/expert-reports/${token}`
+  );
+
+  return res.data.data;
 }

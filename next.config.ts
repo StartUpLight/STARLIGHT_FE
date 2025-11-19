@@ -1,10 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      'kr.object.ncloudstorage.com',
-      'k.kakaocdn.net',
-      'img1.kakaocdn.net',
+    remotePatterns: [
+      {
+        hostname: 'kr.object.ncloudstorage.com',
+        pathname: '/**',
+      },
+      {
+        hostname: 'k.kakaocdn.net',
+        pathname: '/**',
+      },
+      {
+        hostname: 'img1.kakaocdn.net',
+        pathname: '/**',
+      },
     ],
   },
 

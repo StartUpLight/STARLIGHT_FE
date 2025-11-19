@@ -15,7 +15,7 @@ const ExampleReport = () => {
         size="L"
         color="bg-gray-200"
         icon={<ArrowRight />}
-        className="h-11 w-[263px] gap-1 rounded-lg hover:bg-gray-300 active:bg-gray-300"
+        className="h-11 w-[263px] gap-1 rounded-lg text-gray-900 hover:bg-gray-300 active:bg-gray-300"
       />
     </div>
   );
