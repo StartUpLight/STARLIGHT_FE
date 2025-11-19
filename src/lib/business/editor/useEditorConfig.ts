@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/core';
 import type { EditorView } from '@tiptap/pm/view';
 import { uploadImage } from '@/lib/imageUpload';
 import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
+import { ImageCommandAttributes } from '@/lib/business/editor/types';
 
 type EditorViewWithEditor = EditorView & { editor?: Editor };
 
@@ -31,16 +32,15 @@ export const createPasteHandler = () => {
                             const { width, height } = await getImageDimensions(imageUrl);
                             const maxWidth = view.dom?.clientWidth ? view.dom.clientWidth - 48 : undefined;
                             const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
+                            const imageAttributes: ImageCommandAttributes = {
+                                src: imageUrl,
+                                width: clampedWidth ?? undefined,
+                                height: clampedHeight ?? undefined,
+                            };
                             editor
                                 ?.chain()
                                 .focus()
-                                .setImage(
-                                    {
-                                        src: imageUrl,
-                                        width: clampedWidth ?? undefined,
-                                        height: clampedHeight ?? undefined,
-                                    } as any
-                                )
+                                .setImage(imageAttributes)
                                 .run();
                         }
                     })
