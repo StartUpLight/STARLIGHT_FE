@@ -429,37 +429,27 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             // 리스트가 진행 중이면 리스트 종료
             flushAllLists();
 
-            // 일반 텍스트 줄: paragraph에 추가
+            // 일반 텍스트 줄: 각 줄을 별도의 paragraph로 처리
             const parsedNodes = parseMarkdownText(line);
 
-            if (!currentBlock) {
+            // 현재 블록이 있으면 먼저 저장
+            if (hasContent(currentBlock)) {
+                nodes.push(currentBlock);
+                currentBlock = null;
+            }
+
+            // 새로운 paragraph 생성 (각 줄마다 별도의 paragraph)
+            if (parsedNodes.length > 0) {
+                currentBlock = {
+                    type: 'paragraph',
+                    content: parsedNodes,
+                };
+            } else {
                 currentBlock = { type: 'paragraph', content: [] };
             }
 
-            if (!currentBlock.content) {
-                currentBlock.content = [];
-            }
-
-            // 파싱된 노드들을 현재 블록에 추가
-            parsedNodes.forEach((node) => {
-                if (currentBlock && currentBlock.content) {
-                    currentBlock.content.push(node);
-                }
-            });
-
-            // 다음 줄이 존재하고 비어있지 않다면 'hardBreak' 추가 (Enter 1회 -> 줄바꿈)
-            // 단, 다음 줄이 리스트(bulletList 또는 orderedList)인 경우 제외
-            if (nextLine !== null && nextLine.trim() !== '') {
-                const trimmedNextLine = nextLine.trim();
-                const isNextLineList =
-                    /^[-*]\s+/.test(trimmedNextLine) ||  // bulletList: - 또는 *로 시작
-                    /^\d+\.\s+/.test(trimmedNextLine);   // orderedList: 숫자. 로 시작
-
-                if (!isNextLineList && currentBlock && currentBlock.content) {
-                    currentBlock.content.push({ type: 'hardBreak' });
-                }
-            } else {
-                // 다음 줄이 없거나 빈 줄이면 현재 블록 저장
+            // 다음 줄이 없거나 빈 줄이면 현재 블록 저장
+            if (nextLine === null || nextLine.trim() === '') {
                 if (hasContent(currentBlock)) {
                     nodes.push(currentBlock);
                 }
