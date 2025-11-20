@@ -21,7 +21,6 @@ const UserExpertModal = ({
   fileName,
 }: ExportModalProps) => {
   const businessPlanId = useBusinessStore((s) => s.planId);
-  if (!open) return null;
 
   const {
     data: userReport,
@@ -56,6 +55,8 @@ const UserExpertModal = ({
       setSelectedExpert(experts[0]);
     }
   }, [experts, selectedExpert]);
+
+  if (!open) return null;
 
   if (isLoading) {
     return (
@@ -196,7 +197,7 @@ const UserExpertModal = ({
           <div className="flex w-full flex-col gap-4 rounded-xl border border-[#DADFE7] px-6 py-4">
             <div className="ds-subtitle font-semibold text-gray-900">총평</div>
             <div className="ds-text bg-primary-50 text-primary-500 rounded-xl px-2.5 py-5 text-center font-semibold">
-              "{selectedReport.overallComment}"
+              {`"${selectedReport.overallComment}"`}
             </div>
           </div>
 
