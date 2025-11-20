@@ -523,22 +523,3 @@ export const SelectTableOnBorderClick = Extension.create({
     },
 });
 
-export const PreventNestedLists = Extension.create({
-    addKeyboardShortcuts() {
-        return {
-            Tab: () => {
-                if (this.editor?.isActive('bulletList') || this.editor?.isActive('orderedList')) {
-                    return true;
-                }
-                return false;
-            },
-            'Shift-Tab': () => {
-                if (this.editor?.isActive('bulletList') || this.editor?.isActive('orderedList')) {
-                    return true;
-                }
-                return false;
-            },
-        };
-    },
-});
-

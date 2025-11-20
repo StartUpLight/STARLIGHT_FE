@@ -16,7 +16,10 @@ const parseDimension = (value: unknown): number | null => {
     return null;
 };
 
-export const convertToMarkdown = (node: JSONNode | null | undefined): string => {
+export const convertToMarkdown = (
+    node: JSONNode | null | undefined,
+    depth: number = 0
+): string => {
     if (!node) return '';
     if (node.type === 'text') {
         let text = node.text || '';
@@ -60,27 +63,48 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
     }
 
     if (node.type === 'paragraph') {
-        const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
+        const content = (node.content || []).map((child) => convertToMarkdown(child, depth)).join('');
         return content;
     }
 
     if (node.type === 'heading') {
         const level = (node.attrs?.level as number) || 1;
-        const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
+        const content = (node.content || []).map((child) => convertToMarkdown(child, depth)).join('');
         return content ? `${'#'.repeat(level)} ${content.trim()}` : '';
     }
 
     if (node.type === 'bulletList' || node.type === 'orderedList') {
-        const contentArray = node.content || [];
-        const items = contentArray
+        const indent = '  '.repeat(depth);
+        const isOrdered = node.type === 'orderedList';
+        const items = (node.content || [])
             .map((item, index: number) => {
-                const itemContent = (item.content || []).map((child) => convertToMarkdown(child)).join('').trim();
-                const prefix = node.type === 'orderedList' ? `${index + 1}. ` : '- ';
-                const isLast = index === contentArray.length - 1;
-                return itemContent ? `${prefix}${itemContent}${isLast ? '' : '\n'}` : '';
+                if (!item || item.type !== 'listItem') return '';
+                const prefix = isOrdered ? `${index + 1}. ` : '- ';
+
+                const textParts: string[] = [];
+                const nestedParts: string[] = [];
+
+                (item.content || []).forEach((child) => {
+                    if (!child) return;
+                    if (child.type === 'bulletList' || child.type === 'orderedList') {
+                        nestedParts.push(convertToMarkdown(child, depth + 1));
+                    } else {
+                        const value = convertToMarkdown(child, depth + 1).trim();
+                        if (value) {
+                            textParts.push(value);
+                        }
+                    }
+                });
+
+                const textContent = textParts.join(' ').trim();
+                const baseLine = `${indent}${prefix}${textContent}`.trimEnd();
+                const nestedContent = nestedParts.length > 0 ? `\n${nestedParts.join('\n')}` : '';
+
+                return baseLine + nestedContent;
             })
-            .join('');
-        return items ? `${items}` : '';
+            .filter(Boolean);
+
+        return items.length > 0 ? items.join('\n') : '';
     }
 
     if (node.type === 'table') {
@@ -90,7 +114,7 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
                 const cells: string[] = [];
                 (row.content || []).forEach((cell) => {
                     if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                        const cellContent = (cell.content || []).map((child) => convertToMarkdown(child)).join('').trim().replace(/\n/g, ' ');
+                        const cellContent = (cell.content || []).map((child) => convertToMarkdown(child, depth)).join('').trim().replace(/\n/g, ' ');
                         cells.push(cellContent);
                     }
                 });
@@ -121,7 +145,7 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
     }
 
     if (node.content && Array.isArray(node.content)) {
-        return node.content.map((child) => convertToMarkdown(child)).join('');
+        return node.content.map((child) => convertToMarkdown(child, depth)).join('');
     }
     return '';
 };
