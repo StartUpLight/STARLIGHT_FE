@@ -218,7 +218,8 @@ const renderPageHtml = (
             </style>
         </head>
         <body>
-            <div class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
+            <div id="pdf-page-root" class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
+            <div id="pdf-page-root" class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
                 ${showHeader
             ? `<div class="px-12 pt-10 pb-6 border-b border-gray-200 flex-shrink-0">
                         <h1 class="ds-subtitle font-semibold text-gray-900 text-center">${title}</h1>
@@ -532,10 +533,7 @@ export const generatePdfFromSubsections = async (
                                         });
                                     });
 
-                                    const pageElement = pageDoc.body.firstElementChild as HTMLElement;
-                                    if (!pageElement) {
-                                        throw new Error('Page element not found');
-                                    }
+                                    const pageElement = await waitForElement(pageDoc, 'pdf-page-root');
 
                                     const canvas = await html2canvas(pageElement, {
                                         scale: 2,
