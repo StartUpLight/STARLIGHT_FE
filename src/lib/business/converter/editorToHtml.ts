@@ -46,7 +46,31 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
     if (node.type === 'heading') {
         const level = (node.attrs?.level as number) || 1;
         const content = (node.content || []).map((child) => convertToHtml(child)).join('');
-        return content ? `<h${level}>${content}</h${level}>` : '';
+        if (!content) return '';
+
+        // heading level에 따른 스타일 설정
+        let fontSize: string;
+        let fontWeight = '600'; // font-semibold
+        let lineHeight = '150%';
+        let letterSpacing = '-0.02em';
+
+        switch (level) {
+            case 1:
+                fontSize = '28px'; // ds-heading (--text-3xl)
+                break;
+            case 2:
+                fontSize = '20px'; // ds-title (--text-2xl)
+                break;
+            case 3:
+                fontSize = '18px'; // ds-subtitle (--text-xl)
+                break;
+            default:
+                fontSize = '18px';
+                break;
+        }
+
+        const style = `font-size: ${fontSize} !important; line-height: ${lineHeight} !important; font-weight: ${fontWeight} !important; letter-spacing: ${letterSpacing} !important; margin: 0.75rem 0 0.5rem 0 !important;`;
+        return `<h${level} style="${style}">${content}</h${level}>`;
     }
 
     if (node.type === 'bulletList') {
