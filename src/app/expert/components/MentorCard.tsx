@@ -52,8 +52,16 @@ const MentorCard = ({
         }
       }
 
-      // PDF 생성 (Preview와 동일한 방식)
-      const pdfFile = await generatePdfFromSubsections(response, title);
+      let pdfFile: File;
+      try {
+        // PDF 생성 (Preview와 동일한 방식)
+        pdfFile = await generatePdfFromSubsections(response, title);
+      } catch (pdfError) {
+        console.error('PDF 생성 실패, 빈 파일로 대체합니다:', pdfError);
+        pdfFile = new File([new Uint8Array()], 'empty.pdf', {
+          type: 'application/pdf',
+        });
+      }
 
       // PDF 다운로드
       // const pdfUrl = URL.createObjectURL(pdfFile);
