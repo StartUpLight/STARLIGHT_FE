@@ -1,4 +1,4 @@
-import { CheckListRequest } from '@/types/business/checklist.type';
+import { CheckListResponse } from '@/types/business/checklist.type';
 import api from './api';
 import {
   BusinessPlanCreateResponse,
@@ -75,7 +75,7 @@ export async function getGrade(planId: number): Promise<AiGradeResponse> {
   return res.data;
 }
 
-export async function postCheckList(planId: number, body: CheckListRequest) {
+export async function postCheckList(planId: number, body: CheckListResponse) {
   const res = await api.post(
     `/v1/business-plans/${planId}/subsections/check-and-update`,
     body
