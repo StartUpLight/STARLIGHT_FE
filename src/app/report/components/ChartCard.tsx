@@ -21,32 +21,46 @@ const ChartCard = () => {
     { radius: 75, isDashed: true, color: '#DADFE7', bgColor: '#F3F5F9' },
     { radius: 100, isDashed: false, color: '#EBEEF3', bgColor: '#FBFCFD' },
   ] as const;
-  const labelDistances = [30, 40, 30, 60] as const;
+  const labelDistances = [20, 40, 30, 60] as const;
 
   const planId = useBusinessStore((s) => s.planId);
   const { data, isLoading, isError } = useGetGrade((planId ?? 0) as number);
 
   const radarData = useMemo(() => {
     const d = data?.data;
-    return [
+
+    const raw = [
       {
         subject: '문제 정의',
-        value: d?.problemRecognitionScore ?? 0,
+        score: d?.problemRecognitionScore ?? 0,
         fullMark: 20,
       },
-      { subject: '실현 가능성', value: d?.feasibilityScore ?? 0, fullMark: 30 },
       {
-        subject: '성장 전략',
-        value: d?.growthStrategyScore ?? 0,
+        subject: '실현 가능성',
+        score: d?.feasibilityScore ?? 0,
         fullMark: 30,
       },
-      { subject: '팀 역량', value: d?.teamCompetenceScore ?? 0, fullMark: 20 },
+      {
+        subject: '성장 전략',
+        score: d?.growthStrategyScore ?? 0,
+        fullMark: 30,
+      },
+      {
+        subject: '팀 역량',
+        score: d?.teamCompetenceScore ?? 0,
+        fullMark: 20,
+      },
     ];
+
+    return raw.map((item) => ({
+      ...item,
+      ratio: item.fullMark > 0 ? item.score / item.fullMark : 0,
+    }));
   }, [data]);
 
   if (!planId) {
     return (
-      <div className="flex h-[359px] min-w-[540px] items-center justify-center rounded-[12px] border border-gray-300 bg-white p-6">
+      <div className="flex h-[359px] min-w-[540px] items-center justify-center rounded-xl border border-gray-300 bg-white p-6">
         <p className="ds-text text-gray-700">
           계획서를 저장/채점한 후 확인할 수 있어요.
         </p>
@@ -55,21 +69,21 @@ const ChartCard = () => {
   }
   if (isLoading) {
     return (
-      <div className="flex h-[359px] min-w-[540px] items-center justify-center rounded-[12px] border border-gray-300 bg-white p-6">
+      <div className="flex h-[359px] min-w-[540px] items-center justify-center rounded-xl border border-gray-300 bg-white p-6">
         <p className="ds-text text-gray-700">차트 불러오는 중입니다.</p>
       </div>
     );
   }
   if (isError) {
     return (
-      <div className="flex h-[359px] min-w-[540px] items-center justify-center rounded-[12px] border border-gray-300 bg-white p-6">
+      <div className="flex h-[359px] min-w-[540px] items-center justify-center rounded-xl border border-gray-300 bg-white p-6">
         <p className="ds-text text-warning-400">차트를 불러올 수 없습니다.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-[359px] min-w-[540px] flex-col items-center justify-center rounded-[12px] border border-gray-300 bg-white p-6">
+    <div className="flex h-[359px] min-w-[540px] flex-col items-center justify-center rounded-xl border border-gray-300 bg-white p-6">
       <div className="relative h-full w-full">
         <svg
           width="500"
@@ -77,7 +91,7 @@ const ChartCard = () => {
           style={{
             position: 'absolute',
             top: 0,
-            left: '50%',
+            left: '51%',
             transform: 'translateX(-50%)',
           }}
         >
@@ -137,6 +151,7 @@ const ChartCard = () => {
                   outerRadius + labelDistances[index as 0 | 1 | 2 | 3];
                 const newX = cx + distance * Math.cos(angle);
                 const newY = cy - distance * Math.sin(angle);
+
                 return (
                   <text
                     x={newX}
@@ -155,13 +170,13 @@ const ChartCard = () => {
             />
             <PolarRadiusAxis
               angle={90}
-              domain={[0, 30]}
+              domain={[0, 1]}
               tick={false}
               axisLine={false}
             />
             <Radar
               name="점수"
-              dataKey="value"
+              dataKey="ratio"
               stroke="#6F55FF"
               fill="rgba(111, 85, 255, 0.20)"
               fillOpacity={0.8}
