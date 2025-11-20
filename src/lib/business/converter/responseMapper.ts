@@ -133,8 +133,14 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         const lines = text.split('\n');
         const nodes: JSONNode[] = [];
         let currentBlock: JSONNode | null = null;
-        let currentList: JSONNode | null = null;
-        let currentListType: 'bulletList' | 'orderedList' | null = null;
+
+        // 중첩 리스트를 위한 스택 구조
+        type ListStackItem = {
+            list: JSONNode;
+            listType: 'bulletList' | 'orderedList';
+            depth: number;
+        };
+        const listStack: ListStackItem[] = [];
 
         const hasContent = (block: JSONNode | null): block is JSONNode => {
             return block !== null &&
@@ -143,12 +149,49 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                 block.content.length > 0;
         };
 
-        const flushList = () => {
-            if (hasContent(currentList)) {
-                nodes.push(currentList!);
+        // 리스트 스택을 모두 비우고 최상위 노드에 추가
+        const flushAllLists = () => {
+            if (listStack.length === 0) return;
+
+            // 가장 깊은 리스트부터 상위로 올라가며 중첩 구조 완성
+            while (listStack.length > 1) {
+                const child = listStack.pop()!;
+                const parent = listStack[listStack.length - 1];
+
+                // 부모 리스트의 마지막 아이템에 자식 리스트 추가
+                if (parent.list.content && parent.list.content.length > 0) {
+                    const lastItem = parent.list.content[parent.list.content.length - 1];
+                    if (lastItem.type === 'listItem' && lastItem.content) {
+                        // 이미 중첩 리스트가 있는지 확인 (중복 방지)
+                        const hasNestedList = lastItem.content.some(
+                            (c) => c.type === 'orderedList' || c.type === 'bulletList'
+                        );
+                        if (!hasNestedList) {
+                            lastItem.content.push(child.list);
+                        }
+                    }
+                }
             }
-            currentList = null;
-            currentListType = null;
+
+            // 최상위 리스트를 nodes에 추가
+            if (listStack.length > 0) {
+                nodes.push(listStack[0].list);
+                listStack.length = 0;
+            }
+        };
+
+        // 들여쓰기 공백 수를 계산하여 깊이 반환
+        const getIndentDepth = (line: string): number => {
+            let depth = 0;
+            for (let i = 0; i < line.length; i++) {
+                if (line[i] === ' ') {
+                    depth++;
+                } else {
+                    break;
+                }
+            }
+            // 공백 2개 = 깊이 1
+            return Math.floor(depth / 2);
         };
 
         lines.forEach((line, index) => {
@@ -162,7 +205,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                     nodes.push(currentBlock);
                     currentBlock = null;
                 }
-                flushList();
+                flushAllLists();
                 nodes.push({ type: 'paragraph', content: [] });
                 return;
             }
@@ -175,7 +218,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                     nodes.push(currentBlock);
                     currentBlock = null;
                 }
-                flushList();
+                flushAllLists();
 
                 const level = headingMatch[1].length;
                 const headingText = headingMatch[2];
@@ -194,8 +237,8 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                 return;
             }
 
-            // OrderedList 마크다운 체크 (1. 2. 3. 등)
-            const orderedListMatch = trimmedLine.match(/^(\d+)\.\s+(.+)$/);
+            // OrderedList 마크다운 체크 (들여쓰기 고려)
+            const orderedListMatch = line.match(/^(\s*)(\d+)\.\s+(.+)$/);
             if (orderedListMatch) {
                 // 이전 블록 저장
                 if (hasContent(currentBlock)) {
@@ -203,15 +246,11 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                     currentBlock = null;
                 }
 
-                // 리스트 타입이 다르면 이전 리스트 저장
-                if (currentListType !== 'orderedList') {
-                    flushList();
-                    currentListType = 'orderedList';
-                    currentList = { type: 'orderedList', content: [] };
-                }
-
-                const itemText = orderedListMatch[2];
+                const indent = orderedListMatch[1];
+                const itemText = orderedListMatch[3];
+                const depth = getIndentDepth(line);
                 const parsedNodes = parseMarkdownText(itemText);
+
                 const listItem: JSONNode = {
                     type: 'listItem',
                     content: [{
@@ -220,14 +259,81 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                     }],
                 };
 
-                if (currentList && currentList.content) {
-                    currentList.content.push(listItem);
+                // 현재 깊이보다 깊은 리스트들을 상위로 병합
+                while (listStack.length > 0 && listStack[listStack.length - 1].depth > depth) {
+                    const child = listStack.pop()!;
+                    if (listStack.length > 0) {
+                        const parent = listStack[listStack.length - 1];
+                        if (parent.list.content && parent.list.content.length > 0) {
+                            const lastItem = parent.list.content[parent.list.content.length - 1];
+                            if (lastItem.type === 'listItem' && lastItem.content) {
+                                // 이미 중첩 리스트가 있는지 확인
+                                const hasNestedList = lastItem.content.some(
+                                    (c) => c.type === 'orderedList' || c.type === 'bulletList'
+                                );
+                                if (!hasNestedList) {
+                                    lastItem.content.push(child.list);
+                                }
+                            }
+                        }
+                    } else {
+                        nodes.push(child.list);
+                    }
+                }
+
+                // 현재 깊이에 맞는 리스트 찾기 또는 생성
+                if (listStack.length === 0) {
+                    // 새 리스트 시작
+                    flushAllLists();
+                    const newList: JSONNode = { type: 'orderedList', content: [] };
+                    listStack.push({ list: newList, listType: 'orderedList', depth });
+                } else {
+                    const topStack = listStack[listStack.length - 1];
+                    if (topStack.depth < depth) {
+                        // 중첩 리스트 생성: 부모 리스트의 마지막 아이템에 추가
+                        if (topStack.list.content && topStack.list.content.length > 0) {
+                            const lastItem = topStack.list.content[topStack.list.content.length - 1];
+                            if (lastItem.type === 'listItem' && lastItem.content) {
+                                // 이미 중첩 리스트가 있는지 확인
+                                const existingNestedList = lastItem.content.find(
+                                    (c) => c.type === 'orderedList' || c.type === 'bulletList'
+                                ) as JSONNode | undefined;
+
+                                if (existingNestedList && existingNestedList.type === 'orderedList') {
+                                    // 이미 중첩 번호 리스트가 있으면 그 리스트를 스택에 추가
+                                    listStack.push({ list: existingNestedList, listType: 'orderedList', depth });
+                                } else if (!existingNestedList) {
+                                    // 중첩 리스트가 없으면 새로 생성
+                                    const nestedList: JSONNode = { type: 'orderedList', content: [] };
+                                    lastItem.content.push(nestedList);
+                                    listStack.push({ list: nestedList, listType: 'orderedList', depth });
+                                }
+                            }
+                        }
+                    } else if (topStack.depth === depth && topStack.listType !== 'orderedList') {
+                        // 같은 깊이지만 타입이 다르면 이전 리스트 종료 후 새로 시작
+                        flushAllLists();
+                        const newList: JSONNode = { type: 'orderedList', content: [] };
+                        listStack.push({ list: newList, listType: 'orderedList', depth });
+                    }
+                    // 같은 깊이, 같은 타입이면 현재 리스트에 추가 (아래에서 처리)
+                }
+
+                // 현재 리스트에 아이템 추가
+                if (listStack.length > 0) {
+                    const currentListStack = listStack[listStack.length - 1];
+                    // 깊이가 일치하는지 확인
+                    if (currentListStack.depth === depth && currentListStack.listType === 'orderedList') {
+                        if (currentListStack.list.content) {
+                            currentListStack.list.content.push(listItem);
+                        }
+                    }
                 }
                 return;
             }
 
-            // BulletList 마크다운 체크 (- 또는 *)
-            const bulletListMatch = trimmedLine.match(/^[-*]\s+(.+)$/);
+            // BulletList 마크다운 체크 (들여쓰기 고려)
+            const bulletListMatch = line.match(/^(\s*)[-*]\s+(.+)$/);
             if (bulletListMatch) {
                 // 이전 블록 저장
                 if (hasContent(currentBlock)) {
@@ -235,15 +341,10 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                     currentBlock = null;
                 }
 
-                // 리스트 타입이 다르면 이전 리스트 저장
-                if (currentListType !== 'bulletList') {
-                    flushList();
-                    currentListType = 'bulletList';
-                    currentList = { type: 'bulletList', content: [] };
-                }
-
-                const itemText = bulletListMatch[1];
+                const itemText = bulletListMatch[2];
+                const depth = getIndentDepth(line);
                 const parsedNodes = parseMarkdownText(itemText);
+
                 const listItem: JSONNode = {
                     type: 'listItem',
                     content: [{
@@ -252,46 +353,103 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                     }],
                 };
 
-                if (currentList && currentList.content) {
-                    currentList.content.push(listItem);
+                // 현재 깊이보다 깊은 리스트들을 상위로 병합
+                while (listStack.length > 0 && listStack[listStack.length - 1].depth > depth) {
+                    const child = listStack.pop()!;
+                    if (listStack.length > 0) {
+                        const parent = listStack[listStack.length - 1];
+                        if (parent.list.content && parent.list.content.length > 0) {
+                            const lastItem = parent.list.content[parent.list.content.length - 1];
+                            if (lastItem.type === 'listItem' && lastItem.content) {
+                                // 이미 중첩 리스트가 있는지 확인
+                                const hasNestedList = lastItem.content.some(
+                                    (c) => c.type === 'orderedList' || c.type === 'bulletList'
+                                );
+                                if (!hasNestedList) {
+                                    lastItem.content.push(child.list);
+                                }
+                            }
+                        }
+                    } else {
+                        nodes.push(child.list);
+                    }
+                }
+
+                // 현재 깊이에 맞는 리스트 찾기 또는 생성
+                if (listStack.length === 0) {
+                    // 새 리스트 시작
+                    flushAllLists();
+                    const newList: JSONNode = { type: 'bulletList', content: [] };
+                    listStack.push({ list: newList, listType: 'bulletList', depth });
+                } else {
+                    const topStack = listStack[listStack.length - 1];
+                    if (topStack.depth < depth) {
+                        // 중첩 리스트 생성: 부모 리스트의 마지막 아이템에 추가
+                        if (topStack.list.content && topStack.list.content.length > 0) {
+                            const lastItem = topStack.list.content[topStack.list.content.length - 1];
+                            if (lastItem.type === 'listItem' && lastItem.content) {
+                                // 이미 중첩 리스트가 있는지 확인
+                                const existingNestedList = lastItem.content.find(
+                                    (c) => c.type === 'bulletList' || c.type === 'orderedList'
+                                ) as JSONNode | undefined;
+
+                                if (existingNestedList && existingNestedList.type === 'bulletList') {
+                                    // 이미 중첩 불렛 리스트가 있으면 그 리스트를 스택에 추가
+                                    listStack.push({ list: existingNestedList, listType: 'bulletList', depth });
+                                } else if (!existingNestedList) {
+                                    // 중첩 리스트가 없으면 새로 생성
+                                    const nestedList: JSONNode = { type: 'bulletList', content: [] };
+                                    lastItem.content.push(nestedList);
+                                    listStack.push({ list: nestedList, listType: 'bulletList', depth });
+                                }
+                            }
+                        }
+                    } else if (topStack.depth === depth && topStack.listType !== 'bulletList') {
+                        // 같은 깊이지만 타입이 다르면 이전 리스트 종료 후 새로 시작
+                        flushAllLists();
+                        const newList: JSONNode = { type: 'bulletList', content: [] };
+                        listStack.push({ list: newList, listType: 'bulletList', depth });
+                    }
+                    // 같은 깊이, 같은 타입이면 현재 리스트에 추가 (아래에서 처리)
+                }
+
+                // 현재 리스트에 아이템 추가
+                if (listStack.length > 0) {
+                    const currentListStack = listStack[listStack.length - 1];
+                    // 깊이가 일치하는지 확인
+                    if (currentListStack.depth === depth && currentListStack.listType === 'bulletList') {
+                        if (currentListStack.list.content) {
+                            currentListStack.list.content.push(listItem);
+                        }
+                    }
                 }
                 return;
             }
 
             // 리스트가 진행 중이면 리스트 종료
-            flushList();
+            flushAllLists();
 
-            // 일반 텍스트 줄: paragraph에 추가
+            // 일반 텍스트 줄: 각 줄을 별도의 paragraph로 처리
             const parsedNodes = parseMarkdownText(line);
 
-            if (!currentBlock) {
+            // 현재 블록이 있으면 먼저 저장
+            if (hasContent(currentBlock)) {
+                nodes.push(currentBlock);
+                currentBlock = null;
+            }
+
+            // 새로운 paragraph 생성 (각 줄마다 별도의 paragraph)
+            if (parsedNodes.length > 0) {
+                currentBlock = {
+                    type: 'paragraph',
+                    content: parsedNodes,
+                };
+            } else {
                 currentBlock = { type: 'paragraph', content: [] };
             }
 
-            if (!currentBlock.content) {
-                currentBlock.content = [];
-            }
-
-            // 파싱된 노드들을 현재 블록에 추가
-            parsedNodes.forEach((node) => {
-                if (currentBlock && currentBlock.content) {
-                    currentBlock.content.push(node);
-                }
-            });
-
-            // 다음 줄이 존재하고 비어있지 않다면 'hardBreak' 추가 (Enter 1회 -> 줄바꿈)
-            // 단, 다음 줄이 리스트(bulletList 또는 orderedList)인 경우 제외
-            if (nextLine !== null && nextLine.trim() !== '') {
-                const trimmedNextLine = nextLine.trim();
-                const isNextLineList =
-                    /^[-*]\s+/.test(trimmedNextLine) ||  // bulletList: - 또는 *로 시작
-                    /^\d+\.\s+/.test(trimmedNextLine);   // orderedList: 숫자. 로 시작
-
-                if (!isNextLineList && currentBlock && currentBlock.content) {
-                    currentBlock.content.push({ type: 'hardBreak' });
-                }
-            } else {
-                // 다음 줄이 없거나 빈 줄이면 현재 블록 저장
+            // 다음 줄이 없거나 빈 줄이면 현재 블록 저장
+            if (nextLine === null || nextLine.trim() === '') {
                 if (hasContent(currentBlock)) {
                     nodes.push(currentBlock);
                 }
@@ -303,7 +461,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         if (hasContent(currentBlock)) {
             nodes.push(currentBlock);
         }
-        flushList();
+        flushAllLists();
 
         return nodes.length > 0 ? nodes : [{ type: 'paragraph' }];
     }
