@@ -5,9 +5,10 @@ import Button from '@/app/_components/common/Button';
 
 interface FeedBackModalProps {
   onClose: () => void;
+  onSubmit: () => void;
 }
 
-const FeedBackModal = ({ onClose }: FeedBackModalProps) => {
+const FeedBackModal = ({ onClose, onSubmit }: FeedBackModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
       <div className="relative flex h-[308px] w-[377px] flex-col rounded-xl bg-white">
@@ -46,6 +47,7 @@ const FeedBackModal = ({ onClose }: FeedBackModalProps) => {
               text="피드백 보내기"
               size="L"
               color="primary"
+              onClick={onSubmit}
               className={'ds-text h-11 w-full rounded-lg px-8 py-2.5'}
             />
           </div>
