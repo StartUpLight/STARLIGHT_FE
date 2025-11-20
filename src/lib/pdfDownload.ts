@@ -115,6 +115,22 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
                         clonedScrollContainer.style.flex = 'none';
                         clonedScrollContainer.scrollTop = 0;
                     }
+
+                    // 섹션 헤더 스타일 적용
+                    const sectionHeaders = clonedDoc.querySelectorAll('.bg-gray-100');
+                    sectionHeaders.forEach((header) => {
+                        const sectionNumberContainer = header.querySelector('.bg-gray-900.rounded-full') as HTMLElement;
+                        if (sectionNumberContainer) {
+                            const sectionNumberText = sectionNumberContainer.querySelector('span') as HTMLElement;
+                            if (sectionNumberText) {
+                                sectionNumberText.style.setProperty('top', '20%', 'important');
+                            }
+                        }
+                        const sectionTitle = header.querySelector('h2.ds-subtitle') as HTMLElement;
+                        if (sectionTitle) {
+                            sectionTitle.style.setProperty('top', '20%', 'important');
+                        }
+                    });
                 }
             },
         });

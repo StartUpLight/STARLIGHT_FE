@@ -36,11 +36,60 @@ const Preview = () => {
 
             return (
                 <div key={sectionIndex} className="mb-[42px]">
-                    <div className="px-3 py-1 bg-gray-100 mb-3 flex items-center gap-3">
-                        <div className="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                            {sectionNumber}
+                    <div
+                        className="px-3 py-1 bg-gray-100 mb-3"
+                        style={{
+                            position: 'relative',
+                            padding: '0.25rem 0.75rem',
+                            backgroundColor: '#f3f4f6',
+                            marginBottom: '0.75rem',
+                            height: '28px',
+                        }}
+                    >
+                        <div
+                            className="rounded-full bg-gray-900"
+                            style={{
+                                position: 'absolute',
+                                left: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                height: '20px',
+                                width: '20px',
+                                borderRadius: '9999px',
+                                backgroundColor: '#111827',
+                            }}
+                        >
+                            <span
+                                className="ds-caption font-semibold text-white"
+                                style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    top: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    fontSize: '12px',
+                                    lineHeight: '16px',
+                                    fontWeight: '600',
+                                    color: '#ffffff',
+                                }}
+                            >
+                                {sectionNumber}
+                            </span>
                         </div>
-                        <h2 className="ds-subtitle font-semibold text-gray-900">
+                        <h2
+                            className="ds-subtitle font-semibold text-gray-900"
+                            style={{
+                                position: 'absolute',
+                                left: '40px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                fontSize: '18px',
+                                lineHeight: '150%',
+                                fontWeight: '600',
+                                color: '#111827',
+                                letterSpacing: '-0.02em',
+                                margin: 0,
+                            }}
+                        >
                             {section.title.replace(/^\d+\.\s*/, '')}
                         </h2>
                     </div>
@@ -275,11 +324,59 @@ const Preview = () => {
                     if (needsSectionHeader) {
                         currentPageContent.push(
                             <div key={`section-${sectionIndex}`} className="mb-3">
-                                <div className="px-3 py-1 bg-gray-100 flex items-center gap-3">
-                                    <div className="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                                        {sectionNumber}
+                                <div
+                                    className="px-3 py-1 bg-gray-100"
+                                    style={{
+                                        position: 'relative',
+                                        padding: '0.25rem 0.75rem',
+                                        backgroundColor: '#f3f4f6',
+                                        height: '28px',
+                                    }}
+                                >
+                                    <div
+                                        className="rounded-full bg-gray-900"
+                                        style={{
+                                            position: 'absolute',
+                                            left: '12px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            height: '20px',
+                                            width: '20px',
+                                            borderRadius: '9999px',
+                                            backgroundColor: '#111827',
+                                        }}
+                                    >
+                                        <span
+                                            className="ds-caption font-semibold text-white"
+                                            style={{
+                                                position: 'absolute',
+                                                left: '50%',
+                                                top: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                                fontSize: '12px',
+                                                lineHeight: '16px',
+                                                fontWeight: '600',
+                                                color: '#ffffff',
+                                            }}
+                                        >
+                                            {sectionNumber}
+                                        </span>
                                     </div>
-                                    <h2 className="ds-subtitle font-semibold text-gray-900">
+                                    <h2
+                                        className="ds-subtitle font-semibold text-gray-900"
+                                        style={{
+                                            position: 'absolute',
+                                            left: '40px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            fontSize: '18px',
+                                            lineHeight: '150%',
+                                            fontWeight: '600',
+                                            color: '#111827',
+                                            letterSpacing: '-0.02em',
+                                            margin: 0,
+                                        }}
+                                    >
                                         {sectionTitle}
                                     </h2>
                                 </div>
