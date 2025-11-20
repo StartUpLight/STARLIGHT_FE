@@ -24,7 +24,7 @@ type Block = {
   content: Content[];
 };
 
-export type CheckListRequest = {
+export type CheckListResponse = {
   subSectionType: string;
   checks: boolean[];
   meta: { author: string; createdAt: string };

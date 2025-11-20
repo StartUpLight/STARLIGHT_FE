@@ -4,7 +4,7 @@ import Button from '@/app/_components/common/Button';
 import Check from '@/assets/icons/white_check.svg';
 import { useBusinessStore } from '@/store/business.store';
 import sections from '@/data/sidebar.json';
-import { CheckListRequest, Section } from '@/types/business/checklist.type';
+import { CheckListResponse, Section } from '@/types/business/checklist.type';
 import { usePostCheckList } from '@/hooks/mutation/usePostChecklist';
 import { getSubSectionTypeFromNumber } from '@/lib/business/mappers/getSubsection';
 import { buildSubsectionRequest } from '@/lib/business/requestBuilder';
@@ -79,7 +79,7 @@ const CheckList = () => {
     // 현재 체크 상태를 checks 배열에 포함 (userChecked 또는 Checked 상태)
     const currentChecks = items.map((item) => item.userChecked || item.Checked);
 
-    const body: CheckListRequest = {
+    const body: CheckListResponse = {
       subSectionType,
       checks: currentChecks,
       meta: {
