@@ -2,10 +2,14 @@
 
 import { useRef } from 'react';
 import { useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import FeedBackHeader from '../components/FeedBackHeader';
 import FeedBackForm from '../components/FeedBackForm';
 import { FeedBackFormHandle, SectionKey } from '@/types/feedback/sections';
-import { expertReportsResponse } from '@/types/expert/expert.type';
+import {
+  expertReportsResponse,
+  getExpertReportsResponse,
+} from '@/types/expert/expert.type';
 import { useExpertReportFeedback } from '@/hooks/mutation/useExpertReportFeedback';
 import { useExpertReport } from '@/hooks/queries/useExpertReport';
 
@@ -16,8 +20,10 @@ const ExpertWritePage = () => {
   const params = useParams<{ token: string }>();
   const token = params?.token ?? '';
 
-  const { mutate } = useExpertReportFeedback(token);
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useExpertReport(token);
+  const { mutate } = useExpertReportFeedback(token);
 
   const initialFeedback: FeedbackMap | undefined = data && {
     summary: data.overallComment ?? '',
@@ -29,7 +35,10 @@ const ExpertWritePage = () => {
         ?.content ?? '',
   };
 
-  const isCompleteDisabled = data?.canEdit === false;
+  const typedData = data as getExpertReportsResponse | undefined;
+  const isSubmitted = !!typedData && typedData.canEdit === false;
+
+  const isCompleteDisabled = isSubmitted;
 
   const handleComplete = () => {
     if (!formRef.current || !token) return;
@@ -40,20 +49,16 @@ const ExpertWritePage = () => {
       saveType: 'FINAL',
       overallComment: raw.summary,
       details: [
-        {
-          commentType: 'STRENGTH',
-          content: raw.strength,
-        },
-        {
-          commentType: 'WEAKNESS',
-          content: raw.weakness,
-        },
+        { commentType: 'STRENGTH', content: raw.strength },
+        { commentType: 'WEAKNESS', content: raw.weakness },
       ],
     };
 
     mutate(body, {
-      onSuccess: (data) => {
-        console.log(data);
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['GetExpertReport', token],
+        });
       },
       onError: (error) => {
         console.error(error);
@@ -71,6 +76,7 @@ const ExpertWritePage = () => {
         ref={formRef}
         initialFeedback={initialFeedback}
         loading={isLoading}
+        isSubmitted={isSubmitted}
       />
     </>
   );

@@ -1,8 +1,9 @@
 import { GetExpertReport, GetUserExpertReport } from '@/api/expert';
-import { useQuery } from '@tanstack/react-query';
+import { getExpertReportsResponse } from '@/types/expert/expert.type';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 
 export function useExpertReport(token: string) {
-  return useQuery({
+  return useQuery<getExpertReportsResponse, Error>({
     queryKey: ['GetExpertReport', token],
     queryFn: () => GetExpertReport(token),
     enabled: !!token,

@@ -28,7 +28,6 @@ const FeedBackHeader = ({ onComplete, disabled }: FeedBackHeaderProps) => {
           완료하기
         </button>
       </div>
-
       {isModal && (
         <FeedBackModal
           onClose={() => setIsModal(false)}
