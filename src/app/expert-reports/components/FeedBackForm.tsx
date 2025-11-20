@@ -19,10 +19,11 @@ type FeedbackMap = Record<SectionKey, string>;
 type FeedBackFormProps = {
   initialFeedback?: Partial<FeedbackMap>;
   loading?: boolean;
+  isSubmitted?: boolean;
 };
 
 const FeedBackForm = forwardRef<FeedBackFormHandle, FeedBackFormProps>(
-  ({ initialFeedback, loading }, ref) => {
+  ({ initialFeedback, loading, isSubmitted }, ref) => {
     const initialState = useMemo<FeedbackMap>(
       () =>
         sections.reduce(
@@ -39,7 +40,6 @@ const FeedBackForm = forwardRef<FeedBackFormHandle, FeedBackFormProps>(
 
     useEffect(() => {
       if (!initialFeedback) return;
-
       setFeedback((prev) => ({
         ...prev,
         ...initialFeedback,
@@ -76,7 +76,16 @@ const FeedBackForm = forwardRef<FeedBackFormHandle, FeedBackFormProps>(
       <div className="bg-gray-100">
         <div className="mx-auto flex min-h-screen max-w-[762px] flex-col py-[30px]">
           <section className="rounded-xl bg-white shadow-[0_20px_60px_rgba(20,40,120,0.08)]">
-            <div className="flex border-b border-gray-200 px-6 py-4">
+            <div className="flex flex-row items-center gap-2 border-b border-gray-200 px-6 py-4">
+              <div
+                className={`ds-caption flex items-center rounded-full px-2 py-0.5 font-medium ${
+                  isSubmitted
+                    ? 'text-primary-500 bg-purple-50'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                {isSubmitted ? '제출완료' : '제출전'}
+              </div>
               <h1 className="ds-title font-semibold text-gray-900">
                 스타라이트의 사업계획서
               </h1>
@@ -90,11 +99,11 @@ const FeedBackForm = forwardRef<FeedBackFormHandle, FeedBackFormProps>(
                   </p>
                   <textarea
                     data-feedback-textarea={section.key}
-                    className="ds-text min-h-40 w-full resize-none rounded-sm bg-gray-100 px-3 py-2 font-medium placeholder:text-gray-400 focus:border-transparent focus:ring-0 focus:outline-none"
+                    className="ds-text min-h-40 w-full resize-none rounded-sm bg-gray-100 px-3 py-2 font-medium text-gray-800 placeholder:text-gray-400 focus:border-transparent focus:ring-0 focus:outline-none"
                     placeholder={section.placeholder}
                     value={feedback[section.key]}
                     onChange={handleChange(section.key)}
-                    disabled={loading}
+                    disabled={loading || isSubmitted}
                   />
                 </div>
               ))}
