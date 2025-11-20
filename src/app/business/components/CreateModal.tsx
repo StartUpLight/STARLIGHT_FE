@@ -46,6 +46,7 @@ const CreateModal = ({
           width={imageWidth}
           height={imageHeight}
           className="self-center object-contain"
+          priority
         />
 
         <div className="ds-heading mt-8 font-bold text-gray-800">{title}</div>

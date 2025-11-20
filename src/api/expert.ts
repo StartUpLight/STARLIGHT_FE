@@ -5,6 +5,7 @@ import {
   getExpertReportsResponse,
   getExpertResponse,
   getFeedBackExpertResponse,
+  getUserExpertReportResponse,
 } from '@/types/expert/expert.type';
 import api from './api';
 
@@ -66,4 +67,14 @@ export async function GetExpertReport(
   );
 
   return res.data.data;
+}
+
+export async function GetUserExpertReport(
+  businessPlanId: number
+): Promise<getUserExpertReportResponse> {
+  const res = await api.get<getUserExpertReportResponse>('/v1/expert-reports', {
+    params: { businessPlanId },
+  });
+
+  return res.data;
 }
