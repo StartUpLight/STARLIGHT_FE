@@ -27,10 +27,12 @@ export default function PlanCard({
 }: PlanCardProps) {
   const [isModal, setIsModal] = useState(false);
   const router = useRouter();
-  const aiStageIndex = stages.findIndex(stage => stage.key === 'ai');
-  const expertStageIndex = stages.findIndex(stage => stage.key === 'expert');
-  const isAiReportEnabled = aiStageIndex >= 0 && currentStageIndex >= aiStageIndex;
-  const isExpertReportEnabled = expertStageIndex >= 0 && currentStageIndex >= expertStageIndex;
+  const aiStageIndex = stages.findIndex((stage) => stage.key === 'ai');
+  const expertStageIndex = stages.findIndex((stage) => stage.key === 'expert');
+  const isAiReportEnabled =
+    aiStageIndex >= 0 && currentStageIndex >= aiStageIndex;
+  const isExpertReportEnabled =
+    expertStageIndex >= 0 && currentStageIndex >= expertStageIndex;
   const setPlanId = useBusinessStore((s) => s.setPlanId);
 
   const handleTitleClick = () => {
@@ -45,18 +47,25 @@ export default function PlanCard({
     router.push(`/expert`);
   };
 
+  const handleExpertReportModalOpen = () => {
+    setPlanId(businessPlanId);
+    setIsModal(true);
+  };
+
   return (
-    <div className="w-full rounded-[12px] bg-white px-6 pt-6 pb-4 space-y-6">
+    <div className="w-full space-y-6 rounded-xl bg-white px-6 pt-6 pb-4">
       <div className="flex items-center justify-between">
         <button
           onClick={handleTitleClick}
-          className="ds-text font-medium text-gray-900 hover:text-primary-500 cursor-pointer flex items-center gap-1"
+          className="ds-text hover:text-primary-500 flex cursor-pointer items-center gap-1 font-medium text-gray-900"
         >
           {title || '이름 없는 사업계획서'}
           <ArrowRightIcon />
         </button>
         {lastSavedAt && (
-          <div className="ds-caption font-medium text-gray-500 ">최종 저장 날짜: {formatDate(lastSavedAt)}</div>
+          <div className="ds-caption font-medium text-gray-500">
+            최종 저장 날짜: {formatDate(lastSavedAt)}
+          </div>
         )}
       </div>
       <div className="w-full">
@@ -64,19 +73,29 @@ export default function PlanCard({
           {stages.map((stage, idx) => {
             const done = idx < currentStageIndex;
             const doing = idx === currentStageIndex;
-            const lineColor = done ? 'bg-gray-600' : doing ? 'bg-primary-500' : 'bg-gray-200';
+            const lineColor = done
+              ? 'bg-gray-600'
+              : doing
+                ? 'bg-primary-500'
+                : 'bg-gray-200';
             return (
-              <div key={stage.key} className="flex flex-col flex-1">
-                <div className="flex items-center w-full">
-                  <div className={`flex-1 h-[4px] rounded-full ${lineColor}`} />
+              <div key={stage.key} className="flex flex-1 flex-col">
+                <div className="flex w-full items-center">
+                  <div className={`h-1 flex-1 rounded-full ${lineColor}`} />
                 </div>
-                <div className="flex items-center gap-2 mt-[6px]">
-                  <div className="flex-shrink-0">
-                    {done ? <DoneIcon />
-                      : doing ? <DoiningIcon />
-                        : <TodoIcon />}
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="shrink-0">
+                    {done ? (
+                      <DoneIcon />
+                    ) : doing ? (
+                      <DoiningIcon />
+                    ) : (
+                      <TodoIcon />
+                    )}
                   </div>
-                  <span className={`ds-caption font-semibold whitespace-nowrap text-gray-900`}>
+                  <span
+                    className={`ds-caption font-semibold whitespace-nowrap text-gray-900`}
+                  >
                     {stage.label}
                   </span>
                 </div>
@@ -85,28 +104,29 @@ export default function PlanCard({
           })}
         </div>
       </div>
-      <div className='flex items-center'>
+      <div className="flex items-center">
         <button
           onClick={handleAiReportClick}
           disabled={!isAiReportEnabled}
-          className={`mr-auto ds-subtext font-semibold flex items-center py-2 px-3 gap-4 ${isAiReportEnabled
-            ? 'cursor-pointer text-gray-900'
-            : 'cursor-not-allowed text-gray-400'
-            }`}
+          className={`ds-subtext mr-auto flex items-center gap-4 px-3 py-2 font-semibold ${
+            isAiReportEnabled
+              ? 'cursor-pointer text-gray-900'
+              : 'cursor-not-allowed text-gray-400'
+          }`}
         >
           AI 리포트 보러가기
           <ArrowRightIcon />
         </button>
-        <div className='w-[1px] h-[24px] bg-gray-300 mx-[33px]'></div>
-        <div className='flex items-center gap-[167px]'>
+        <div className="mx-[33px] h-6 w-px bg-gray-300"></div>
+        <div className="flex items-center gap-[167px]">
           <button
             disabled={!isExpertReportEnabled}
-            className={`ds-subtext font-semibold flex items-center py-2 px-3 gap-4 
-                            ${isExpertReportEnabled
-                ? 'cursor-pointer text-gray-900 hover:bg-gray-100 rounded-[4px]'
+            className={`ds-subtext flex items-center gap-4 px-3 py-2 font-semibold ${
+              isExpertReportEnabled
+                ? 'cursor-pointer rounded-sm text-gray-900 hover:bg-gray-100'
                 : 'cursor-not-allowed text-gray-400'
-              }`}
-            onClick={() => setIsModal(true)}
+            }`}
+            onClick={handleExpertReportModalOpen}
           >
             전문가 리포트 보러가기
             <ArrowRightIcon />
@@ -115,18 +135,22 @@ export default function PlanCard({
             disabled={!isExpertReportEnabled}
             onClick={handleNewExpertClick}
             type="button"
-            className={`ds-caption font-medium whitespace-nowrap flex items-center justify-center rounded-[8px] transition px-3 py-2 
-                            ${isExpertReportEnabled
-                ? 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-100 active:bg-gray-200 cursor-pointer'
-                : 'bg-gray-200 text-gray-500 border border-gray-200 cursor-not-allowed opacity-50'
-              }`}
+            className={`ds-caption flex items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition ${
+              isExpertReportEnabled
+                ? 'cursor-pointer border border-gray-300 bg-white text-gray-900 hover:bg-gray-100 active:bg-gray-200'
+                : 'cursor-not-allowed border border-gray-200 bg-gray-200 text-gray-500 opacity-50'
+            }`}
           >
             새로운 전문가 연결
           </button>
         </div>
       </div>
-      {isModal && <UserExpertModal onClose={() => setIsModal(false)} />}
-    </div >
+      {isModal && (
+        <UserExpertModal
+          onClose={() => setIsModal(false)}
+          fileName={title || '이름 없는 사업계획서'}
+        />
+      )}
+    </div>
   );
 }
-
