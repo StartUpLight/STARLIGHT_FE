@@ -132,16 +132,22 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
                         }
                     });
 
-                    // 개별 요소에도 직접 스타일 적용 (이중 보장)
-                    const markElements = clonedDoc.querySelectorAll('mark');
-                    markElements.forEach((mark) => {
-                        const markEl = mark as HTMLElement;
-                        markEl.style.setProperty('vertical-align', 'baseline', 'important');
-                        markEl.style.setProperty('display', 'inline', 'important');
-                        markEl.style.setProperty('line-height', 'inherit', 'important');
-                        markEl.style.setProperty('padding-top', '0.05em', 'important');
-                        markEl.style.setProperty('padding-bottom', '0.05em', 'important');
-                        markEl.style.setProperty('margin', '0', 'important');
+                    // 하이라이트 배경색 위치 조정 (텍스트는 그대로, 배경만 조정)
+                    const highlightWrappers = clonedDoc.querySelectorAll('span[style*="position: relative"][style*="display: inline-block"]');
+                    highlightWrappers.forEach((wrapper) => {
+                        const wrapperEl = wrapper as HTMLElement;
+                        // 첫 번째 자식이 배경색 span
+                        const bgSpan = wrapperEl.firstElementChild as HTMLElement;
+                        if (bgSpan && bgSpan.style.backgroundColor) {
+                            // 배경색 span의 top 값 조정 가능
+                            bgSpan.style.setProperty('top', '0.8em', 'important');
+                            bgSpan.style.setProperty('left', '0', 'important');
+                            bgSpan.style.setProperty('right', '0', 'important');
+                            bgSpan.style.setProperty('bottom', '0', 'important');
+                            bgSpan.style.setProperty('z-index', '0', 'important');
+                            bgSpan.style.setProperty('pointer-events', 'none', 'important');
+                            bgSpan.style.setProperty('background-color', bgSpan.style.backgroundColor || '', 'important');
+                        }
                     });
 
                     const listItems = clonedDoc.querySelectorAll('li');
