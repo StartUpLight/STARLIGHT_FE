@@ -48,7 +48,7 @@ const LandingRelation = () => {
         priority
       />
 
-      <div className="mt-[119px] flex w-full flex-col px-[132px] pb-[235px]">
+      <div className="mt-[119px] flex w-full flex-col bg-white px-[132px] pb-[235px]">
         <div className="text-[42px] leading-[150%] font-bold tracking-[-0.84px] text-gray-900">
           관련 기관
         </div>

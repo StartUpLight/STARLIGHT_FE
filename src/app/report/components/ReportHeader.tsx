@@ -31,14 +31,14 @@ const ReportHeader = () => {
           text="전문가 연결"
           size="L"
           disabled={!canUseExpert}
-          className="rounded-[8px] px-8"
+          className="rounded-lg px-8"
           onClick={() => {
             if (!canUseExpert) return;
             router.push('/expert');
           }}
         />
         <div
-          className={`absolute top-13 -left-[14px] -translate-x-1/2 ${
+          className={`absolute top-13 -left-3.5 -translate-x-1/2 ${
             !dismissed
               ? 'pointer-events-none hidden group-hover:block'
               : 'hidden'
