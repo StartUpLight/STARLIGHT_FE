@@ -544,6 +544,54 @@ export const generatePdfFromSubsections = async (
                                         width: A4_WIDTH,
                                         height: A4_HEIGHT,
                                         onclone: (clonedDoc) => {
+                                            // 전역 스타일 주입 - 위로 쏠리는 현상 방지
+                                            const styleEl = clonedDoc.createElement('style');
+                                            styleEl.innerHTML = `
+                                                /* 인라인 요소 정렬 수정 */
+                                                mark, strong, em, code, span {
+                                                    vertical-align: baseline !important;
+                                                    display: inline !important;
+                                                    line-height: inherit !important;
+                                                }
+                                                
+                                                /* 하이라이트 추가 여백 */
+                                                mark {
+                                                    padding-top: 0.05em !important;
+                                                    padding-bottom: 0.05em !important;
+                                                    margin: 0 !important;
+                                                }
+                                                
+                                                /* 리스트 스타일 강제 */
+                                                ul, ol {
+                                                    list-style-position: outside !important;
+                                                    padding-left: 1.5rem !important;
+                                                    margin: 0 0 0.75rem 0 !important;
+                                                }
+                                                
+                                                ul {
+                                                    list-style-type: disc !important;
+                                                }
+                                                
+                                                ol {
+                                                    list-style-type: decimal !important;
+                                                }
+                                                
+                                                li {
+                                                    display: list-item !important;
+                                                    line-height: 1.6 !important;
+                                                    vertical-align: baseline !important;
+                                                    padding: 0 !important;
+                                                    margin: 0 !important;
+                                                }
+                                                
+                                                /* 문단 스타일 */
+                                                p {
+                                                    line-height: 1.6 !important;
+                                                    margin: 0 0 0.75rem 0 !important;
+                                                }
+                                            `;
+                                            clonedDoc.head.appendChild(styleEl);
+
                                             // 섹션 헤더 스타일 적용
                                             const sectionHeaders = clonedDoc.querySelectorAll('.bg-gray-100');
                                             sectionHeaders.forEach((header) => {
@@ -558,6 +606,102 @@ export const generatePdfFromSubsections = async (
                                                 if (sectionTitle) {
                                                     sectionTitle.style.setProperty('top', '20%', 'important');
                                                 }
+                                            });
+
+                                            // 개별 요소에도 직접 스타일 적용 (이중 보장)
+                                            const markElements = clonedDoc.querySelectorAll('mark');
+                                            markElements.forEach((mark) => {
+                                                const markEl = mark as HTMLElement;
+                                                markEl.style.setProperty('vertical-align', 'baseline', 'important');
+                                                markEl.style.setProperty('display', 'inline', 'important');
+                                                markEl.style.setProperty('line-height', 'inherit', 'important');
+                                                markEl.style.setProperty('padding-top', '0.05em', 'important');
+                                                markEl.style.setProperty('padding-bottom', '0.05em', 'important');
+                                                markEl.style.setProperty('margin', '0', 'important');
+                                            });
+
+                                            const listItems = clonedDoc.querySelectorAll('li');
+                                            listItems.forEach((li) => {
+                                                const liEl = li as HTMLElement;
+                                                liEl.style.setProperty('display', 'list-item', 'important');
+                                                liEl.style.setProperty('line-height', '1.6', 'important');
+                                                liEl.style.setProperty('vertical-align', 'baseline', 'important');
+                                            });
+
+                                            const bulletLists = clonedDoc.querySelectorAll('ul');
+                                            bulletLists.forEach((ul) => {
+                                                const ulEl = ul as HTMLElement;
+                                                ulEl.style.setProperty('list-style-type', 'none', 'important');
+                                                ulEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                                                const bulletItems = ulEl.querySelectorAll('li');
+                                                bulletItems.forEach((li) => {
+                                                    const liEl = li as HTMLElement;
+                                                    liEl.style.setProperty('list-style-type', 'none', 'important');
+                                                    liEl.style.setProperty('position', 'relative', 'important');
+                                                    liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                    let bulletSpan = liEl.querySelector('.pdf-bullet-marker') as HTMLElement | null;
+                                                    if (!bulletSpan) {
+                                                        bulletSpan = clonedDoc.createElement('span');
+                                                        bulletSpan.className = 'pdf-bullet-marker';
+                                                        bulletSpan.textContent = '•';
+                                                        liEl.insertBefore(bulletSpan, liEl.firstChild);
+                                                    }
+
+                                                    bulletSpan.style.setProperty('position', 'absolute', 'important');
+                                                    bulletSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                    bulletSpan.style.setProperty('top', '0.75em', 'important');
+                                                    bulletSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                    bulletSpan.style.setProperty('line-height', '1', 'important');
+                                                    bulletSpan.style.setProperty('font-size', '1.1rem', 'important');
+                                                    bulletSpan.style.setProperty('color', '#4b5563', 'important');
+                                                });
+                                            });
+
+                                            const orderedLists = clonedDoc.querySelectorAll('ol');
+                                            orderedLists.forEach((ol) => {
+                                                const olEl = ol as HTMLElement;
+                                                olEl.style.setProperty('list-style-type', 'none', 'important');
+                                                olEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                                                // ol의 직접 자식 li만 선택 (중첩된 ul 내부의 li는 제외)
+                                                const orderedItems = Array.from(olEl.children).filter(
+                                                    (child) => child.tagName === 'LI'
+                                                ) as HTMLElement[];
+
+                                                orderedItems.forEach((li, index) => {
+                                                    const liEl = li as HTMLElement;
+                                                    liEl.style.setProperty('list-style-type', 'none', 'important');
+                                                    liEl.style.setProperty('position', 'relative', 'important');
+                                                    liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                    let numberSpan = liEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                                    if (!numberSpan) {
+                                                        numberSpan = clonedDoc.createElement('span');
+                                                        numberSpan.className = 'pdf-number-marker';
+                                                        numberSpan.textContent = `${index + 1}.`;
+                                                        liEl.insertBefore(numberSpan, liEl.firstChild);
+                                                    } else {
+                                                        numberSpan.textContent = `${index + 1}.`;
+                                                    }
+
+                                                    numberSpan.style.setProperty('position', 'absolute', 'important');
+                                                    numberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                    numberSpan.style.setProperty('top', '0.72em', 'important');
+                                                    numberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                    numberSpan.style.setProperty('line-height', '1', 'important');
+                                                    numberSpan.style.setProperty('font-size', '1rem', 'important');
+                                                    numberSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                                    // 중첩된 ul이 있으면 padding-left 조정하여 겹치지 않도록
+                                                    const nestedUl = liEl.querySelector('ul');
+                                                    if (nestedUl) {
+                                                        const nestedUlEl = nestedUl as HTMLElement;
+                                                        nestedUlEl.style.setProperty('margin-left', '0.2rem', 'important');
+                                                        nestedUlEl.style.setProperty('padding-left', '0.6rem', 'important');
+                                                    }
+                                                });
                                             });
                                         },
                                     });
