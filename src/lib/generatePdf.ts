@@ -158,12 +158,14 @@ const renderPreviewHtml = (
         const sectionTitle = section.title.replace(/^\d+\.\s*/, '');
 
         html += `
-            <div class="mb-[42px]">
-                <div class="px-3 py-1 bg-gray-100 mb-3 flex items-center gap-3">
-                    <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                        ${sectionNumber}
+            <div style="margin-bottom: 42px;">
+                <div style="position: relative; padding: 0.25rem 0.75rem; background-color: #f3f4f6; margin-bottom: 0.75rem; height: 28px;">
+                    <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); height: 20px; width: 20px; border-radius: 9999px; background-color: #111827;">
+                        <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 12px; line-height: 16px; font-weight: 600; color: #ffffff;">
+                            ${sectionNumber}
+                        </span>
                     </div>
-                    <h2 class="ds-subtitle font-semibold text-gray-900">
+                    <h2 style="position: absolute; left: 40px; top: 50%; transform: translateY(-50%); font-size: 18px; line-height: 150%; font-weight: 600; color: #111827; letter-spacing: -0.02em; margin: 0;">
                         ${sectionTitle}
                     </h2>
                 </div>
@@ -381,12 +383,14 @@ export const generatePdfFromSubsections = async (
                             // 섹션 헤더 추가 (처음 한 번만)
                             if (needsSectionHeader) {
                                 currentPageContent.push(`
-                                    <div class="mb-3">
-                                        <div class="px-3 py-1 bg-gray-100 flex items-center gap-3">
-                                            <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                                                ${sectionNumber}
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <div style="position: relative; padding: 0.25rem 0.75rem; background-color: #f3f4f6; margin-bottom: 0.75rem; height: 28px;">
+                                            <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); height: 20px; width: 20px; border-radius: 9999px; background-color: #111827;">
+                                                <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 12px; line-height: 16px; font-weight: 600; color: #ffffff;">
+                                                    ${sectionNumber}
+                                                </span>
                                             </div>
-                                            <h2 class="ds-subtitle font-semibold text-gray-900">
+                                            <h2 style="position: absolute; left: 40px; top: 50%; transform: translateY(-50%); font-size: 18px; line-height: 150%; font-weight: 600; color: #111827; letter-spacing: -0.02em; margin: 0;">
                                                 ${sectionTitle}
                                             </h2>
                                         </div>
@@ -616,7 +620,7 @@ export const generatePdfFromSubsections = async (
                                                 const bgSpan = wrapperEl.firstElementChild as HTMLElement;
                                                 if (bgSpan && bgSpan.style.backgroundColor) {
                                                     // 배경색 span의 top 값 조정 가능
-                                                    bgSpan.style.setProperty('top', '0.1em', 'important');
+                                                    bgSpan.style.setProperty('top', '0.8em', 'important');
                                                     bgSpan.style.setProperty('left', '0', 'important');
                                                     bgSpan.style.setProperty('right', '0', 'important');
                                                     bgSpan.style.setProperty('bottom', '0', 'important');
