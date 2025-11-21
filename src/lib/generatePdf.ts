@@ -640,7 +640,11 @@ export const generatePdfFromSubsections = async (
                                                 ulEl.style.setProperty('list-style-type', 'none', 'important');
                                                 ulEl.style.setProperty('padding-left', '1.2rem', 'important');
 
-                                                const bulletItems = ulEl.querySelectorAll('li');
+                                                // ul의 직접 자식 li만 선택 (중첩된 ol 내부의 li는 제외)
+                                                const bulletItems = Array.from(ulEl.children).filter(
+                                                    (child) => child.tagName === 'LI'
+                                                ) as HTMLElement[];
+
                                                 bulletItems.forEach((li) => {
                                                     const liEl = li as HTMLElement;
                                                     liEl.style.setProperty('list-style-type', 'none', 'important');
@@ -657,11 +661,50 @@ export const generatePdfFromSubsections = async (
 
                                                     bulletSpan.style.setProperty('position', 'absolute', 'important');
                                                     bulletSpan.style.setProperty('left', '-0.5rem', 'important');
-                                                    bulletSpan.style.setProperty('top', '0.75em', 'important');
+                                                    bulletSpan.style.setProperty('top', '0.3em', 'important');
                                                     bulletSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
                                                     bulletSpan.style.setProperty('line-height', '1', 'important');
-                                                    bulletSpan.style.setProperty('font-size', '1.1rem', 'important');
+                                                    bulletSpan.style.setProperty('font-size', '1.5rem', 'important');
                                                     bulletSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                                    // ul의 li 내부에 중첩된 ol이 있는 경우 처리
+                                                    const nestedOl = liEl.querySelector('ol');
+                                                    if (nestedOl) {
+                                                        const nestedOlEl = nestedOl as HTMLElement;
+                                                        nestedOlEl.style.setProperty('list-style-type', 'none', 'important');
+                                                        nestedOlEl.style.setProperty('padding-left', '1.2rem', 'important');
+                                                        nestedOlEl.style.setProperty('margin-left', '0.2rem', 'important');
+
+                                                        // 중첩된 ol의 직접 자식 li만 선택
+                                                        const nestedOlItems = Array.from(nestedOlEl.children).filter(
+                                                            (child) => child.tagName === 'LI'
+                                                        ) as HTMLElement[];
+
+                                                        nestedOlItems.forEach((nestedLi, nestedIndex) => {
+                                                            const nestedLiEl = nestedLi as HTMLElement;
+                                                            nestedLiEl.style.setProperty('list-style-type', 'none', 'important');
+                                                            nestedLiEl.style.setProperty('position', 'relative', 'important');
+                                                            nestedLiEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                            let nestedNumberSpan = nestedLiEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                                            if (!nestedNumberSpan) {
+                                                                nestedNumberSpan = clonedDoc.createElement('span');
+                                                                nestedNumberSpan.className = 'pdf-number-marker';
+                                                                nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                                                nestedLiEl.insertBefore(nestedNumberSpan, nestedLiEl.firstChild);
+                                                            } else {
+                                                                nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                                            }
+
+                                                            nestedNumberSpan.style.setProperty('position', 'absolute', 'important');
+                                                            nestedNumberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                            nestedNumberSpan.style.setProperty('top', '0.72em', 'important');
+                                                            nestedNumberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                            nestedNumberSpan.style.setProperty('line-height', '1', 'important');
+                                                            nestedNumberSpan.style.setProperty('font-size', '1rem', 'important');
+                                                            nestedNumberSpan.style.setProperty('color', '#4b5563', 'important');
+                                                        });
+                                                    }
                                                 });
                                             });
 
