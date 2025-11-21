@@ -50,9 +50,9 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
 
         // heading level에 따른 스타일 설정
         let fontSize: string;
-        let fontWeight = '600'; // font-semibold
-        let lineHeight = '150%';
-        let letterSpacing = '-0.02em';
+        const fontWeight = '600'; // font-semibold
+        const lineHeight = '150%';
+        const letterSpacing = '-0.02em';
 
         switch (level) {
             case 1:
