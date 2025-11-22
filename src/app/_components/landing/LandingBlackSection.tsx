@@ -13,7 +13,7 @@ const LandingBlackSection = () => {
         </div>
 
         <div className="ds-title mt-3 font-medium text-white">
-          어쩌구어쩌구어쩌구어쩌꾸어
+          정량·정성 평가 요소를 기반으로 한 실전형 진단 가이드
         </div>
 
         <Image
@@ -36,7 +36,7 @@ const LandingBlackSection = () => {
         </div>
 
         <div className="ds-title font-medium text-white">
-          어쩌구어쩌구어쩌구어쩌꾸어
+          AI 진단 기반으로 내 사업계획서의 강·약점을 정확하게 분석
         </div>
 
         <Image
@@ -58,7 +58,7 @@ const LandingBlackSection = () => {
         </div>
 
         <div className="ds-title font-medium text-white">
-          어쩌구어쩌구어쩌구어쩌꾸어
+          검증된 전문가에게 직접 피드백을 받아 개선 방향을 명확히 제시
         </div>
 
         <div className="mt-[60px] flex flex-col items-center justify-center gap-6">

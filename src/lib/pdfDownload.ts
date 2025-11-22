@@ -86,62 +86,11 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
         // 모든 이미지 로드 완료 대기
         await Promise.all(imagePromises);
 
-        const canvas = await html2canvas(previewContent, {
-            scale: 1.5,
-            useCORS: true,
-            allowTaint: false,
-            logging: false,
-            backgroundColor: '#ffffff',
-            scrollX: 0,
-            scrollY: 0,
-            imageTimeout: 15000,
-            removeContainer: true,
-            foreignObjectRendering: false,
-            onclone: (clonedDoc) => {
-                const clonedPreview = clonedDoc.querySelector('[data-preview-content]') as HTMLElement;
-                if (clonedPreview) {
-                    clonedPreview.style.height = 'auto';
-                    clonedPreview.style.maxHeight = 'none';
-                    const parentContainer = clonedPreview.parentElement;
-                    if (parentContainer) {
-                        parentContainer.style.height = 'auto';
-                        parentContainer.style.maxHeight = 'none';
-                    }
-                    const clonedScrollContainer = clonedPreview.querySelector('.overflow-y-auto') as HTMLElement;
-                    if (clonedScrollContainer) {
-                        clonedScrollContainer.style.overflow = 'visible';
-                        clonedScrollContainer.style.height = 'auto';
-                        clonedScrollContainer.style.maxHeight = 'none';
-                        clonedScrollContainer.style.flex = 'none';
-                        clonedScrollContainer.scrollTop = 0;
-                    }
+        // 각 페이지를 개별적으로 찾기 (Preview.tsx에서 렌더링된 각 페이지 div)
+        const pageElements = Array.from(
+            previewContent.querySelectorAll('.bg-white.shadow-lg')
+        ) as HTMLElement[];
 
-                    // 섹션 헤더 스타일 적용
-                    const sectionHeaders = clonedDoc.querySelectorAll('.bg-gray-100');
-                    sectionHeaders.forEach((header) => {
-                        const sectionNumberContainer = header.querySelector('.bg-gray-900.rounded-full') as HTMLElement;
-                        if (sectionNumberContainer) {
-                            const sectionNumberText = sectionNumberContainer.querySelector('span') as HTMLElement;
-                            if (sectionNumberText) {
-                                sectionNumberText.style.setProperty('top', '20%', 'important');
-                            }
-                        }
-                        const sectionTitle = header.querySelector('h2.ds-subtitle') as HTMLElement;
-                        if (sectionTitle) {
-                            sectionTitle.style.setProperty('top', '20%', 'important');
-                        }
-                    });
-                }
-            },
-        });
-
-        // 원래 스크롤 위치로 복원
-        if (scrollContainer) {
-            scrollContainer.scrollTop = originalScrollTop;
-        }
-
-        // JPEG로 변환하여 용량 감소 (품질 0.85로 설정)
-        const imgData = canvas.toDataURL('image/jpeg', 0.85);
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
@@ -149,20 +98,217 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
             compress: true, // PDF 압축 활성화
         });
 
-        const imgWidth = 210;
-        const pageHeight = 297;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+        const imgWidth = 210; // A4 너비 (mm)
+        const pageHeight = 297; // A4 높이 (mm)
 
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        // 각 페이지를 개별적으로 캡처
+        for (let i = 0; i < pageElements.length; i++) {
+            const pageElement = pageElements[i];
 
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
+            // 임시 데이터 속성 추가 (클론된 문서에서 찾기 위해)
+            pageElement.setAttribute('data-pdf-page-index', String(i));
+
+            // 각 페이지를 캡처
+            const pageCanvas = await html2canvas(pageElement, {
+                scale: 1.5,
+                useCORS: true,
+                allowTaint: false,
+                logging: false,
+                backgroundColor: '#ffffff',
+                scrollX: 0,
+                scrollY: 0,
+                imageTimeout: 15000,
+                removeContainer: true,
+                foreignObjectRendering: false,
+                onclone: (clonedDoc) => {
+                    // 클론된 문서에서 해당 페이지 요소 찾기
+                    const clonedPage = clonedDoc.querySelector(
+                        `[data-pdf-page-index="${i}"]`
+                    ) as HTMLElement;
+                    if (clonedPage) {
+                        // 페이지 스타일 조정
+                        clonedPage.style.height = 'auto';
+                        clonedPage.style.maxHeight = 'none';
+                        clonedPage.style.overflow = 'visible';
+
+                        // 섹션 헤더 스타일 적용
+                        const sectionHeaders = clonedPage.querySelectorAll('.bg-gray-100');
+                        sectionHeaders.forEach((header) => {
+                            const sectionNumberContainer = header.querySelector('.bg-gray-900.rounded-full') as HTMLElement;
+                            if (sectionNumberContainer) {
+                                const sectionNumberText = sectionNumberContainer.querySelector('span') as HTMLElement;
+                                if (sectionNumberText) {
+                                    sectionNumberText.style.setProperty('top', '20%', 'important');
+                                }
+                            }
+                            const sectionTitle = header.querySelector('h2.ds-subtitle') as HTMLElement;
+                            if (sectionTitle) {
+                                sectionTitle.style.setProperty('top', '20%', 'important');
+                            }
+                        });
+
+                        // 하이라이트 배경색 위치 조정
+                        const highlightWrappers = clonedPage.querySelectorAll('span[style*="position: relative"][style*="display: inline-block"]');
+                        highlightWrappers.forEach((wrapper) => {
+                            const wrapperEl = wrapper as HTMLElement;
+                            const bgSpan = wrapperEl.firstElementChild as HTMLElement;
+                            if (bgSpan && bgSpan.style.backgroundColor) {
+                                bgSpan.style.setProperty('top', '0.8em', 'important');
+                                bgSpan.style.setProperty('left', '0', 'important');
+                                bgSpan.style.setProperty('right', '0', 'important');
+                                bgSpan.style.setProperty('bottom', '0', 'important');
+                                bgSpan.style.setProperty('z-index', '0', 'important');
+                                bgSpan.style.setProperty('pointer-events', 'none', 'important');
+                                bgSpan.style.setProperty('background-color', bgSpan.style.backgroundColor || '', 'important');
+                            }
+                        });
+
+                        // 리스트 스타일 적용
+                        const listItems = clonedPage.querySelectorAll('li');
+                        listItems.forEach((li) => {
+                            const liEl = li as HTMLElement;
+                            liEl.style.setProperty('display', 'list-item', 'important');
+                            liEl.style.setProperty('line-height', '1.6', 'important');
+                            liEl.style.setProperty('vertical-align', 'baseline', 'important');
+                        });
+
+                        const bulletLists = clonedPage.querySelectorAll('ul');
+                        bulletLists.forEach((ul) => {
+                            const ulEl = ul as HTMLElement;
+                            ulEl.style.setProperty('list-style-type', 'none', 'important');
+                            ulEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                            // ul의 직접 자식 li만 선택 (중첩된 ol 내부의 li는 제외)
+                            const bulletItems = Array.from(ulEl.children).filter(
+                                (child) => child.tagName === 'LI'
+                            ) as HTMLElement[];
+
+                            bulletItems.forEach((li) => {
+                                const liEl = li as HTMLElement;
+                                liEl.style.setProperty('list-style-type', 'none', 'important');
+                                liEl.style.setProperty('position', 'relative', 'important');
+                                liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                let bulletSpan = liEl.querySelector('.pdf-bullet-marker') as HTMLElement | null;
+                                if (!bulletSpan) {
+                                    bulletSpan = clonedDoc.createElement('span');
+                                    bulletSpan.className = 'pdf-bullet-marker';
+                                    bulletSpan.textContent = '•';
+                                    liEl.insertBefore(bulletSpan, liEl.firstChild);
+                                }
+
+                                bulletSpan.style.setProperty('position', 'absolute', 'important');
+                                bulletSpan.style.setProperty('left', '-0.5rem', 'important');
+                                bulletSpan.style.setProperty('top', '0.3em', 'important');
+                                bulletSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                bulletSpan.style.setProperty('line-height', '1', 'important');
+                                bulletSpan.style.setProperty('font-size', '1.5rem', 'important');
+                                bulletSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                // ul의 li 내부에 중첩된 ol이 있는 경우 처리
+                                const nestedOl = liEl.querySelector('ol');
+                                if (nestedOl) {
+                                    const nestedOlEl = nestedOl as HTMLElement;
+                                    nestedOlEl.style.setProperty('list-style-type', 'none', 'important');
+                                    nestedOlEl.style.setProperty('padding-left', '1.2rem', 'important');
+                                    nestedOlEl.style.setProperty('margin-left', '0.2rem', 'important');
+
+                                    // 중첩된 ol의 직접 자식 li만 선택
+                                    const nestedOlItems = Array.from(nestedOlEl.children).filter(
+                                        (child) => child.tagName === 'LI'
+                                    ) as HTMLElement[];
+
+                                    nestedOlItems.forEach((nestedLi, nestedIndex) => {
+                                        const nestedLiEl = nestedLi as HTMLElement;
+                                        nestedLiEl.style.setProperty('list-style-type', 'none', 'important');
+                                        nestedLiEl.style.setProperty('position', 'relative', 'important');
+                                        nestedLiEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                        let nestedNumberSpan = nestedLiEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                        if (!nestedNumberSpan) {
+                                            nestedNumberSpan = clonedDoc.createElement('span');
+                                            nestedNumberSpan.className = 'pdf-number-marker';
+                                            nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                            nestedLiEl.insertBefore(nestedNumberSpan, nestedLiEl.firstChild);
+                                        } else {
+                                            nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                        }
+
+                                        nestedNumberSpan.style.setProperty('position', 'absolute', 'important');
+                                        nestedNumberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                        nestedNumberSpan.style.setProperty('top', '0.72em', 'important');
+                                        nestedNumberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                        nestedNumberSpan.style.setProperty('line-height', '1', 'important');
+                                        nestedNumberSpan.style.setProperty('font-size', '1rem', 'important');
+                                        nestedNumberSpan.style.setProperty('color', '#4b5563', 'important');
+                                    });
+                                }
+                            });
+                        });
+
+                        const orderedLists = clonedPage.querySelectorAll('ol');
+                        orderedLists.forEach((ol) => {
+                            const olEl = ol as HTMLElement;
+                            olEl.style.setProperty('list-style-type', 'none', 'important');
+                            olEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                            const orderedItems = Array.from(olEl.children).filter(
+                                (child) => child.tagName === 'LI'
+                            ) as HTMLElement[];
+
+                            orderedItems.forEach((li, index) => {
+                                const liEl = li as HTMLElement;
+                                liEl.style.setProperty('list-style-type', 'none', 'important');
+                                liEl.style.setProperty('position', 'relative', 'important');
+                                liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                let numberSpan = liEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                if (!numberSpan) {
+                                    numberSpan = clonedDoc.createElement('span');
+                                    numberSpan.className = 'pdf-number-marker';
+                                    numberSpan.textContent = `${index + 1}.`;
+                                    liEl.insertBefore(numberSpan, liEl.firstChild);
+                                } else {
+                                    numberSpan.textContent = `${index + 1}.`;
+                                }
+
+                                numberSpan.style.setProperty('position', 'absolute', 'important');
+                                numberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                numberSpan.style.setProperty('top', '0.72em', 'important');
+                                numberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                numberSpan.style.setProperty('line-height', '1', 'important');
+                                numberSpan.style.setProperty('font-size', '1rem', 'important');
+                                numberSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                const nestedUl = liEl.querySelector('ul');
+                                if (nestedUl) {
+                                    const nestedUlEl = nestedUl as HTMLElement;
+                                    nestedUlEl.style.setProperty('margin-left', '0.2rem', 'important');
+                                    nestedUlEl.style.setProperty('padding-left', '0.6rem', 'important');
+                                }
+                            });
+                        });
+                    }
+                },
+            });
+
+            // JPEG로 변환
+            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
+            // 첫 페이지가 아니면 새 페이지 추가
+            if (i > 0) {
+                pdf.addPage();
+            }
+
+            // 페이지에 이미지 추가 (항상 상단(0)에 배치, 페이지 높이에 맞춤)
+            pdf.addImage(pageImgData, 'JPEG', 0, 0, imgWidth, pageHeight);
+
+            // 임시 속성 제거
+            pageElement.removeAttribute('data-pdf-page-index');
+        }
+
+        // 원래 스크롤 위치로 복원
+        if (scrollContainer) {
+            scrollContainer.scrollTop = originalScrollTop;
         }
 
         pdf.save(`${fileName}.pdf`);

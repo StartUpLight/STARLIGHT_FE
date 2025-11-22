@@ -158,12 +158,14 @@ const renderPreviewHtml = (
         const sectionTitle = section.title.replace(/^\d+\.\s*/, '');
 
         html += `
-            <div class="mb-[42px]">
-                <div class="px-3 py-1 bg-gray-100 mb-3 flex items-center gap-3">
-                    <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                        ${sectionNumber}
+            <div style="margin-bottom: 42px;">
+                <div style="position: relative; padding: 0.25rem 0.75rem; background-color: #f3f4f6; margin-bottom: 0.75rem; height: 28px;">
+                    <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); height: 20px; width: 20px; border-radius: 9999px; background-color: #111827;">
+                        <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 12px; line-height: 16px; font-weight: 600; color: #ffffff;">
+                            ${sectionNumber}
+                        </span>
                     </div>
-                    <h2 class="ds-subtitle font-semibold text-gray-900">
+                    <h2 style="position: absolute; left: 40px; top: 50%; transform: translateY(-50%); font-size: 18px; line-height: 150%; font-weight: 600; color: #111827; letter-spacing: -0.02em; margin: 0;">
                         ${sectionTitle}
                     </h2>
                 </div>
@@ -381,12 +383,14 @@ export const generatePdfFromSubsections = async (
                             // 섹션 헤더 추가 (처음 한 번만)
                             if (needsSectionHeader) {
                                 currentPageContent.push(`
-                                    <div class="mb-3">
-                                        <div class="px-3 py-1 bg-gray-100 flex items-center gap-3">
-                                            <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                                                ${sectionNumber}
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <div style="position: relative; padding: 0.25rem 0.75rem; background-color: #f3f4f6; margin-bottom: 0.75rem; height: 28px;">
+                                            <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); height: 20px; width: 20px; border-radius: 9999px; background-color: #111827;">
+                                                <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 12px; line-height: 16px; font-weight: 600; color: #ffffff;">
+                                                    ${sectionNumber}
+                                                </span>
                                             </div>
-                                            <h2 class="ds-subtitle font-semibold text-gray-900">
+                                            <h2 style="position: absolute; left: 40px; top: 50%; transform: translateY(-50%); font-size: 18px; line-height: 150%; font-weight: 600; color: #111827; letter-spacing: -0.02em; margin: 0;">
                                                 ${sectionTitle}
                                             </h2>
                                         </div>
@@ -544,6 +548,54 @@ export const generatePdfFromSubsections = async (
                                         width: A4_WIDTH,
                                         height: A4_HEIGHT,
                                         onclone: (clonedDoc) => {
+                                            // 전역 스타일 주입 - 위로 쏠리는 현상 방지
+                                            const styleEl = clonedDoc.createElement('style');
+                                            styleEl.innerHTML = `
+                                                /* 인라인 요소 정렬 수정 */
+                                                mark, strong, em, code, span {
+                                                    vertical-align: baseline !important;
+                                                    display: inline !important;
+                                                    line-height: inherit !important;
+                                                }
+                                                
+                                                /* 하이라이트 추가 여백 */
+                                                mark {
+                                                    padding-top: 0.05em !important;
+                                                    padding-bottom: 0.05em !important;
+                                                    margin: 0 !important;
+                                                }
+                                                
+                                                /* 리스트 스타일 강제 */
+                                                ul, ol {
+                                                    list-style-position: outside !important;
+                                                    padding-left: 1.5rem !important;
+                                                    margin: 0 0 0.75rem 0 !important;
+                                                }
+                                                
+                                                ul {
+                                                    list-style-type: disc !important;
+                                                }
+                                                
+                                                ol {
+                                                    list-style-type: decimal !important;
+                                                }
+                                                
+                                                li {
+                                                    display: list-item !important;
+                                                    line-height: 1.6 !important;
+                                                    vertical-align: baseline !important;
+                                                    padding: 0 !important;
+                                                    margin: 0 !important;
+                                                }
+                                                
+                                                /* 문단 스타일 */
+                                                p {
+                                                    line-height: 1.6 !important;
+                                                    margin: 0 0 0.75rem 0 !important;
+                                                }
+                                            `;
+                                            clonedDoc.head.appendChild(styleEl);
+
                                             // 섹션 헤더 스타일 적용
                                             const sectionHeaders = clonedDoc.querySelectorAll('.bg-gray-100');
                                             sectionHeaders.forEach((header) => {
@@ -558,6 +610,151 @@ export const generatePdfFromSubsections = async (
                                                 if (sectionTitle) {
                                                     sectionTitle.style.setProperty('top', '20%', 'important');
                                                 }
+                                            });
+
+                                            // 하이라이트 배경색 위치 조정 (텍스트는 그대로, 배경만 조정)
+                                            const highlightWrappers = clonedDoc.querySelectorAll('span[style*="position: relative"][style*="display: inline-block"]');
+                                            highlightWrappers.forEach((wrapper) => {
+                                                const wrapperEl = wrapper as HTMLElement;
+                                                // 첫 번째 자식이 배경색 span
+                                                const bgSpan = wrapperEl.firstElementChild as HTMLElement;
+                                                if (bgSpan && bgSpan.style.backgroundColor) {
+                                                    // 배경색 span의 top 값 조정 가능
+                                                    bgSpan.style.setProperty('top', '0.8em', 'important');
+                                                    bgSpan.style.setProperty('left', '0', 'important');
+                                                    bgSpan.style.setProperty('right', '0', 'important');
+                                                    bgSpan.style.setProperty('bottom', '0', 'important');
+                                                    bgSpan.style.setProperty('z-index', '0', 'important');
+                                                    bgSpan.style.setProperty('pointer-events', 'none', 'important');
+                                                    bgSpan.style.setProperty('background-color', bgSpan.style.backgroundColor || '', 'important');
+                                                }
+                                            });
+
+                                            const listItems = clonedDoc.querySelectorAll('li');
+                                            listItems.forEach((li) => {
+                                                const liEl = li as HTMLElement;
+                                                liEl.style.setProperty('display', 'list-item', 'important');
+                                                liEl.style.setProperty('line-height', '1.6', 'important');
+                                                liEl.style.setProperty('vertical-align', 'baseline', 'important');
+                                            });
+
+                                            const bulletLists = clonedDoc.querySelectorAll('ul');
+                                            bulletLists.forEach((ul) => {
+                                                const ulEl = ul as HTMLElement;
+                                                ulEl.style.setProperty('list-style-type', 'none', 'important');
+                                                ulEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                                                // ul의 직접 자식 li만 선택 (중첩된 ol 내부의 li는 제외)
+                                                const bulletItems = Array.from(ulEl.children).filter(
+                                                    (child) => child.tagName === 'LI'
+                                                ) as HTMLElement[];
+
+                                                bulletItems.forEach((li) => {
+                                                    const liEl = li as HTMLElement;
+                                                    liEl.style.setProperty('list-style-type', 'none', 'important');
+                                                    liEl.style.setProperty('position', 'relative', 'important');
+                                                    liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                    let bulletSpan = liEl.querySelector('.pdf-bullet-marker') as HTMLElement | null;
+                                                    if (!bulletSpan) {
+                                                        bulletSpan = clonedDoc.createElement('span');
+                                                        bulletSpan.className = 'pdf-bullet-marker';
+                                                        bulletSpan.textContent = '•';
+                                                        liEl.insertBefore(bulletSpan, liEl.firstChild);
+                                                    }
+
+                                                    bulletSpan.style.setProperty('position', 'absolute', 'important');
+                                                    bulletSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                    bulletSpan.style.setProperty('top', '0.3em', 'important');
+                                                    bulletSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                    bulletSpan.style.setProperty('line-height', '1', 'important');
+                                                    bulletSpan.style.setProperty('font-size', '1.5rem', 'important');
+                                                    bulletSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                                    // ul의 li 내부에 중첩된 ol이 있는 경우 처리
+                                                    const nestedOl = liEl.querySelector('ol');
+                                                    if (nestedOl) {
+                                                        const nestedOlEl = nestedOl as HTMLElement;
+                                                        nestedOlEl.style.setProperty('list-style-type', 'none', 'important');
+                                                        nestedOlEl.style.setProperty('padding-left', '1.2rem', 'important');
+                                                        nestedOlEl.style.setProperty('margin-left', '0.2rem', 'important');
+
+                                                        // 중첩된 ol의 직접 자식 li만 선택
+                                                        const nestedOlItems = Array.from(nestedOlEl.children).filter(
+                                                            (child) => child.tagName === 'LI'
+                                                        ) as HTMLElement[];
+
+                                                        nestedOlItems.forEach((nestedLi, nestedIndex) => {
+                                                            const nestedLiEl = nestedLi as HTMLElement;
+                                                            nestedLiEl.style.setProperty('list-style-type', 'none', 'important');
+                                                            nestedLiEl.style.setProperty('position', 'relative', 'important');
+                                                            nestedLiEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                            let nestedNumberSpan = nestedLiEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                                            if (!nestedNumberSpan) {
+                                                                nestedNumberSpan = clonedDoc.createElement('span');
+                                                                nestedNumberSpan.className = 'pdf-number-marker';
+                                                                nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                                                nestedLiEl.insertBefore(nestedNumberSpan, nestedLiEl.firstChild);
+                                                            } else {
+                                                                nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                                            }
+
+                                                            nestedNumberSpan.style.setProperty('position', 'absolute', 'important');
+                                                            nestedNumberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                            nestedNumberSpan.style.setProperty('top', '0.72em', 'important');
+                                                            nestedNumberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                            nestedNumberSpan.style.setProperty('line-height', '1', 'important');
+                                                            nestedNumberSpan.style.setProperty('font-size', '1rem', 'important');
+                                                            nestedNumberSpan.style.setProperty('color', '#4b5563', 'important');
+                                                        });
+                                                    }
+                                                });
+                                            });
+
+                                            const orderedLists = clonedDoc.querySelectorAll('ol');
+                                            orderedLists.forEach((ol) => {
+                                                const olEl = ol as HTMLElement;
+                                                olEl.style.setProperty('list-style-type', 'none', 'important');
+                                                olEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                                                // ol의 직접 자식 li만 선택 (중첩된 ul 내부의 li는 제외)
+                                                const orderedItems = Array.from(olEl.children).filter(
+                                                    (child) => child.tagName === 'LI'
+                                                ) as HTMLElement[];
+
+                                                orderedItems.forEach((li, index) => {
+                                                    const liEl = li as HTMLElement;
+                                                    liEl.style.setProperty('list-style-type', 'none', 'important');
+                                                    liEl.style.setProperty('position', 'relative', 'important');
+                                                    liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                    let numberSpan = liEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                                    if (!numberSpan) {
+                                                        numberSpan = clonedDoc.createElement('span');
+                                                        numberSpan.className = 'pdf-number-marker';
+                                                        numberSpan.textContent = `${index + 1}.`;
+                                                        liEl.insertBefore(numberSpan, liEl.firstChild);
+                                                    } else {
+                                                        numberSpan.textContent = `${index + 1}.`;
+                                                    }
+
+                                                    numberSpan.style.setProperty('position', 'absolute', 'important');
+                                                    numberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                    numberSpan.style.setProperty('top', '0.72em', 'important');
+                                                    numberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                    numberSpan.style.setProperty('line-height', '1', 'important');
+                                                    numberSpan.style.setProperty('font-size', '1rem', 'important');
+                                                    numberSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                                    // 중첩된 ul이 있으면 padding-left 조정하여 겹치지 않도록
+                                                    const nestedUl = liEl.querySelector('ul');
+                                                    if (nestedUl) {
+                                                        const nestedUlEl = nestedUl as HTMLElement;
+                                                        nestedUlEl.style.setProperty('margin-left', '0.2rem', 'important');
+                                                        nestedUlEl.style.setProperty('padding-left', '0.6rem', 'important');
+                                                    }
+                                                });
                                             });
                                         },
                                     });
