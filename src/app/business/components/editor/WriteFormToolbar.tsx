@@ -46,6 +46,109 @@ const WriteFormToolbar = ({
         setShowTableGrid(!showTableGrid);
     };
 
+    const handleHeading = (level: 1 | 2 | 3) => {
+        if (!activeEditor) return;
+        const { state } = activeEditor;
+        const { from, to, empty } = state.selection;
+
+        // 텍스트가 선택되어 있으면 선택 부분만 헤딩으로 변환
+        if (!empty && from !== to) {
+            const $from = state.selection.$from;
+
+            // 선택한 텍스트 추출
+            const selectedText = state.doc.textBetween(from, to);
+            if (!selectedText.trim()) return;
+
+            // 문단 위치 찾기
+            let paragraphStart = from;
+            let paragraphBeforePos = -1;
+
+            for (let d = $from.depth; d > 0; d--) {
+                const node = $from.node(d);
+                if (node.type.name === 'paragraph') {
+                    paragraphBeforePos = $from.before(d);
+                    paragraphStart = $from.start(d);
+                    break;
+                }
+            }
+
+            if (paragraphBeforePos === -1) {
+                activeEditor.chain().focus().toggleHeading({ level }).run();
+                return;
+            }
+
+            // 선택한 범위의 콘텐츠 추출 (마크 포함)
+            const selectedSlice = state.doc.slice(from, to);
+            const selectedContentJSON = selectedSlice.content.toJSON();
+
+            // 문단의 끝 위치 찾기
+            const $to = state.selection.$to;
+            let paragraphEnd = to;
+            for (let d = $to.depth; d > 0; d--) {
+                const node = $to.node(d);
+                if (node.type.name === 'paragraph') {
+                    paragraphEnd = $to.start(d) + node.nodeSize - 2;
+                    break;
+                }
+            }
+
+            // 앞뒤 콘텐츠 추출 (마크 포함)
+            const beforeSlice = state.doc.slice(paragraphStart, from);
+            const afterSlice = state.doc.slice(to, paragraphEnd);
+            const beforeContentJSON = beforeSlice.content.toJSON();
+            const afterContentJSON = afterSlice.content.toJSON();
+
+            // 앞뒤 텍스트 확인
+            const beforeText = state.doc.textBetween(paragraphStart, from);
+            const afterText = state.doc.textBetween(to, paragraphEnd);
+
+            // 새 콘텐츠 구성
+            const newContent: any[] = [];
+
+            // 앞부분 문단 (텍스트가 있을 때만)
+            if (beforeText.trim()) {
+                newContent.push({
+                    type: 'paragraph',
+                    content: Array.isArray(beforeContentJSON) && beforeContentJSON.length > 0
+                        ? beforeContentJSON
+                        : [{ type: 'text', text: beforeText }],
+                });
+            }
+
+            // 헤딩
+            newContent.push({
+                type: 'heading',
+                attrs: { level },
+                content: Array.isArray(selectedContentJSON) && selectedContentJSON.length > 0
+                    ? selectedContentJSON
+                    : [{ type: 'text', text: selectedText }],
+            });
+
+            // 뒷부분 문단 (텍스트가 있을 때만)
+            if (afterText.trim()) {
+                newContent.push({
+                    type: 'paragraph',
+                    content: Array.isArray(afterContentJSON) && afterContentJSON.length > 0
+                        ? afterContentJSON
+                        : [{ type: 'text', text: afterText }],
+                });
+            }
+
+            // 전체 문단 삭제 후 새 콘텐츠를 한 번에 삽입
+            if (newContent.length > 0) {
+                activeEditor
+                    .chain()
+                    .focus()
+                    .deleteRange({ from: paragraphStart, to: paragraphEnd })
+                    .insertContentAt(paragraphBeforePos, newContent)
+                    .run();
+            }
+        } else {
+            // 텍스트가 선택되지 않았으면 기본 동작
+            activeEditor.chain().focus().toggleHeading({ level }).run();
+        }
+    };
+
     const handleTableSelect = (rows: number, cols: number) => {
         if (!activeEditor) return;
         const { state } = activeEditor;
@@ -145,19 +248,19 @@ const WriteFormToolbar = ({
             <ToolButton
                 label={<Heading1Icon />}
                 active={!!activeEditor?.isActive('heading', { level: 1 })}
-                onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 1 }).run()}
+                onClick={() => handleHeading(1)}
                 disabled={isSimpleEditor}
             />
             <ToolButton
                 label={<Heading2Icon />}
                 active={!!activeEditor?.isActive('heading', { level: 2 })}
-                onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                onClick={() => handleHeading(2)}
                 disabled={isSimpleEditor}
             />
             <ToolButton
                 label={<Heading3Icon />}
                 active={!!activeEditor?.isActive('heading', { level: 3 })}
-                onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 3 }).run()}
+                onClick={() => handleHeading(3)}
                 disabled={isSimpleEditor}
             />
             <div className="mx-2 h-5 w-px bg-gray-200" />
