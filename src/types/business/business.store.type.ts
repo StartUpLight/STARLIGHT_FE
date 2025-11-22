@@ -15,8 +15,8 @@ export type EditorJSON = {
 };
 
 export interface ItemContent {
-    itemName?: string;
-    oneLineIntro?: string;
+    itemName?: string | EditorJSON | null;
+    oneLineIntro?: string | EditorJSON | null;
     editorFeatures?: EditorJSON | null; // TipTap JSON
     editorSkills?: EditorJSON | null;
     editorGoals?: EditorJSON | null;

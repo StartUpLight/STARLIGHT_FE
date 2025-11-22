@@ -571,11 +571,11 @@ export const convertResponseToItemContent = (
         };
 
         if (title === '아이템명') {
-            const textItem = block.content.find(c => c.type === 'text') as TextContentItem | undefined;
-            content.itemName = textItem?.value || '';
+            // JSONContent로 저장 (에디터 형식)
+            content.itemName = editorJson;
         } else if (title === '아이템 한줄 소개') {
-            const textItem = block.content.find(c => c.type === 'text') as TextContentItem | undefined;
-            content.oneLineIntro = textItem?.value || '';
+            // JSONContent로 저장 (에디터 형식)
+            content.oneLineIntro = editorJson;
         } else if (title === '아이템 / 아이디어 주요 기능') {
             content.editorFeatures = editorJson;
         } else if (title === '관련 보유 기술') {

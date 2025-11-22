@@ -16,6 +16,8 @@ import TableGridSelector from './TableGridSelector';
 
 interface WriteFormToolbarProps {
     activeEditor: Editor | null;
+    editorItemName?: Editor | null;
+    editorOneLineIntro?: Editor | null;
     onImageClick: () => void;
     onSpellCheckClick: () => void;
     grammarActive: boolean;
@@ -26,6 +28,8 @@ interface WriteFormToolbarProps {
 
 const WriteFormToolbar = ({
     activeEditor,
+    editorItemName,
+    editorOneLineIntro,
     onImageClick,
     onSpellCheckClick,
     grammarActive,
@@ -33,6 +37,8 @@ const WriteFormToolbar = ({
     isSaving,
     lastSavedTime,
 }: WriteFormToolbarProps) => {
+    // 아이템명 또는 한줄소개 에디터인지 확인
+    const isSimpleEditor = activeEditor === editorItemName || activeEditor === editorOneLineIntro;
     const [showTableGrid, setShowTableGrid] = useState(false);
     const tableButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -140,16 +146,19 @@ const WriteFormToolbar = ({
                 label={<Heading1Icon />}
                 active={!!activeEditor?.isActive('heading', { level: 1 })}
                 onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 1 }).run()}
+                disabled={isSimpleEditor}
             />
             <ToolButton
                 label={<Heading2Icon />}
                 active={!!activeEditor?.isActive('heading', { level: 2 })}
                 onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                disabled={isSimpleEditor}
             />
             <ToolButton
                 label={<Heading3Icon />}
                 active={!!activeEditor?.isActive('heading', { level: 3 })}
                 onClick={() => activeEditor?.chain().focus().toggleHeading({ level: 3 }).run()}
+                disabled={isSimpleEditor}
             />
             <div className="mx-2 h-5 w-px bg-gray-200" />
             <div className="relative flex items-center">
@@ -157,8 +166,9 @@ const WriteFormToolbar = ({
                     ref={tableButtonRef}
                     label={<TableIcon />}
                     onClick={handleTableClick}
+                    disabled={isSimpleEditor}
                 />
-                {showTableGrid && (
+                {showTableGrid && !isSimpleEditor && (
                     <TableGridSelector
                         onSelect={handleTableSelect}
                         onClose={() => setShowTableGrid(false)}
@@ -166,7 +176,11 @@ const WriteFormToolbar = ({
                     />
                 )}
             </div>
-            <ToolButton label={<ImageIcon />} onClick={onImageClick} />
+            <ToolButton
+                label={<ImageIcon />}
+                onClick={onImageClick}
+                disabled={isSimpleEditor}
+            />
             <button
                 type="button"
                 onClick={onSpellCheckClick}

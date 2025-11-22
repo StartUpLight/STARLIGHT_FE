@@ -103,7 +103,14 @@ const Preview = () => {
                                     <div className="mb-4">
                                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
                                         {content.itemName ? (
-                                            <p className="ds-text text-gray-700">{content.itemName}</p>
+                                            <div
+                                                className="ds-text text-gray-700 prose max-w-none"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: typeof content.itemName === 'string'
+                                                        ? content.itemName
+                                                        : convertEditorJsonToHtml(content.itemName),
+                                                }}
+                                            />
                                         ) : (
                                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                                         )}
@@ -112,7 +119,14 @@ const Preview = () => {
                                     <div className="mb-4">
                                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
                                         {content.oneLineIntro ? (
-                                            <p className="ds-text text-gray-700">{content.oneLineIntro}</p>
+                                            <div
+                                                className="ds-text text-gray-700 prose max-w-none"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: typeof content.oneLineIntro === 'string'
+                                                        ? content.oneLineIntro
+                                                        : convertEditorJsonToHtml(content.oneLineIntro),
+                                                }}
+                                            />
                                         ) : (
                                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                                         )}
@@ -188,7 +202,14 @@ const Preview = () => {
                     <div className="mb-4">
                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
                         {content.itemName ? (
-                            <p className="ds-text text-gray-700">{content.itemName}</p>
+                            <div
+                                className="ds-text text-gray-700 prose max-w-none"
+                                dangerouslySetInnerHTML={{
+                                    __html: typeof content.itemName === 'string'
+                                        ? content.itemName
+                                        : convertEditorJsonToHtml(content.itemName),
+                                }}
+                            />
                         ) : (
                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                         )}
@@ -196,7 +217,14 @@ const Preview = () => {
                     <div className="mb-4">
                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
                         {content.oneLineIntro ? (
-                            <p className="ds-text text-gray-700">{content.oneLineIntro}</p>
+                            <div
+                                className="ds-text text-gray-700 prose max-w-none"
+                                dangerouslySetInnerHTML={{
+                                    __html: typeof content.oneLineIntro === 'string'
+                                        ? content.oneLineIntro
+                                        : convertEditorJsonToHtml(content.oneLineIntro),
+                                }}
+                            />
                         ) : (
                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                         )}

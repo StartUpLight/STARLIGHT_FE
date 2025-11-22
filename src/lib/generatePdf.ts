@@ -39,17 +39,28 @@ const renderItemHtml = (
     content: ReturnType<typeof convertResponseToItemContent>
 ): string => {
     if (item.number === '0') {
+        const itemNameHtml = content.itemName
+            ? (typeof content.itemName === 'string'
+                ? content.itemName
+                : convertEditorJsonToHtml(content.itemName))
+            : '';
+        const oneLineIntroHtml = content.oneLineIntro
+            ? (typeof content.oneLineIntro === 'string'
+                ? content.oneLineIntro
+                : convertEditorJsonToHtml(content.oneLineIntro))
+            : '';
+
         let html = `
             <div class="mb-4">
                 <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
-                ${content.itemName
-                ? `<p class="ds-text text-gray-700">${content.itemName}</p>`
+                ${itemNameHtml
+                ? `<div class="ds-text text-gray-700 prose max-w-none">${itemNameHtml}</div>`
                 : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
             </div>
             <div class="mb-4">
                 <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
-                ${content.oneLineIntro
-                ? `<p class="ds-text text-gray-700">${content.oneLineIntro}</p>`
+                ${oneLineIntroHtml
+                ? `<div class="ds-text text-gray-700 prose max-w-none">${oneLineIntroHtml}</div>`
                 : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
             </div>
         `;

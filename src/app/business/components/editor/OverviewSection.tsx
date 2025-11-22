@@ -1,27 +1,22 @@
 import { Editor } from '@tiptap/core';
 import { EditorContent } from '@tiptap/react';
-import TextInput from './TextInput';
 import TableToolbar from './TableToolbar';
 
 interface OverviewSectionProps {
-  itemName: string;
-  oneLineIntro: string;
+  editorItemName: Editor | null;
+  editorOneLineIntro: Editor | null;
   editorFeatures: Editor | null;
   editorSkills: Editor | null;
   editorGoals: Editor | null;
-  onItemNameChange: (value: string) => void;
-  onOneLineIntroChange: (value: string) => void;
   onEditorFocus: (editor: Editor) => void;
 }
 
 const OverviewSection = ({
-  itemName,
-  oneLineIntro,
+  editorItemName,
+  editorOneLineIntro,
   editorFeatures,
   editorSkills,
   editorGoals,
-  onItemNameChange,
-  onOneLineIntroChange,
   onEditorFocus,
 }: OverviewSectionProps) => {
   return (
@@ -30,22 +25,48 @@ const OverviewSection = ({
         <label className="ds-subtitle mb-[10px] block font-semibold text-gray-900">
           아이템명
         </label>
-        <TextInput
-          placeholder="답변을 입력하세요."
-          value={itemName}
-          onChange={onItemNameChange}
-        />
+        <div
+          className="min-h-[40px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2 text-gray-900"
+          onClick={() => {
+            if (editorItemName && !editorItemName.isDestroyed) {
+              editorItemName.commands.focus();
+              onEditorFocus(editorItemName);
+            }
+          }}
+        >
+          {editorItemName && (
+            <EditorContent
+              editor={editorItemName}
+              onFocus={() => onEditorFocus(editorItemName)}
+              className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none"
+              placeholder="답변을 입력하세요."
+            />
+          )}
+        </div>
       </div>
 
       <div>
         <label className="ds-subtitle mb-[10px] block font-semibold text-gray-900">
           아이템 한줄 소개
         </label>
-        <TextInput
-          placeholder="답변을 입력하세요."
-          value={oneLineIntro}
-          onChange={onOneLineIntroChange}
-        />
+        <div
+          className="min-h-[40px] cursor-text rounded-[4px] bg-gray-100 px-3 py-2 text-gray-900"
+          onClick={() => {
+            if (editorOneLineIntro && !editorOneLineIntro.isDestroyed) {
+              editorOneLineIntro.commands.focus();
+              onEditorFocus(editorOneLineIntro);
+            }
+          }}
+        >
+          {editorOneLineIntro && (
+            <EditorContent
+              editor={editorOneLineIntro}
+              onFocus={() => onEditorFocus(editorOneLineIntro)}
+              className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none"
+              placeholder="답변을 입력하세요."
+            />
+          )}
+        </div>
       </div>
 
       <div>
