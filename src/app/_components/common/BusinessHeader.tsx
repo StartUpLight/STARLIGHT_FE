@@ -37,9 +37,27 @@ const BusinessHeaderContent = () => {
       return;
     }
 
-    loadTitleFromAPI(targetPlanId).catch((error) => {
-      console.error('제목 불러오기 실패:', error);
-    });
+    // planId가 변경되었을 때만 제목 로드 (중복 요청 방지)
+    let isCancelled = false;
+    loadTitleFromAPI(targetPlanId)
+      .then((loadedTitle) => {
+        if (!isCancelled && loadedTitle) {
+          // 제목이 로드되었을 때만 업데이트 (planId가 변경되지 않았는지 확인)
+          const currentPlanId = planIdParam ? parseInt(planIdParam, 10) : planId;
+          if (currentPlanId === targetPlanId) {
+            setTitle(loadedTitle);
+          }
+        }
+      })
+      .catch((error) => {
+        if (!isCancelled) {
+          console.error('제목 불러오기 실패:', error);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
   }, [searchParams, planId, loadTitleFromAPI, setTitle]);
 
   // 제목 변경 시 API 요청 (debounce 적용)

@@ -65,12 +65,15 @@ const BusinessPageContent = () => {
       });
     };
 
-    const loadPlan = (id: number) => {
+    const loadPlan = async (id: number) => {
+      // planId를 먼저 설정하면 setPlanId에서 contents가 초기화됨
       setPlanId(id);
       setIsModalOpen(false);
-      loadContentsFromAPI(id).catch((error) => {
+      try {
+        await loadContentsFromAPI(id);
+      } catch (error) {
         console.error('데이터 불러오기 실패:', error);
-      });
+      }
     };
 
     if (!isRefresh && shouldResetDraft) {

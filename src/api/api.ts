@@ -26,6 +26,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // 요청 취소 에러는 그대로 전파 (정상적인 취소이므로 처리하지 않음)
+    if (error?.code === 'ERR_CANCELED' || error?.name === 'CanceledError' || error?.message?.includes('canceled')) {
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config;
 
     // 401 에러이고, 재시도 플래그가 없을 때만 처리
