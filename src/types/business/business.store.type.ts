@@ -48,9 +48,6 @@ export interface BusinessStore {
     // API에서 contents 불러오기
     loadContentsFromAPI: (planId: number) => Promise<Record<string, ItemContent>>;
 
-    // localStorage 초기화
-    clearStorage: () => void;
-
     // 미리보기 모드
     isPreview: boolean;
     setPreview: (isPreview: boolean) => void;

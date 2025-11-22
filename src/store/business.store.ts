@@ -160,13 +160,6 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         currentLoadAbortController = null;
         return contents;
     },
-    // localStorage 초기화
-    clearStorage: () => {
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem(PLAN_ID_KEY);
-            localStorage.removeItem('businessPlanTitle');
-        }
-    },
     resetDraft: () => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem(PLAN_ID_KEY);
