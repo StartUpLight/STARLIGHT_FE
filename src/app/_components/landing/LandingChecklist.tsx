@@ -3,7 +3,7 @@ import React from 'react';
 
 const LandingChecklist = () => {
   return (
-    <div className="h-[897px] px-[132px] py-[120px]">
+    <div className="h-[897px] bg-white px-[132px] py-[120px]">
       <div className="ds-heading gradation inline-block font-semibold">
         항목별 체크리스트{' '}
       </div>
