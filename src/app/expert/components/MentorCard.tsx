@@ -9,6 +9,7 @@ import {
 import { generatePdfFromSubsections } from '@/lib/generatePdf';
 import Image from 'next/image';
 import Check from '@/assets/icons/gray_check.svg';
+import GrayPlus from '@/assets/icons/gray_plus.svg';
 import Plus from '@/assets/icons/white_plus.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
@@ -151,7 +152,13 @@ const MentorCard = ({
         ].join(' ')}
         title={disabled ? disabledReason : undefined}
       >
-        {isDone ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+        {isDone ? (
+          <Check className="h-5 w-5" />
+        ) : disabled ? (
+          <GrayPlus className="h-5 w-5" />
+        ) : (
+          <Plus className="h-5 w-5" />
+        )}
         {isDone ? '신청 완료' : uploading ? '신청 중..' : '전문가 연결'}
       </button>
     </div>
