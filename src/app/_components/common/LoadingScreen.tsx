@@ -7,6 +7,8 @@ interface LoadingScreenProps {
   subtitles: string[];
   buttonTextLeft?: string;
   buttonTextRight?: string;
+  onClickLeft?: () => void;
+  onClickRight?: () => void;
 }
 
 const LoadingScreen = ({
@@ -14,6 +16,8 @@ const LoadingScreen = ({
   subtitles,
   buttonTextLeft,
   buttonTextRight,
+  onClickLeft,
+  onClickRight,
 }: LoadingScreenProps) => {
   return (
     <div className="flex h-full justify-center bg-white">
@@ -31,12 +35,22 @@ const LoadingScreen = ({
         </div>
 
         <div className="mt-11 flex w-full flex-row items-center justify-center gap-4">
-          <button className="border-primary-500 ds-text text-primary-500 hover:bg-primary-50 active:bg-primary-50 w-[200px] flex-1 cursor-pointer items-center justify-center rounded-lg border-[1.2px] bg-white px-8 py-2.5 font-medium">
-            {buttonTextLeft}
-          </button>
-          <button className="bg-primary-500 ds-text hover:bg-primary-600 active:bg-primary-700 w-[200px] flex-1 cursor-pointer items-center justify-center rounded-lg px-8 py-2.5 font-medium text-white">
-            {buttonTextRight}
-          </button>
+          {buttonTextLeft && (
+            <button
+              className="border-primary-500 ds-text text-primary-500 hover:bg-primary-50 active:bg-primary-50 w-[200px] flex-1 cursor-pointer items-center justify-center rounded-lg border-[1.2px] bg-white px-8 py-2.5 font-medium"
+              onClick={onClickLeft}
+            >
+              {buttonTextLeft}
+            </button>
+          )}
+          {buttonTextRight && (
+            <button
+              className="bg-primary-500 ds-text hover:bg-primary-600 active:bg-primary-700 w-[200px] flex-1 cursor-pointer items-center justify-center rounded-lg px-8 py-2.5 font-medium text-white"
+              onClick={onClickRight}
+            >
+              {buttonTextRight}
+            </button>
+          )}
         </div>
       </div>
     </div>

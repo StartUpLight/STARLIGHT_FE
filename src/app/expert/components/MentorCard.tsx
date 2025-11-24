@@ -14,6 +14,7 @@ import Plus from '@/assets/icons/white_plus.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
+import { useRouter } from 'next/navigation';
 
 type ExtraProps = {
   onApplied?: () => void;
@@ -29,6 +30,7 @@ const MentorCard = ({
   id,
   onApplied,
 }: MentorCardProps & ExtraProps) => {
+  const router = useRouter();
   const planId = useBusinessStore((s) => s.planId);
 
   const hasExpertUnlocked = useEvaluationStore((s) => s.hasExpertUnlocked);
@@ -92,6 +94,7 @@ const MentorCard = ({
 
       setDidApply(true);
       onApplied?.();
+      router.push('expert/loading');
     } catch (e) {
       console.error('전문가 연결 실패:', e);
       alert('전문가 연결에 실패했습니다. 다시 시도해주세요.');
