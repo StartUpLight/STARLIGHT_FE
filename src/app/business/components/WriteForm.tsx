@@ -4,6 +4,7 @@ import { useEditor } from '@tiptap/react';
 import { useBusinessStore } from '@/store/business.store';
 import { uploadImage } from '@/lib/imageUpload';
 import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
+import { getSelectionAvailableWidth } from '@/lib/business/editor/getSelectionAvailableWidth';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextStyle from '@tiptap/extension-text-style';
@@ -429,9 +430,11 @@ const WriteForm = ({
 
       if (imageUrl && activeEditor) {
         const { width, height } = await getImageDimensions(imageUrl);
+        const selectionWidth = getSelectionAvailableWidth(activeEditor);
         const editorDom = activeEditor.view.dom as HTMLElement | null;
-        const maxWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
-        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
+        const fallbackWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
+        const maxWidth = selectionWidth ?? fallbackWidth;
+        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth ?? undefined);
         const imageAttributes: ImageCommandAttributes = {
           src: imageUrl,
           width: clampedWidth ?? undefined,

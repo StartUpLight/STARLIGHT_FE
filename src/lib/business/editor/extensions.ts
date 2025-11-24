@@ -142,6 +142,7 @@ export const ResizableImage = Image.extend({
 
     addNodeView() {
         return ({ node, getPos, editor }) => {
+            let currentNode = node;
             const dom = document.createElement('div');
             dom.className = 'image-wrapper';
 
@@ -177,14 +178,26 @@ export const ResizableImage = Image.extend({
 
             const clampWidth = (width: number, height: number) => {
                 const availableWidth = getAvailableWidth();
-                if (availableWidth && width > availableWidth) {
-                    const ratio = height / width;
-                    return {
-                        width: availableWidth,
-                        height: Math.round(availableWidth * ratio),
-                    };
+                if (availableWidth) {
+                    const maxWidth = Math.max(50, availableWidth);
+                    if (width > maxWidth) {
+                        const ratio = height > 0 ? height / width : 0;
+                        return {
+                            width: maxWidth,
+                            height: ratio ? Math.round(maxWidth * ratio) : height,
+                        };
+                    }
                 }
                 return { width, height };
+            };
+
+            const toNumber = (value: unknown): number | null => {
+                if (typeof value === 'number' && !Number.isNaN(value)) return value;
+                if (typeof value === 'string') {
+                    const parsed = parseFloat(value);
+                    return Number.isNaN(parsed) ? null : parsed;
+                }
+                return null;
             };
 
             const applyExplicitSize = (width?: number | null, height?: number | null) => {
@@ -203,29 +216,6 @@ export const ResizableImage = Image.extend({
                 }
             };
 
-            applyExplicitSize(node.attrs.width, node.attrs.height);
-
-            const ensureExplicitSize = () => {
-                if (node.attrs.width || !img.naturalWidth || !img.naturalHeight) return;
-                const { width, height } = clampWidth(img.naturalWidth, img.naturalHeight);
-                updateImageSize(width, height);
-            };
-
-            if (img.complete) {
-                ensureExplicitSize();
-            } else {
-                img.addEventListener('load', ensureExplicitSize, { once: true });
-            }
-
-            const resizeHandle = document.createElement('div');
-            resizeHandle.className = 'image-resize-handle';
-            resizeHandle.style.display = 'none';
-
-            let isResizing = false;
-            let startX = 0;
-            let startWidth = 0;
-            let startHeight = 0;
-
             const updateImageSize = async (width: number, height: number) => {
                 const pos = typeof getPos === 'function' ? getPos() : null;
                 if (pos === null || pos === undefined) return;
@@ -238,7 +228,46 @@ export const ResizableImage = Image.extend({
                 editor.emit('update', { editor, transaction });
             };
 
+            const ensureSizeWithinBounds = (sourceWidth?: number | null, sourceHeight?: number | null) => {
+                if (!img.naturalWidth || !img.naturalHeight) return;
+                const baseWidth = sourceWidth ?? img.naturalWidth;
+                const baseHeight = sourceHeight ?? img.naturalHeight;
+                const { width, height } = clampWidth(baseWidth, baseHeight);
+                const attrWidth = toNumber(currentNode.attrs.width);
+                const attrHeight = toNumber(currentNode.attrs.height);
+
+                applyExplicitSize(width, height);
+
+                if (attrWidth !== width || attrHeight !== height || attrWidth === null) {
+                    updateImageSize(width, height);
+                }
+            };
+
+            const initializeSize = () => {
+                const currentWidth = toNumber(currentNode.attrs.width);
+                const currentHeight = toNumber(currentNode.attrs.height);
+                ensureSizeWithinBounds(currentWidth, currentHeight);
+            };
+
+            if (img.complete) {
+                initializeSize();
+            } else {
+                img.addEventListener('load', initializeSize, { once: true });
+            }
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'image-resize-handle';
+            resizeHandle.style.display = 'none';
+
+            let isResizing = false;
+            let startX = 0;
+            let startWidth = 0;
+            let startHeight = 0;
+
+            const isInsideTable = () => Boolean(img.closest('td, th'));
+
             const handleMouseDown = (e: MouseEvent) => {
+                if (isInsideTable()) return;
                 e.preventDefault();
                 e.stopPropagation();
                 isResizing = true;
@@ -294,12 +323,13 @@ export const ResizableImage = Image.extend({
                 const pos = typeof getPos === 'function' ? getPos() : null;
                 if (pos !== null && pos !== undefined) {
                     const isSelected = editor.state.selection.from === pos;
+                    const disallowResize = isInsideTable();
                     if (isSelected) {
-                        resizeHandle.style.display = 'block';
                         img.classList.add('selected');
+                        resizeHandle.style.display = disallowResize ? 'none' : 'block';
                     } else {
-                        resizeHandle.style.display = 'none';
                         img.classList.remove('selected');
+                        resizeHandle.style.display = 'none';
                     }
                 }
             };
@@ -311,6 +341,15 @@ export const ResizableImage = Image.extend({
             imgContainer.appendChild(resizeHandle);
             dom.appendChild(imgContainer);
 
+            const waitAndInitialize = () => {
+                if (!img.isConnected) return;
+                initializeSize();
+            };
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(waitAndInitialize);
+            });
+
             return {
                 dom,
                 update: (updatedNode) => {
@@ -318,14 +357,12 @@ export const ResizableImage = Image.extend({
                         return false;
                     }
 
+                    currentNode = updatedNode;
                     img.src = updatedNode.attrs.src;
                     img.alt = updatedNode.attrs.alt || '';
-                    if (updatedNode.attrs.width && updatedNode.attrs.height) {
-                        const clamped = clampWidth(updatedNode.attrs.width, updatedNode.attrs.height);
-                        applyExplicitSize(clamped.width, clamped.height);
-                    } else {
-                        applyExplicitSize(updatedNode.attrs.width, updatedNode.attrs.height);
-                    }
+                    const updatedWidth = toNumber(updatedNode.attrs.width);
+                    const updatedHeight = toNumber(updatedNode.attrs.height);
+                    ensureSizeWithinBounds(updatedWidth, updatedHeight);
 
                     return true;
                 },
