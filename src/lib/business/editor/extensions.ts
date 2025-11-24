@@ -158,6 +158,35 @@ export const ResizableImage = Image.extend({
             img.style.height = 'auto';
             img.style.cursor = 'pointer';
 
+            const getAvailableWidth = () => {
+                const cell = img.closest('td, th') as HTMLElement | null;
+                if (cell) {
+                    const computed = window.getComputedStyle(cell);
+                    const paddingLeft = parseFloat(computed.paddingLeft || '0');
+                    const paddingRight = parseFloat(computed.paddingRight || '0');
+                    const available = cell.clientWidth - paddingLeft - paddingRight - 8;
+                    return Math.max(50, available);
+                }
+                const editorDom = editor.view.dom as HTMLElement | null;
+                if (editorDom) {
+                    const padding = 48;
+                    return Math.max(50, editorDom.clientWidth - padding);
+                }
+                return null;
+            };
+
+            const clampWidth = (width: number, height: number) => {
+                const availableWidth = getAvailableWidth();
+                if (availableWidth && width > availableWidth) {
+                    const ratio = height / width;
+                    return {
+                        width: availableWidth,
+                        height: Math.round(availableWidth * ratio),
+                    };
+                }
+                return { width, height };
+            };
+
             const applyExplicitSize = (width?: number | null, height?: number | null) => {
                 if (typeof width === 'number' && !Number.isNaN(width)) {
                     img.style.width = `${width}px`;
@@ -176,23 +205,9 @@ export const ResizableImage = Image.extend({
 
             applyExplicitSize(node.attrs.width, node.attrs.height);
 
-            const clampToEditorWidth = (width: number, height: number) => {
-                const editorDom = editor.view.dom as HTMLElement | null;
-                const padding = 48;
-                const maxWidth = editorDom ? Math.max(0, editorDom.clientWidth - padding) : null;
-                if (maxWidth && width > maxWidth) {
-                    const ratio = height / width;
-                    return {
-                        width: maxWidth,
-                        height: Math.round(maxWidth * ratio),
-                    };
-                }
-                return { width, height };
-            };
-
             const ensureExplicitSize = () => {
                 if (node.attrs.width || !img.naturalWidth || !img.naturalHeight) return;
-                const { width, height } = clampToEditorWidth(img.naturalWidth, img.naturalHeight);
+                const { width, height } = clampWidth(img.naturalWidth, img.naturalHeight);
                 updateImageSize(width, height);
             };
 
@@ -240,7 +255,11 @@ export const ResizableImage = Image.extend({
 
                 const deltaX = e.clientX - startX;
                 const aspectRatio = startHeight / startWidth;
-                const newWidth = Math.max(50, startWidth + deltaX);
+                let newWidth = Math.max(50, startWidth + deltaX);
+                const availableWidth = getAvailableWidth();
+                if (availableWidth) {
+                    newWidth = Math.min(newWidth, availableWidth);
+                }
                 const newHeight = newWidth * aspectRatio;
 
                 img.style.width = `${newWidth}px`;
@@ -301,7 +320,12 @@ export const ResizableImage = Image.extend({
 
                     img.src = updatedNode.attrs.src;
                     img.alt = updatedNode.attrs.alt || '';
-                    applyExplicitSize(updatedNode.attrs.width, updatedNode.attrs.height);
+                    if (updatedNode.attrs.width && updatedNode.attrs.height) {
+                        const clamped = clampWidth(updatedNode.attrs.width, updatedNode.attrs.height);
+                        applyExplicitSize(clamped.width, clamped.height);
+                    } else {
+                        applyExplicitSize(updatedNode.attrs.width, updatedNode.attrs.height);
+                    }
 
                     return true;
                 },
