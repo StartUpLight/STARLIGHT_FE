@@ -153,30 +153,53 @@ export const ResizableImage = Image.extend({
             const img = document.createElement('img');
             img.src = node.attrs.src;
             img.alt = node.attrs.alt || '';
-            img.style.display = 'block';
+            img.style.display = 'inline-block';
             img.style.maxWidth = '100%';
             img.style.height = 'auto';
             img.style.cursor = 'pointer';
 
-            const updateContainerWidth = () => {
-                if (img.offsetWidth > 0) {
-                    imgContainer.style.width = `${img.offsetWidth}px`;
+            const applyExplicitSize = (width?: number | null, height?: number | null) => {
+                if (typeof width === 'number' && !Number.isNaN(width)) {
+                    img.style.width = `${width}px`;
+                    imgContainer.style.width = `${width}px`;
+                } else {
+                    img.style.width = '';
+                    imgContainer.style.width = 'auto';
+                }
+
+                if (typeof height === 'number' && !Number.isNaN(height)) {
+                    img.style.height = `${height}px`;
+                } else {
+                    img.style.height = '';
                 }
             };
 
-            if (node.attrs.width) {
-                img.style.width = `${node.attrs.width}px`;
-                imgContainer.style.width = `${node.attrs.width}px`;
-            } else {
-                if (img.complete) {
-                    setTimeout(updateContainerWidth, 0);
-                } else {
-                    img.onload = updateContainerWidth;
-                }
-            }
+            applyExplicitSize(node.attrs.width, node.attrs.height);
 
-            if (node.attrs.height) {
-                img.style.height = `${node.attrs.height}px`;
+            const clampToEditorWidth = (width: number, height: number) => {
+                const editorDom = editor.view.dom as HTMLElement | null;
+                const padding = 48;
+                const maxWidth = editorDom ? Math.max(0, editorDom.clientWidth - padding) : null;
+                if (maxWidth && width > maxWidth) {
+                    const ratio = height / width;
+                    return {
+                        width: maxWidth,
+                        height: Math.round(maxWidth * ratio),
+                    };
+                }
+                return { width, height };
+            };
+
+            const ensureExplicitSize = () => {
+                if (node.attrs.width || !img.naturalWidth || !img.naturalHeight) return;
+                const { width, height } = clampToEditorWidth(img.naturalWidth, img.naturalHeight);
+                updateImageSize(width, height);
+            };
+
+            if (img.complete) {
+                ensureExplicitSize();
+            } else {
+                img.addEventListener('load', ensureExplicitSize, { once: true });
             }
 
             const resizeHandle = document.createElement('div');
@@ -278,25 +301,7 @@ export const ResizableImage = Image.extend({
 
                     img.src = updatedNode.attrs.src;
                     img.alt = updatedNode.attrs.alt || '';
-
-                    if (updatedNode.attrs.width) {
-                        img.style.width = `${updatedNode.attrs.width}px`;
-                        imgContainer.style.width = `${updatedNode.attrs.width}px`;
-                    } else {
-                        img.style.width = '';
-                        imgContainer.style.width = '';
-                        if (img.complete) {
-                            setTimeout(updateContainerWidth, 0);
-                        } else {
-                            img.onload = updateContainerWidth;
-                        }
-                    }
-
-                    if (updatedNode.attrs.height) {
-                        img.style.height = `${updatedNode.attrs.height}px`;
-                    } else {
-                        img.style.height = '';
-                    }
+                    applyExplicitSize(updatedNode.attrs.width, updatedNode.attrs.height);
 
                     return true;
                 },
