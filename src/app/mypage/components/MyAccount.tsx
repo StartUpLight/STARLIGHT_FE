@@ -39,8 +39,8 @@ const MyAccount = () => {
               {user?.name}{' '}
             </div>
             <div className="mt-1 flex flex-row items-center gap-2">
-              {user?.provider == 'kakao' && <KaKao />}
-              {user?.provider == 'naver' && <Naver />}
+              {user?.provider === 'kakao' && <KaKao />}
+              {user?.provider === 'naver' && <Naver />}
 
               <div className="ds-subtext font-medium text-gray-900">
                 {user?.email}
