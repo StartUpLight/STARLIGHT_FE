@@ -218,6 +218,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         allItems.forEach((item: SidebarItem) => {
             const content = contents[item.number] || {};
             const requestBody = buildSubsectionRequest(item.number, item.title, content);
+            console.log(`[${item.number}] subsection request body:`, JSON.stringify(requestBody, null, 2));
             //console.log(`[${item.number}] requestBody:`, JSON.stringify(requestBody, null, 2));
 
             // contents에 해당 항목이 존재하면(한 번이라도 작성한 적이 있으면) 빈 값이어도 저장 요청 전송

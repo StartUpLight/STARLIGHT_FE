@@ -82,7 +82,20 @@ const MentorCard = ({
           type: 'application/pdf',
         });
       }
-
+      // //
+      // try {
+      //   const downloadUrl = URL.createObjectURL(pdfFile);
+      //   const link = document.createElement('a');
+      //   link.href = downloadUrl;
+      //   link.download = pdfFile.name || '사업계획서.pdf';
+      //   document.body.appendChild(link);
+      //   link.click();
+      //   document.body.removeChild(link);
+      //   URL.revokeObjectURL(downloadUrl);
+      // } catch (downloadError) {
+      //   console.warn('PDF 자동 다운로드 실패:', downloadError);
+      // }
+      // //
       await ApplyFeedback({
         expertId: id,
         businessPlanId: planId!,
