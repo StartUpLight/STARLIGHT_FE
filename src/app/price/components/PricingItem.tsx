@@ -41,7 +41,7 @@ export default function PricingItem({
       </div>
 
       <Button
-        text="가입하기"
+        text="구매하기"
         size="L"
         color="primary"
         className="ds-text h-11 w-full rounded-lg px-8 py-2.5"
