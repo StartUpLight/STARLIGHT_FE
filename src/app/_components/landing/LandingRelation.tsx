@@ -64,13 +64,13 @@ const LandingRelation = () => {
                 aria-label={`${logo.alt} 공식 사이트로 이동 (새 창)`}
                 className="block"
               >
-                <div className="bg-gray-80 flex h-[208px] w-full items-center justify-center rounded-[12px] px-[56px]">
+                <div className="bg-gray-80 flex h-52 w-full items-center justify-center rounded-xl px-14">
                   <Image
                     src={logo.src}
                     alt={logo.alt}
                     width={260}
                     height={60}
-                    className="object-contain"
+                    className="h-[60px] w-auto object-contain"
                     priority
                   />
                 </div>

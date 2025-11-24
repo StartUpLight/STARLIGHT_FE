@@ -21,8 +21,9 @@ const LandingBlackSection = () => {
           alt="홈화면 이미지"
           width={912}
           height={593}
-          className="mt-[60px] w-[90vw] max-w-[912px]"
+          className="mt-[60px] h-auto w-auto max-w-[912px]"
           priority
+          unoptimized={true}
         />
       </div>
 
@@ -44,8 +45,10 @@ const LandingBlackSection = () => {
           alt="피드백 이미지"
           width={1176}
           height={651}
-          className="mt-[60px] w-[90vw] max-w-full"
+          className="mt-[60px] h-auto w-full max-w-[1176px]"
           priority
+          quality={100}
+          unoptimized={true}
         />
       </div>
 
@@ -67,8 +70,9 @@ const LandingBlackSection = () => {
             alt="랜딩 전문가 이미지"
             width={1176}
             height={200}
-            className="max-w-[1176px]"
+            className="max-w-[1176px] object-contain"
             priority
+            unoptimized={true}
           />
           <Image
             src="/images/landing/landing_expert2.png"
@@ -77,6 +81,7 @@ const LandingBlackSection = () => {
             height={200}
             className="max-w-[1176px]"
             priority
+            unoptimized={true}
           />
           <Image
             src="/images/landing/landing_expert3.png"
@@ -85,6 +90,7 @@ const LandingBlackSection = () => {
             height={200}
             className="max-w-[1176px]"
             priority
+            unoptimized={true}
           />
         </div>
       </div>

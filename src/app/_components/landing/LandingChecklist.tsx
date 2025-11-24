@@ -19,6 +19,7 @@ const LandingChecklist = () => {
           height={480}
           className="h-[480px] w-[368px]"
           priority
+          unoptimized={true}
         />
 
         <Image
@@ -28,6 +29,7 @@ const LandingChecklist = () => {
           height={480}
           className="h-[480px] w-[368px]"
           priority
+          unoptimized={true}
         />
 
         <Image
@@ -37,6 +39,7 @@ const LandingChecklist = () => {
           height={480}
           className="h-[480px] w-[368px]"
           priority
+          unoptimized={true}
         />
       </div>
     </div>
