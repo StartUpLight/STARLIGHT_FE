@@ -9,10 +9,12 @@ import {
 import { generatePdfFromSubsections } from '@/lib/generatePdf';
 import Image from 'next/image';
 import Check from '@/assets/icons/gray_check.svg';
+import GrayPlus from '@/assets/icons/gray_plus.svg';
 import Plus from '@/assets/icons/white_plus.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
+import { useRouter } from 'next/navigation';
 
 type ExtraProps = {
   onApplied?: () => void;
@@ -28,6 +30,7 @@ const MentorCard = ({
   id,
   onApplied,
 }: MentorCardProps & ExtraProps) => {
+  const router = useRouter();
   const planId = useBusinessStore((s) => s.planId);
 
   const hasExpertUnlocked = useEvaluationStore((s) => s.hasExpertUnlocked);
@@ -91,6 +94,7 @@ const MentorCard = ({
 
       setDidApply(true);
       onApplied?.();
+      router.push('/expert/loading');
     } catch (e) {
       console.error('전문가 연결 실패:', e);
       alert('전문가 연결에 실패했습니다. 다시 시도해주세요.');
@@ -151,7 +155,13 @@ const MentorCard = ({
         ].join(' ')}
         title={disabled ? disabledReason : undefined}
       >
-        {isDone ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+        {isDone ? (
+          <Check className="h-5 w-5" />
+        ) : disabled ? (
+          <GrayPlus className="h-5 w-5" />
+        ) : (
+          <Plus className="h-5 w-5" />
+        )}
         {isDone ? '신청 완료' : uploading ? '신청 중..' : '전문가 연결'}
       </button>
     </div>

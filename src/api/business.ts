@@ -10,7 +10,10 @@ import {
   SubSectionType,
   AiGradeResponse,
   BusinessPlanSubsectionsResponse,
+  PdfGradingRequest,
+  PdfGradingRequestWithFile,
 } from '@/types/business/business.type';
+import { uploadImage } from '@/lib/imageUpload';
 
 export async function postBusinessPlan(): Promise<BusinessPlanCreateResponse> {
   const res = await api.post(`/v1/business-plans`);
@@ -35,12 +38,16 @@ export async function getBusinessPlanSubsection(
   return res.data as BusinessPlanSubsectionResponse;
 }
 
-export async function getBusinessPlanSubsections(planId: number): Promise<BusinessPlanSubsectionsResponse> {
+export async function getBusinessPlanSubsections(
+  planId: number
+): Promise<BusinessPlanSubsectionsResponse> {
   const res = await api.get(`/v1/business-plans/${planId}/subsections`);
   return res.data as BusinessPlanSubsectionsResponse;
 }
 
-export async function getBusinessPlanTitle(planId: number): Promise<BusinessPlanTitleResponse> {
+export async function getBusinessPlanTitle(
+  planId: number
+): Promise<BusinessPlanTitleResponse> {
   const res = await api.get(`/v1/business-plans/${planId}/titles`);
   return res.data as BusinessPlanTitleResponse;
 }
@@ -80,6 +87,23 @@ export async function postCheckList(planId: number, body: CheckListResponse) {
     `/v1/business-plans/${planId}/subsections/check-and-update`,
     body
   );
+
+  return res.data;
+}
+
+export async function postPdfEvaluation(
+  params: PdfGradingRequestWithFile
+): Promise<AiGradeResponse> {
+  const { title, file } = params;
+
+  const pdfUrl = await uploadImage(file);
+
+  const body: PdfGradingRequest = {
+    title,
+    pdfUrl,
+  };
+
+  const res = await api.post(`/v1/ai-reports/evaluation/pdf`, body);
 
   return res.data;
 }
