@@ -40,7 +40,7 @@ const ExampleExpertModal = ({ onClose }: ExampleReportModalProps) => {
               alt="총평 이미지"
               width={614}
               height={272}
-              className="object-contain"
+              className="h-auto w-auto object-contain"
               priority
               quality={100}
               unoptimized={true}
@@ -52,7 +52,7 @@ const ExampleExpertModal = ({ onClose }: ExampleReportModalProps) => {
                 alt="장점 이미지"
                 width={301}
                 height={163}
-                className="object-contain"
+                className="h-auto object-contain"
                 priority
                 quality={100}
                 unoptimized={true}

@@ -59,7 +59,7 @@ const ExampleReportModal = ({ onClose }: ExampleReportModalProps) => {
               alt={slide.title}
               width={614}
               height={272}
-              className="object-contain"
+              className="h-[272px] w-[614px] object-contain"
               priority
               quality={100}
               unoptimized={true}
