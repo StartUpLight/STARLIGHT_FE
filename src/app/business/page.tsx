@@ -46,6 +46,14 @@ const BusinessPageContent = () => {
     };
   }, []);
 
+  // 첫 진입 시에도 초기화 플래그를 기본적으로 활성화
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!sessionStorage.getItem('shouldResetBusinessDraft')) {
+      sessionStorage.setItem('shouldResetBusinessDraft', 'true');
+    }
+  }, []);
+
   // 새로고침 감지: 새로고침 시 상태 유지
   useEffect(() => {
     const currentUrl = window.location.href;
@@ -108,12 +116,9 @@ const BusinessPageContent = () => {
       return;
     }
 
-    // 기존 planId가 있으면 유지
-    if (planId) return;
-
-    // 초기 상태 설정
+    // 초기 상태 설정 (새 사업계획서 작성 모드)
     clearRefreshFlags();
-    if (!isRefresh && shouldResetDraft) {
+    if (shouldResetDraft) {
       sessionStorage.removeItem('shouldResetBusinessDraft');
       resetDraftState();
     }
