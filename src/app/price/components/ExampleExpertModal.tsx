@@ -7,8 +7,6 @@ interface ExampleExpertModalProps {
 }
 
 const ExampleExpertModal = ({ onClose }: ExampleExpertModalProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
   return (
     <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/20">
       <div className="w-[662px] rounded-2xl bg-white shadow-lg">
@@ -59,7 +57,7 @@ const ExampleExpertModal = ({ onClose }: ExampleExpertModalProps) => {
               />
               <Image
                 src="/images/price/example_expert_3.png"
-                alt="장점 이미지"
+                alt="단점 이미지"
                 width={301}
                 height={163}
                 className="object-contain"
