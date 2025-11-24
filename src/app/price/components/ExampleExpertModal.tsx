@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import Close from '@/assets/icons/close.svg';
 import Image from 'next/image';
 
-interface ExampleReportModalProps {
+interface ExampleExpertModalProps {
   onClose?: () => void;
 }
 
-const ExampleExpertModal = ({ onClose }: ExampleReportModalProps) => {
+const ExampleExpertModal = ({ onClose }: ExampleExpertModalProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   return (
