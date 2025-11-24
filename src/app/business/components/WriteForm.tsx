@@ -186,10 +186,24 @@ const WriteForm = ({
     if (!editor || editor.isDestroyed) return;
     try {
       if (content) {
-        editor.commands.setContent(content);
+        const currentJSON = editor.getJSON();
+        const nextJSON = JSON.parse(JSON.stringify(content));
+        if (JSON.stringify(currentJSON) === JSON.stringify(nextJSON)) {
+          return;
+        }
+        editor.commands.setContent(nextJSON, false);
       } else {
+        const currentJSON = editor.getJSON();
+        const isAlreadyEmpty =
+          !currentJSON ||
+          !Array.isArray(currentJSON.content) ||
+          currentJSON.content.length === 0 ||
+          (currentJSON.content.length === 1 &&
+            currentJSON.content[0]?.type === 'paragraph' &&
+            (!currentJSON.content[0]?.content || currentJSON.content[0]?.content?.length === 0));
+        if (isAlreadyEmpty) return;
         // content가 없으면 에디터를 빈 상태로 초기화
-        editor.commands.clearContent();
+        editor.commands.clearContent(false);
       }
 
       // setTimeout(() => {
