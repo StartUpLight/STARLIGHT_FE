@@ -89,22 +89,24 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || isPending) return;
 
     try {
       setValidationError(null);
 
       const title = selectedFile.name.replace(/\.pdf$/i, '');
-      onClose();
-      router.push('/report/loading');
 
-      await gradePdf({
+      const result = gradePdf({
         title,
         file: selectedFile,
       });
 
-      resetState();
       onClose();
+      router.push('/report/loading');
+
+      await result;
+
+      resetState();
       router.push('/mypage');
     } catch (e) {
       console.error(e);
