@@ -78,8 +78,6 @@ const CheckList = () => {
       blocks: subsectionRequest.blocks,
     };
 
-    console.log('체크리스트 요청 바디:', JSON.stringify(body, null, 2));
-
     checkListConfirm(
       { planId, body },
       {
