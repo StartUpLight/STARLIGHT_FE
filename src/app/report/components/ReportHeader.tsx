@@ -26,7 +26,7 @@ const ReportHeader = () => {
         </div>
       </div>
 
-      <div className="group relative">
+      <div className="relative">
         <Button
           text="전문가 연결"
           size="L"
@@ -37,18 +37,17 @@ const ReportHeader = () => {
             router.push('/expert');
           }}
         />
+
         <div
-          className={`absolute top-13 -left-3.5 -translate-x-1/2 ${
-            !dismissed
-              ? 'pointer-events-none hidden group-hover:block'
-              : 'hidden'
+          className={`absolute top-0.5 -left-36 -translate-x-1/2 ${
+            dismissed ? 'hidden' : 'block'
           }`}
         >
           <div className="relative select-none">
             <Bubble />
 
             <div className="absolute inset-0 z-10">
-              <p className="ds-subtext absolute top-6 right-9 left-4 font-medium whitespace-pre-line text-white">
+              <p className="ds-subtext absolute top-3 right-10 left-4 font-medium whitespace-pre-line text-white">
                 {canUseExpert
                   ? '전문가 연결을 통해 전문가에게 피드백을 \n요청할 수 있어요!'
                   : '전문가 연결은 점수가 70점 이상이거나 \n스페셜 회원권 보유 시 이용할 수 있어요!'}
@@ -61,7 +60,7 @@ const ReportHeader = () => {
                   e.stopPropagation();
                   setDismissed(true);
                 }}
-                className="pointer-events-auto absolute top-6 right-3 h-5 w-5"
+                className="absolute top-3 right-4 h-5 w-5 cursor-pointer"
               >
                 <Close />
               </button>
