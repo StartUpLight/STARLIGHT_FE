@@ -1,6 +1,27 @@
-import PricingItem from './PricingItem';
+'use client';
 
-const pricingData = [
+import Script from 'next/script';
+import PricingItem from './PricingItem';
+import usePayment from '@/hooks/queries/usePayment';
+import {
+  TossPaymentMethod,
+  UsageProductCode,
+} from '@/types/payment/payment.type';
+
+type PricingDataItem = {
+  title: string;
+  description: string;
+  price: string;
+  cycle: string;
+  highlight: string;
+  features: string[];
+  background?: string;
+  productCode?: UsageProductCode;
+};
+
+const DEFAULT_METHOD: TossPaymentMethod = 'CARD';
+
+const pricingData: PricingDataItem[] = [
   {
     title: 'Lite',
     description: '지금 당장 제출 직전, 한 번만 빠르게 퀄리티 올리고 싶은 분',
@@ -14,6 +35,7 @@ const pricingData = [
       '강·약점 구체 코멘트',
       'AI 리포트 무제한 포함',
     ],
+    productCode: 'AI_REPORT_1',
   },
   {
     title: 'Standard',
@@ -28,6 +50,7 @@ const pricingData = [
       '강·약점 구체 코멘트',
       'AI 리포트 무제한 포함',
     ],
+    productCode: 'AI_REPORT_2',
   },
   {
     title: 'Special',
@@ -46,13 +69,51 @@ const pricingData = [
 ];
 
 const PricingCard = () => {
+  const { startPayment, isProcessing } = usePayment({
+    successUrl: '/price/complete',
+    failUrl: '/price/complete',
+  });
+
+  const handleClickProduct = async (productCode: UsageProductCode) => {
+    try {
+      await startPayment({
+        productCode,
+        method: DEFAULT_METHOD,
+      });
+    } catch (e) {
+      console.error('결제 시작 에러:', e);
+    }
+  };
+
   return (
-    <div className="mt-12 flex w-full flex-row gap-6">
-      {pricingData.map((item, idx) => (
-        <PricingItem key={idx} {...item} />
-      ))}
-    </div>
+    <>
+      <Script
+        src="https://js.tosspayments.com/v2/standard"
+        strategy="afterInteractive"
+      />
+
+      <div className="mt-12 flex w-full flex-row gap-6">
+        {pricingData.map((item) => {
+          const { productCode } = item;
+
+          const handleClick = () => {
+            if (!productCode) return;
+            if (isProcessing) return;
+
+            handleClickProduct(productCode);
+          };
+
+          return (
+            <PricingItem
+              key={item.title}
+              {...item}
+              onClick={productCode ? handleClick : undefined}
+              disabled={isProcessing}
+            />
+          );
+        })}
+      </div>
+    </>
   );
 };
-
 export default PricingCard;
