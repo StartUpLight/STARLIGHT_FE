@@ -125,14 +125,13 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                     );
                     contents[item.number] = itemContent;
                 }
-            } catch (error: any) {
-                // 요청 취소 에러는 정상적인 취소이므로 로그 출력하지 않음
-                // Axios의 CanceledError 또는 AbortError 모두 처리
+            } catch (error) {
+                const err = error as { name?: string; code?: string; message?: string };
                 const isCanceled =
-                    error?.name === 'AbortError' ||
-                    error?.name === 'CanceledError' ||
-                    error?.code === 'ERR_CANCELED' ||
-                    (error?.message && error.message.includes('canceled'));
+                    err?.name === 'AbortError' ||
+                    err?.name === 'CanceledError' ||
+                    err?.code === 'ERR_CANCELED' ||
+                    (err?.message && err.message.includes('canceled'));
 
                 if (isCanceled) {
                     return;
