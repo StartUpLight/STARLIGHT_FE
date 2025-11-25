@@ -43,6 +43,7 @@ const Landing = () => {
             height={560}
             className="w-[90vw] max-w-[912px]"
             priority
+            unoptimized={true}
           />
         </div>
       </div>

@@ -21,17 +21,16 @@ const CheckList = () => {
     Array<{
       title: string;
       content: string;
-      userChecked: boolean;
-      Checked: boolean;
+      checked: boolean;
     }>
   >([]);
 
   useEffect(() => {
     const data = sections as Section[];
+
     for (const section of data) {
       const found = section.items.find((it) => it.number === selected.number);
       if (found?.checklist) {
-        // store에서 체크 상태 불러오기
         const itemContent = getItemContent(selected.number);
         const savedChecks = itemContent.checks || [];
 
@@ -39,23 +38,15 @@ const CheckList = () => {
           found.checklist.map((e, index) => ({
             title: e.title,
             content: e.content,
-            userChecked: false,
-            Checked: savedChecks[index] || false,
+            checked: savedChecks[index] || false,
           }))
         );
         return;
       }
     }
+
     setItems([]);
   }, [selected.number, getItemContent]);
-
-  const toggleCheck = (idx: number) => {
-    setItems((prev) =>
-      prev.map((item, i) =>
-        i === idx ? { ...item, userChecked: !item.userChecked } : item
-      )
-    );
-  };
 
   const handleCheck = async () => {
     if (!planId || items.length === 0) return;
@@ -68,7 +59,6 @@ const CheckList = () => {
       return;
     }
 
-    // 해당 서브섹션의 에디터 내용 가져오기
     const itemContent = getItemContent(selected.number);
     const subsectionRequest = buildSubsectionRequest(
       selected.number,
@@ -76,8 +66,7 @@ const CheckList = () => {
       itemContent
     );
 
-    // 현재 체크 상태를 checks 배열에 포함 (userChecked 또는 Checked 상태)
-    const currentChecks = items.map((item) => item.userChecked || item.Checked);
+    const currentChecks = items.map((item) => item.checked);
 
     const body: CheckListResponse = {
       subSectionType,
@@ -89,25 +78,19 @@ const CheckList = () => {
       blocks: subsectionRequest.blocks,
     };
 
-    // 요청 바디 콘솔 출력
-    console.log('체크리스트 요청 바디:', JSON.stringify(body, null, 2));
-
     checkListConfirm(
       { planId, body },
       {
         onSuccess: (res) => {
-          // 서버에서 반환된 체크 상태로 업데이트
           const serverChecks = res.data || currentChecks;
 
           setItems((prev) =>
             prev.map((item, i) => ({
               ...item,
-              userChecked: false, // 점검 완료 후 userChecked 초기화
-              Checked: serverChecks[i] || false,
+              checked: serverChecks[i] || false,
             }))
           );
 
-          // store에 체크 상태 저장
           updateItemContent(selected.number, {
             checks: serverChecks,
           });
@@ -117,29 +100,22 @@ const CheckList = () => {
   };
 
   return (
-    <div className="flex h-[439px] w-full flex-col rounded-[12px] bg-white">
-      <div className="flex w-full items-center border-b border-gray-200 px-6 pt-4 pb-[10px]">
+    <div className="flex h-[439px] w-full flex-col rounded-xl bg-white">
+      <div className="flex w-full items-center border-b border-gray-200 px-6 pt-4 pb-2.5">
         <span className="ds-subtitle font-semibold text-gray-900">
           체크리스트
         </span>
       </div>
 
-      <div className="flex w-full flex-col space-y-[10px] px-6 py-5">
+      <div className="flex w-full flex-col space-y-2.5 px-6 py-5">
         {items.map((item, i) => {
-          const isChecked = item.userChecked || item.Checked;
-          const isUserCheck = item.userChecked;
+          const isChecked = item.checked;
 
           return (
             <div key={`${item.title}-${i}`}>
-              <div
-                className="flex cursor-pointer items-center gap-[10px]"
-                onClick={() => toggleCheck(i)}
-              >
+              <div className="flex items-center gap-2.5">
                 {isChecked ? (
-                  <div
-                    className={`flex h-[18px] w-[18px] items-center justify-center rounded-full ${isUserCheck ? 'bg-gray-900' : 'bg-primary-500'
-                      }`}
-                  >
+                  <div className="bg-primary-500 flex h-[18px] w-[18px] items-center justify-center rounded-full">
                     <Check />
                   </div>
                 ) : (
@@ -157,7 +133,7 @@ const CheckList = () => {
               </div>
 
               {i < items.length - 1 && (
-                <div className="mt-[10px] h-[1px] w-full bg-gray-100" />
+                <div className="mt-2.5 h-px w-full bg-gray-100" />
               )}
             </div>
           );
@@ -165,7 +141,7 @@ const CheckList = () => {
 
         <Button
           text={isPending ? '점검 중' : '점검하기'}
-          className="mt-[10px] rounded-[8px]"
+          className="mt-2.5 rounded-lg"
           disabled={isPending}
           onClick={handleCheck}
         />

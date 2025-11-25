@@ -15,6 +15,7 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    qualities: [60, 75, 90, 100],
   },
 
   turbopack: {

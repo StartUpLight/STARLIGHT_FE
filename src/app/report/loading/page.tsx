@@ -3,7 +3,7 @@ import LoadingPoint from '@/assets/icons/loading_point.svg';
 
 const page = () => {
   return (
-    <div className="flex min-h-screen justify-center bg-white">
+    <div className="flex justify-center bg-white">
       <div className="mt-[220px] text-center">
         <div className="bg-primary-500 mx-auto mb-6 flex h-[60px] w-[60px] items-center justify-center gap-[6px] rounded-full">
           <LoadingPoint />
