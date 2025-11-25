@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { postTossConfirm } from '@/api/payment';
 import {
@@ -11,7 +11,7 @@ import Check from '@/assets/icons/puple_check.svg';
 
 type ViewState = 'LOADING' | 'SUCCESS' | 'FAIL';
 
-export default function PayCompletePage() {
+function PayComplete() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -227,5 +227,24 @@ export default function PayCompletePage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function PayCompletePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex h-full items-center justify-center bg-white px-4">
+          <div className="w-full max-w-xl rounded-2xl px-8 py-10 text-center">
+            <h1 className="mb-2 text-xl font-semibold">결제 처리 중...</h1>
+            <p className="text-sm text-gray-700">
+              결제 승인 상태를 확인하고 있습니다. 잠시만 기다려 주세요.
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <PayComplete />
+    </Suspense>
   );
 }
