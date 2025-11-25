@@ -85,7 +85,6 @@ const MentorCard = ({
           type: 'application/pdf',
         });
       }
-
       await ApplyFeedback({
         expertId: id,
         businessPlanId: planId!,

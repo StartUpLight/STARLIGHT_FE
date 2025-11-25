@@ -9,7 +9,8 @@ export interface Editor {
 }
 
 export interface ItemContent {
-  itemName?: string;
+  itemName?: string | Editor | null;
+  oneLineIntro?: string | Editor | null;
   firstSection?: string;
   editorFeatures?: Editor | null;
   editorSkills?: Editor | null;
@@ -34,12 +35,19 @@ function hasContent(node: Editor | null | undefined): boolean {
 
 const sectionCheckers: Record<string, (content: ItemContent) => boolean> = {
   OVERVIEW_BASIC: (content) => {
-    const hasText = content.itemName?.trim() || content.firstSection?.trim();
+    // itemName과 oneLineIntro가 문자열인지 JSONContent인지 확인
+    const hasItemName = typeof content.itemName === 'string'
+      ? content.itemName.trim().length > 0
+      : hasContent(content.itemName as Editor | null);
+    const hasOneLineIntro = typeof content.oneLineIntro === 'string'
+      ? content.oneLineIntro.trim().length > 0
+      : hasContent(content.oneLineIntro as Editor | null);
+    const hasFirstSection = typeof content.firstSection === 'string' && content.firstSection.trim().length > 0;
     const hasEditor =
       hasContent(content.editorFeatures) ||
       hasContent(content.editorSkills) ||
       hasContent(content.editorGoals);
-    return !!(hasText || hasEditor);
+    return !!(hasItemName || hasOneLineIntro || hasFirstSection || hasEditor);
   },
   default: (content) => hasContent(content.editorContent),
 };

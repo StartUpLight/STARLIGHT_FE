@@ -39,17 +39,28 @@ const renderItemHtml = (
     content: ReturnType<typeof convertResponseToItemContent>
 ): string => {
     if (item.number === '0') {
+        const itemNameHtml = content.itemName
+            ? (typeof content.itemName === 'string'
+                ? content.itemName
+                : convertEditorJsonToHtml(content.itemName))
+            : '';
+        const oneLineIntroHtml = content.oneLineIntro
+            ? (typeof content.oneLineIntro === 'string'
+                ? content.oneLineIntro
+                : convertEditorJsonToHtml(content.oneLineIntro))
+            : '';
+
         let html = `
             <div class="mb-4">
                 <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
-                ${content.itemName
-                ? `<p class="ds-text text-gray-700">${content.itemName}</p>`
+                ${itemNameHtml
+                ? `<div class="ds-text text-gray-700 prose max-w-none">${itemNameHtml}</div>`
                 : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
             </div>
             <div class="mb-4">
                 <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
-                ${content.oneLineIntro
-                ? `<p class="ds-text text-gray-700">${content.oneLineIntro}</p>`
+                ${oneLineIntroHtml
+                ? `<div class="ds-text text-gray-700 prose max-w-none">${oneLineIntroHtml}</div>`
                 : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
             </div>
         `;
@@ -102,6 +113,66 @@ const renderItemHtml = (
     `;
 };
 
+const renderSectionHeaderHtml = (sectionNumber: number, sectionTitle: string) => `
+    <div
+        class="px-3 py-1 bg-gray-100 mb-3"
+        style="
+            position: relative;
+            padding: 0.25rem 0.75rem;
+            background-color: #f3f4f6;
+            margin-bottom: 0.75rem;
+            height: 28px;
+        "
+    >
+        <div
+            class="rounded-full bg-gray-900"
+            style="
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                height: 20px;
+                width: 20px;
+                border-radius: 9999px;
+                background-color: #111827;
+            "
+        >
+            <span
+                class="ds-caption font-semibold text-white"
+                style="
+                    position: absolute;
+                    left: 50%;
+                    top: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 12px;
+                    line-height: 16px;
+                    font-weight: 600;
+                    color: #ffffff;
+                "
+            >
+                ${sectionNumber}
+            </span>
+        </div>
+        <h2
+            class="ds-subtitle font-semibold text-gray-900"
+            style="
+                position: absolute;
+                left: 40px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 18px;
+                line-height: 150%;
+                font-weight: 600;
+                color: #111827;
+                letter-spacing: -0.02em;
+                margin: 0;
+            "
+        >
+            ${sectionTitle}
+        </h2>
+    </div>
+`;
+
 // Preview와 동일한 HTML 생성 (측정용)
 const renderPreviewHtml = (
     response: BusinessPlanSubsectionsResponse
@@ -139,17 +210,18 @@ const renderPreviewHtml = (
                     padding: 0;
                     background: white;
                 }
-                .ds-caption { font-size: 12px; line-height: 16px; }
-                .ds-subtext { font-size: 13px; line-height: 18px; }
-                .ds-text { font-size: 14px; line-height: 20px; }
-                .ds-subtitle { font-size: 16px; line-height: 24px; }
+                .ds-caption { font-size: 12px; line-height: 150%; letter-spacing: 0; }
+                .ds-subtext { font-size: 14px; line-height: 150%; letter-spacing: 0; }
+                .ds-text { font-size: 16px; line-height: 150%; letter-spacing: -0.01em; }
+                .ds-subtitle { font-size: 18px; line-height: 150%; letter-spacing: -0.02em; }
                 .prose img { display: block; margin: 0 auto; }
-                .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
-                .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
+                .prose ul { list-style-type: disc; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose li { margin: 0.15rem 0; }
             </style>
         </head>
         <body>
-            <div id="measure-content" style="width: ${A4_WIDTH - 96}px; padding: 24px; visibility: hidden; position: absolute; top: -9999px;">
+            <div id="measure-content" style="width: ${A4_WIDTH}px; padding: 24px 48px; box-sizing: border-box; visibility: hidden; position: absolute; top: -9999px;">
     `;
 
     // 섹션별로 렌더링 (측정용)
@@ -158,17 +230,8 @@ const renderPreviewHtml = (
         const sectionTitle = section.title.replace(/^\d+\.\s*/, '');
 
         html += `
-            <div style="margin-bottom: 42px;">
-                <div style="position: relative; padding: 0.25rem 0.75rem; background-color: #f3f4f6; margin-bottom: 0.75rem; height: 28px;">
-                    <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); height: 20px; width: 20px; border-radius: 9999px; background-color: #111827;">
-                        <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 12px; line-height: 16px; font-weight: 600; color: #ffffff;">
-                            ${sectionNumber}
-                        </span>
-                    </div>
-                    <h2 style="position: absolute; left: 40px; top: 50%; transform: translateY(-50%); font-size: 18px; line-height: 150%; font-weight: 600; color: #111827; letter-spacing: -0.02em; margin: 0;">
-                        ${sectionTitle}
-                    </h2>
-                </div>
+            <div class="mb-[42px]">
+                ${renderSectionHeaderHtml(sectionNumber, sectionTitle)}
         `;
 
         section.items.forEach((item) => {
@@ -210,17 +273,17 @@ const renderPageHtml = (
                     padding: 0;
                     background: white;
                 }
-                .ds-caption { font-size: 12px; line-height: 16px; }
-                .ds-subtext { font-size: 13px; line-height: 18px; }
-                .ds-text { font-size: 14px; line-height: 20px; }
-                .ds-subtitle { font-size: 16px; line-height: 24px; }
+                .ds-caption { font-size: 12px; line-height: 150%; letter-spacing: 0; }
+                .ds-subtext { font-size: 14px; line-height: 150%; letter-spacing: 0; }
+                .ds-text { font-size: 16px; line-height: 150%; letter-spacing: -0.01em; }
+                .ds-subtitle { font-size: 18px; line-height: 150%; letter-spacing: -0.02em; }
                 .prose img { display: block; margin: 0 auto; }
-                .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
-                .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
+                .prose ul { list-style-type: disc; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose li { margin: 0.15rem 0; }
             </style>
         </head>
         <body>
-            <div id="pdf-page-root" class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
             <div id="pdf-page-root" class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
                 ${showHeader
             ? `<div class="px-12 pt-10 pb-6 border-b border-gray-200 flex-shrink-0">
@@ -354,48 +417,30 @@ export const generatePdfFromSubsections = async (
 
                             const needsSectionHeader = !shownSections.has(sectionNumber);
 
-                            // 개요(sectionNumber 1) 또는 개요 다음 영역(sectionNumber 2, "1. 문제 인식")이 시작될 때는 무조건 새 페이지에서 시작
-                            const shouldForceNewPage = needsSectionHeader && (sectionNumber === 1 || sectionNumber === 2);
-
                             // 섹션 제목 높이 계산
                             const totalItemHeight = needsSectionHeader
                                 ? sectionHeaderHeight + SECTION_HEADER_MARGIN + itemHeight + ITEM_MARGIN
                                 : itemHeight + ITEM_MARGIN;
 
                             // 페이지 분할: 특정 섹션은 강제로 새 페이지, 나머지는 여유 공간 고려
-                            const PAGE_BUFFER = 50; // 약간의 여유 공간
-                            if (shouldForceNewPage || (currentPageContent.length > 0 && currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER)) {
+                            const PAGE_BUFFER = -10; // 오버플로 방지를 위해 여유를 덜 사용
+                            if (currentPageContent.length > 0 && currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER) {
                                 // 현재 페이지 저장
                                 if (currentPageContent.length > 0) {
                                     pages.push({
                                         content: currentPageContent.join(''),
                                         showHeader: isFirstPage,
                                     });
+                                    isFirstPage = false;
                                 }
                                 // 새 페이지 시작
                                 currentPageContent = [];
                                 currentPageHeight = 0;
-                                // 개요(sectionNumber 1)는 첫 페이지이므로 제목 표시, 그 외는 false
-                                isFirstPage = sectionNumber === 1;
-                                // 새 페이지에서도 섹션 헤더는 다시 표시하지 않음 (이미 표시된 섹션이면)
                             }
 
                             // 섹션 헤더 추가 (처음 한 번만)
                             if (needsSectionHeader) {
-                                currentPageContent.push(`
-                                    <div style="margin-bottom: 0.75rem;">
-                                        <div style="position: relative; padding: 0.25rem 0.75rem; background-color: #f3f4f6; margin-bottom: 0.75rem; height: 28px;">
-                                            <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); height: 20px; width: 20px; border-radius: 9999px; background-color: #111827;">
-                                                <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 12px; line-height: 16px; font-weight: 600; color: #ffffff;">
-                                                    ${sectionNumber}
-                                                </span>
-                                            </div>
-                                            <h2 style="position: absolute; left: 40px; top: 50%; transform: translateY(-50%); font-size: 18px; line-height: 150%; font-weight: 600; color: #111827; letter-spacing: -0.02em; margin: 0;">
-                                                ${sectionTitle}
-                                            </h2>
-                                        </div>
-                                    </div>
-                                `);
+                                currentPageContent.push(renderSectionHeaderHtml(sectionNumber, sectionTitle));
                                 currentPageHeight += sectionHeaderHeight + SECTION_HEADER_MARGIN;
                                 shownSections.add(sectionNumber);
                             }
@@ -410,6 +455,17 @@ export const generatePdfFromSubsections = async (
                             const ITEM_MARGIN = 16; // mb-4 = 16px
                             currentPageHeight += SECTION_BOTTOM_MARGIN - ITEM_MARGIN; // 마지막 아이템의 mb-4를 제외하고 섹션 여백 추가
                         }
+
+                        // 개요 섹션(1번)은 다른 섹션과 페이지를 공유하지 않도록 강제 분리
+                        if (sectionNumber === 1 && currentPageContent.length > 0) {
+                            pages.push({
+                                content: currentPageContent.join(''),
+                                showHeader: isFirstPage,
+                            });
+                            isFirstPage = false;
+                            currentPageContent = [];
+                            currentPageHeight = 0;
+                        }
                     });
 
                     if (currentPageContent.length > 0) {
@@ -417,6 +473,7 @@ export const generatePdfFromSubsections = async (
                             content: currentPageContent.join(''),
                             showHeader: isFirstPage,
                         });
+                        isFirstPage = false;
                     }
 
                     // 측정용 iframe 제거

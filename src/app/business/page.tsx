@@ -4,167 +4,19 @@ import { useSearchParams } from 'next/navigation';
 import WriteForm from './components/WriteForm';
 import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
-import { useEditorStore } from '@/store/editor.store';
 import CreateModal from './components/CreateModal';
 
 const WRITE_MODAL_KEY = 'writeModalShown';
 
 const BusinessPageContent = () => {
   const searchParams = useSearchParams();
+  const selectedItem = useBusinessStore((state) => state.selectedItem);
+  const { initializePlan, loadContentsFromAPI, resetDraft, isPreview, setPreview, planId, setPlanId, setSelectedItem } = useBusinessStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [hasSeenModal, setHasSeenModal] = useState(false);
   const [modalReady, setModalReady] = useState(false);
-  const selectedItem = useBusinessStore((state) => state.selectedItem);
-  const setSelectedItem = useBusinessStore((state) => state.setSelectedItem);
-  const { initializePlan, loadContentsFromAPI, clearStorage, resetDraft, isPreview, setPreview, planId, setPlanId } = useBusinessStore();
-  const registerEditor = useEditorStore((state) => state.register);
   const hasInitializedPlanRef = useRef(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const token = localStorage.getItem('accessToken');
-    const seen = localStorage.getItem(WRITE_MODAL_KEY) === 'true';
-    setIsMember(Boolean(token));
-    setHasSeenModal(seen);
-    setModalReady(true);
-  }, []);
-
-  const markModalSeen = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(WRITE_MODAL_KEY, 'true');
-    }
-    setHasSeenModal(true);
-  }, []);
-
-  // 페이지 진입 시 모달 표시 여부 확인 및 데이터 불러오기
-  useEffect(() => {
-    if (typeof window === 'undefined' || !modalReady) return;
-
-    const planIdParam = searchParams.get('planId');
-    const isRefreshing = sessionStorage.getItem('isRefreshing') === 'true';
-    const previousUrl = sessionStorage.getItem('previousUrl');
-    const currentUrl = window.location.href;
-    const isRefresh = isRefreshing && previousUrl === currentUrl;
-    const shouldResetDraft = sessionStorage.getItem('shouldResetBusinessDraft') === 'true';
-
-    const clearRefreshFlags = () => {
-      sessionStorage.removeItem('isRefreshing');
-      sessionStorage.removeItem('previousUrl');
-    };
-
-    const resetDraftState = () => {
-      clearStorage();
-      resetDraft();
-      // 에디터 스토어도 초기화하여 이전 내용이 남지 않도록 함
-      registerEditor({
-        sectionNumber: '0',
-        features: null,
-        skills: null,
-        goals: null,
-      });
-    };
-
-    const loadPlan = (id: number) => {
-      setPlanId(id);
-      setIsModalOpen(false);
-      loadContentsFromAPI(id).catch((error) => {
-        console.error('데이터 불러오기 실패:', error);
-      });
-    };
-
-    if (!isRefresh && shouldResetDraft) {
-      sessionStorage.removeItem('shouldResetBusinessDraft');
-      resetDraftState();
-    }
-
-    const parsedPlanId = planIdParam ? parseInt(planIdParam, 10) : NaN;
-    if (!isNaN(parsedPlanId)) {
-      loadPlan(parsedPlanId);
-      return;
-    }
-
-    if (isRefresh) {
-      clearRefreshFlags();
-      setIsModalOpen(false);
-      if (planId) {
-        loadPlan(planId);
-      }
-      return;
-    }
-
-    if (planId) {
-      return;
-    }
-
-    clearRefreshFlags();
-    setIsModalOpen(isMember ? !hasSeenModal : true);
-    resetDraftState();
-
-    if (isMember && !hasInitializedPlanRef.current) {
-      hasInitializedPlanRef.current = true;
-      initializePlan().catch((error) => {
-        console.error('사업계획서 생성 실패:', error);
-      });
-    }
-  }, [
-    searchParams,
-    setPlanId,
-    planId,
-    loadContentsFromAPI,
-    clearStorage,
-    resetDraft,
-    modalReady,
-    isMember,
-    hasSeenModal,
-    initializePlan,
-  ]);
-
-  // 페이지를 떠났음을 표시 (실제 초기화는 다음 진입 시점에 수행)
-  useEffect(() => {
-    return () => {
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('shouldResetBusinessDraft', 'true');
-      }
-    };
-  }, []);
-
-  // 새로고침 감지 및 다른 페이지 이동 감지
-  useEffect(() => {
-    const currentUrl = window.location.href;
-    const handleBeforeUnload = () => {
-      sessionStorage.setItem('isRefreshing', 'true');
-      sessionStorage.setItem('previousUrl', currentUrl);
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
-  const handleCloseModal = () => {
-    if (isMember && !hasSeenModal) {
-      markModalSeen();
-    }
-    setIsModalOpen(false);
-  };
-
-  const handleCreatePlan = async () => {
-    try {
-      if (isMember) {
-        await initializePlan();
-        if (!hasSeenModal) {
-          markModalSeen();
-        }
-      }
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error('사업계획서 생성 실패:', error);
-      setIsModalOpen(false);
-    }
-  };
 
   useEffect(() => {
     setSelectedItem({
@@ -175,22 +27,149 @@ const BusinessPageContent = () => {
     });
   }, [setSelectedItem]);
 
-  // 미리보기 모드 전환 핸들러
+  // 초기 설정: 로그인 상태 및 모달 표시 여부 확인
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const token = localStorage.getItem('accessToken');
+    const seen = localStorage.getItem(WRITE_MODAL_KEY) === 'true';
+    setIsMember(Boolean(token));
+    setHasSeenModal(seen);
+    setModalReady(true);
+  }, []);
+
+  // 페이지 이탈 감지: 다음 진입 시 초기화 플래그 설정
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('shouldResetBusinessDraft', 'true');
+      }
+    };
+  }, []);
+
+  // 첫 진입 시에도 초기화 플래그를 기본적으로 활성화
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!sessionStorage.getItem('shouldResetBusinessDraft')) {
+      sessionStorage.setItem('shouldResetBusinessDraft', 'true');
+    }
+  }, []);
+
+  // 새로고침 감지: 새로고침 시 상태 유지
+  useEffect(() => {
+    const currentUrl = window.location.href;
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('isRefreshing', 'true');
+      sessionStorage.setItem('previousUrl', currentUrl);
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  const markModalSeen = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(WRITE_MODAL_KEY, 'true');
+    }
+    setHasSeenModal(true);
+  }, []);
+
+  // 페이지 진입 시 데이터 로딩 및 초기화
+  useEffect(() => {
+    if (typeof window === 'undefined' || !modalReady) return;
+
+    const planIdParam = searchParams.get('planId');
+    const parsedPlanId = planIdParam ? parseInt(planIdParam, 10) : null;
+    const isRefreshing = sessionStorage.getItem('isRefreshing') === 'true';
+    const previousUrl = sessionStorage.getItem('previousUrl');
+    const isRefresh = isRefreshing && previousUrl === window.location.href;
+    const shouldResetDraft = sessionStorage.getItem('shouldResetBusinessDraft') === 'true';
+
+    const clearRefreshFlags = () => {
+      sessionStorage.removeItem('isRefreshing');
+      sessionStorage.removeItem('previousUrl');
+    };
+
+    const resetDraftState = () => {
+      resetDraft();
+    };
+
+    const loadPlan = async (id: number) => {
+      setPlanId(id);
+      setIsModalOpen(false);
+      try {
+        await loadContentsFromAPI(id);
+      } catch (error) {
+        console.error('데이터 불러오기 실패:', error);
+      }
+    };
+
+    // URL에 planId가 있으면 해당 planId로 로드
+    if (parsedPlanId) {
+      loadPlan(parsedPlanId);
+      return;
+    }
+
+    // 새로고침인 경우 기존 planId로 로드
+    if (isRefresh) {
+      clearRefreshFlags();
+      setIsModalOpen(false);
+      if (planId) loadPlan(planId);
+      return;
+    }
+
+    // 초기 상태 설정 (새 사업계획서 작성 모드)
+    clearRefreshFlags();
+    if (shouldResetDraft) {
+      sessionStorage.removeItem('shouldResetBusinessDraft');
+      resetDraftState();
+    }
+
+    setIsModalOpen(isMember ? !hasSeenModal : true);
+    if (isMember && !hasInitializedPlanRef.current) {
+      hasInitializedPlanRef.current = true;
+      initializePlan().catch((error) => console.error('사업계획서 생성 실패:', error));
+    }
+  }, [
+    searchParams,
+    setPlanId,
+    planId,
+    loadContentsFromAPI,
+    resetDraft,
+    modalReady,
+    isMember,
+    hasSeenModal,
+    initializePlan,
+  ]);
+
+  // 이벤트 핸들러
+  const handleCloseModal = () => {
+    if (isMember && !hasSeenModal) markModalSeen();
+    setIsModalOpen(false);
+  };
+
+  const handleCreatePlan = async () => {
+    try {
+      if (isMember) {
+        await initializePlan();
+        if (!hasSeenModal) markModalSeen();
+      }
+    } catch (error) {
+      console.error('사업계획서 생성 실패:', error);
+    } finally {
+      setIsModalOpen(false);
+    }
+  };
+
   const handleTogglePreview = useCallback(() => {
     setPreview(!isPreview);
   }, [isPreview, setPreview]);
 
-  // 전역으로 미리보기 토글 함수 등록 (BusinessHeader에서 사용)
+  // 전역 미리보기 토글 함수 등록 (BusinessHeader에서 사용)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const win = window as Window & { togglePreview?: () => void };
-      win.togglePreview = handleTogglePreview;
-    }
+    if (typeof window === 'undefined') return;
+    const win = window as Window & { togglePreview?: () => void };
+    win.togglePreview = handleTogglePreview;
     return () => {
-      if (typeof window !== 'undefined') {
-        const win = window as Window & { togglePreview?: () => void };
-        delete win.togglePreview;
-      }
+      delete win.togglePreview;
     };
   }, [handleTogglePreview]);
 

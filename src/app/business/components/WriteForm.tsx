@@ -4,6 +4,7 @@ import { useEditor } from '@tiptap/react';
 import { useBusinessStore } from '@/store/business.store';
 import { uploadImage } from '@/lib/imageUpload';
 import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
+import { getSelectionAvailableWidth } from '@/lib/business/editor/getSelectionAvailableWidth';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import TextStyle from '@tiptap/extension-text-style';
@@ -121,6 +122,52 @@ const WriteForm = ({
       handlePaste: createPasteHandler(),
     },
   });
+
+  // 아이템명 에디터 (하이라이트, 볼드, 색상만 가능, 헤딩/표/이미지 비활성화)
+  const editorItemName = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: false,
+        blockquote: false,
+        codeBlock: false,
+        horizontalRule: false,
+        hardBreak: false,
+      }),
+      SpellError,
+      Highlight.configure({ multicolor: true }),
+      TextStyle,
+      Color,
+      Placeholder.configure({
+        placeholder: '답변을 입력하세요.',
+        includeChildren: false,
+        showOnlyWhenEditable: true,
+      }),
+    ],
+    content: '<p></p>',
+  });
+
+  // 아이템 한줄소개 에디터 (하이라이트, 볼드, 색상만 가능, 헤딩/표/이미지 비활성화)
+  const editorOneLineIntro = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: false,
+        blockquote: false,
+        codeBlock: false,
+        horizontalRule: false,
+        hardBreak: false,
+      }),
+      SpellError,
+      Highlight.configure({ multicolor: true }),
+      TextStyle,
+      Color,
+      Placeholder.configure({
+        placeholder: '답변을 입력하세요.',
+        includeChildren: false,
+        showOnlyWhenEditable: true,
+      }),
+    ],
+    content: '<p></p>',
+  });
   const { updateItemContent, getItemContent, lastSavedTime, isSaving, saveAllItems, planId } = useBusinessStore();
   // 현재 섹션의 contents만 구독하여 변경 감지
   const currentContent = useBusinessStore((state) => state.contents[number]);
@@ -134,20 +181,30 @@ const WriteForm = ({
 
   // store에서 저장된 내용 불러오기
   const savedContent = getItemContent(number);
-  const [itemName, setItemName] = useState(savedContent.itemName || '');
-  const [oneLineIntro, setOneLineIntro] = useState(
-    savedContent.oneLineIntro || ''
-  );
 
   // 에디터 내용 복원 헬퍼 함수
   const restoreEditorContent = useCallback((editor: Editor | null, content: JSONContent | null | undefined) => {
     if (!editor || editor.isDestroyed) return;
     try {
       if (content) {
-        editor.commands.setContent(content);
+        const currentJSON = editor.getJSON();
+        const nextJSON = JSON.parse(JSON.stringify(content));
+        if (JSON.stringify(currentJSON) === JSON.stringify(nextJSON)) {
+          return;
+        }
+        editor.commands.setContent(nextJSON, false);
       } else {
+        const currentJSON = editor.getJSON();
+        const isAlreadyEmpty =
+          !currentJSON ||
+          !Array.isArray(currentJSON.content) ||
+          currentJSON.content.length === 0 ||
+          (currentJSON.content.length === 1 &&
+            currentJSON.content[0]?.type === 'paragraph' &&
+            (!currentJSON.content[0]?.content || currentJSON.content[0]?.content?.length === 0));
+        if (isAlreadyEmpty) return;
         // content가 없으면 에디터를 빈 상태로 초기화
-        editor.commands.clearContent();
+        editor.commands.clearContent(false);
       }
 
       // setTimeout(() => {
@@ -178,18 +235,19 @@ const WriteForm = ({
     if (!editorFeatures) return;
 
     const content = getItemContent(number);
-    setItemName(content.itemName || '');
-    setOneLineIntro(content.oneLineIntro || '');
 
     // 에디터 내용 복원
     if (isOverview) {
+      // itemName과 oneLineIntro는 JSONContent로 저장되어 있을 수 있음
+      restoreEditorContent(editorItemName, content.itemName ? (typeof content.itemName === 'string' ? { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: content.itemName }] }] } : content.itemName) : null);
+      restoreEditorContent(editorOneLineIntro, content.oneLineIntro ? (typeof content.oneLineIntro === 'string' ? { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: content.oneLineIntro }] }] } : content.oneLineIntro) : null);
       restoreEditorContent(editorFeatures, content.editorFeatures);
       restoreEditorContent(editorSkills, content.editorSkills);
       restoreEditorContent(editorGoals, content.editorGoals);
     } else {
       restoreEditorContent(editorFeatures, content.editorContent);
     }
-  }, [number, editorFeatures, editorSkills, editorGoals, currentContent, getItemContent, isOverview, restoreEditorContent]);
+  }, [number, editorFeatures, editorSkills, editorGoals, editorItemName, editorOneLineIntro, currentContent, getItemContent, isOverview, restoreEditorContent]);
 
   // 공통 저장 함수 (디바운스 적용)
   const debouncedSave = useCallback(async () => {
@@ -216,12 +274,14 @@ const WriteForm = ({
       const mainSelection = saveSelection(editorFeatures);
       const skillsSelection = saveSelection(editorSkills);
       const goalsSelection = saveSelection(editorGoals);
+      const itemNameSelection = saveSelection(editorItemName);
+      const oneLineIntroSelection = saveSelection(editorOneLineIntro);
 
       // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
       if (isOverview) {
         updateItemContent(number, {
-          itemName,
-          oneLineIntro,
+          itemName: editorItemName?.getJSON() || null,
+          oneLineIntro: editorOneLineIntro?.getJSON() || null,
           editorFeatures: editorFeatures?.getJSON() || null,
           editorSkills: editorSkills?.getJSON() || null,
           editorGoals: editorGoals?.getJSON() || null,
@@ -243,6 +303,10 @@ const WriteForm = ({
             selectionToRestore = skillsSelection;
           } else if (currentActiveEditor === editorGoals && goalsSelection) {
             selectionToRestore = goalsSelection;
+          } else if (currentActiveEditor === editorItemName && itemNameSelection) {
+            selectionToRestore = itemNameSelection;
+          } else if (currentActiveEditor === editorOneLineIntro && oneLineIntroSelection) {
+            selectionToRestore = oneLineIntroSelection;
           }
           if (selectionToRestore) {
             try {
@@ -265,12 +329,14 @@ const WriteForm = ({
         debouncedSave();
       }, 300);
     };
-  }, [isOverview, number, itemName, oneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave, activeEditor]);
+  }, [isOverview, number, editorItemName, editorOneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave, activeEditor]);
 
   // 에디터에 onChange 이벤트 리스너 추가 (store는 즉시 저장, API만 디바운스)
   const mainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const skillsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const goalsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const itemNameTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const oneLineIntroTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!editorFeatures) return;
@@ -284,6 +350,26 @@ const WriteForm = ({
     }];
 
     if (isOverview) {
+      // 아이템명 에디터
+      if (editorItemName) {
+        const handleItemNameUpdate = createUpdateHandler(itemNameTimeoutRef);
+        editorItemName.on('update', handleItemNameUpdate);
+        cleanup.push(() => {
+          if (itemNameTimeoutRef.current) clearTimeout(itemNameTimeoutRef.current);
+          editorItemName.off('update', handleItemNameUpdate);
+        });
+      }
+
+      // 한줄소개 에디터
+      if (editorOneLineIntro) {
+        const handleOneLineIntroUpdate = createUpdateHandler(oneLineIntroTimeoutRef);
+        editorOneLineIntro.on('update', handleOneLineIntroUpdate);
+        cleanup.push(() => {
+          if (oneLineIntroTimeoutRef.current) clearTimeout(oneLineIntroTimeoutRef.current);
+          editorOneLineIntro.off('update', handleOneLineIntroUpdate);
+        });
+      }
+
       if (editorSkills) {
         const handleSkillsUpdate = createUpdateHandler(skillsTimeoutRef);
         editorSkills.on('update', handleSkillsUpdate);
@@ -310,40 +396,13 @@ const WriteForm = ({
     editorFeatures,
     editorSkills,
     editorGoals,
+    editorItemName,
+    editorOneLineIntro,
     planId,
     isOverview,
     createUpdateHandler,
   ]);
 
-  // TextInput 값 변경 시 store에 즉시 저장, API 저장만 디바운스 적용
-  const textInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleTextInputChange = useCallback((field: 'itemName' | 'oneLineIntro', value: string) => {
-    // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
-    if (field === 'itemName') {
-      setItemName(value);
-      updateItemContent(number, { itemName: value });
-    } else {
-      setOneLineIntro(value);
-      updateItemContent(number, { oneLineIntro: value });
-    }
-
-    // API 저장만 디바운스 적용 (네트워크 요청이므로)
-    if (textInputTimeoutRef.current) {
-      clearTimeout(textInputTimeoutRef.current);
-    }
-    textInputTimeoutRef.current = setTimeout(() => {
-      debouncedSave();
-    }, 500);
-  }, [number, updateItemContent, debouncedSave]);
-
-  const handleItemNameChange = useCallback((value: string) => {
-    handleTextInputChange('itemName', value);
-  }, [handleTextInputChange]);
-
-  const handleOneLineIntroChange = useCallback((value: string) => {
-    handleTextInputChange('oneLineIntro', value);
-  }, [handleTextInputChange]);
 
   // 이미지 파일 선택 핸들러
   const handleImageUpload = async (
@@ -371,9 +430,11 @@ const WriteForm = ({
 
       if (imageUrl && activeEditor) {
         const { width, height } = await getImageDimensions(imageUrl);
+        const selectionWidth = getSelectionAvailableWidth(activeEditor);
         const editorDom = activeEditor.view.dom as HTMLElement | null;
-        const maxWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
-        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
+        const fallbackWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
+        const maxWidth = selectionWidth ?? fallbackWidth;
+        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth ?? undefined);
         const imageAttributes: ImageCommandAttributes = {
           src: imageUrl,
           width: clampedWidth ?? undefined,
@@ -477,8 +538,8 @@ const WriteForm = ({
     const payload = SpellPayload({
       number,
       title,
-      itemName,
-      oneLineIntro,
+      itemName: editorItemName?.getText() || '',
+      oneLineIntro: editorOneLineIntro?.getText() || '',
       editorFeatures,
       editorSkills,
       editorGoals,
@@ -503,6 +564,8 @@ const WriteForm = ({
       <WriteFormHeader number={number} title={title} subtitle={subtitle} />
       <WriteFormToolbar
         activeEditor={activeEditor}
+        editorItemName={isOverview ? editorItemName : undefined}
+        editorOneLineIntro={isOverview ? editorOneLineIntro : undefined}
         onImageClick={handleImageButtonClick}
         onSpellCheckClick={handleSpellCheckClick}
         grammarActive={grammarActive}
@@ -522,13 +585,11 @@ const WriteForm = ({
         <div className="space-y-[24px] px-5 pt-4 pb-[80px]">
           {isOverview ? (
             <OverviewSection
-              itemName={itemName}
-              oneLineIntro={oneLineIntro}
+              editorItemName={editorItemName}
+              editorOneLineIntro={editorOneLineIntro}
               editorFeatures={editorFeatures}
               editorSkills={editorSkills}
               editorGoals={editorGoals}
-              onItemNameChange={handleItemNameChange}
-              onOneLineIntroChange={handleOneLineIntroChange}
               onEditorFocus={setActiveEditor}
             />
           ) : (

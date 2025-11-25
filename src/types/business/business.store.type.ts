@@ -15,8 +15,8 @@ export type EditorJSON = {
 };
 
 export interface ItemContent {
-    itemName?: string;
-    oneLineIntro?: string;
+    itemName?: string | EditorJSON | null;
+    oneLineIntro?: string | EditorJSON | null;
     editorFeatures?: EditorJSON | null; // TipTap JSON
     editorSkills?: EditorJSON | null;
     editorGoals?: EditorJSON | null;
@@ -47,9 +47,6 @@ export interface BusinessStore {
 
     // API에서 contents 불러오기
     loadContentsFromAPI: (planId: number) => Promise<Record<string, ItemContent>>;
-
-    // localStorage 초기화
-    clearStorage: () => void;
 
     // 미리보기 모드
     isPreview: boolean;

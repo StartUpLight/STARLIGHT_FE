@@ -30,10 +30,12 @@ export async function postBusinessPlanSubsections(
 
 export async function getBusinessPlanSubsection(
   planId: number,
-  subSectionType: SubSectionType
+  subSectionType: SubSectionType,
+  signal?: AbortSignal
 ): Promise<BusinessPlanSubsectionResponse> {
   const res = await api.get(
-    `/v1/business-plans/${planId}/subsections/${subSectionType}`
+    `/v1/business-plans/${planId}/subsections/${subSectionType}`,
+    { signal }
   );
   return res.data as BusinessPlanSubsectionResponse;
 }

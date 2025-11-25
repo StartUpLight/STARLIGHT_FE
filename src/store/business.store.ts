@@ -31,11 +31,26 @@ const savePlanIdToStorage = (planId: number) => {
 };
 
 let initializingPlanPromise: Promise<number> | null = null;
+let currentLoadAbortController: AbortController | null = null;
 
 export const useBusinessStore = create<BusinessStore>((set, get) => ({
     planId: loadPlanIdFromStorage(),
     setPlanId: (planId: number) => {
-        set({ planId });
+        const currentPlanId = get().planId;
+        // planId가 변경될 때만 contents 초기화
+        if (currentPlanId !== planId) {
+            // 이전 로딩 요청 취소
+            if (currentLoadAbortController) {
+                currentLoadAbortController.abort();
+                currentLoadAbortController = null;
+            }
+            // contents 즉시 초기화하여 이전 데이터가 보이지 않도록 함
+            set({
+                planId,
+                contents: {},
+                title: '',
+            });
+        }
         savePlanIdToStorage(planId);
     },
     initializePlan: async () => {
@@ -63,6 +78,23 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     },
     // API에서 모든 섹션 데이터 불러오기
     loadContentsFromAPI: async (planId: number) => {
+        // 이전 로딩 요청 취소
+        if (currentLoadAbortController) {
+            currentLoadAbortController.abort();
+        }
+
+        // 새로운 AbortController 생성
+        const abortController = new AbortController();
+        currentLoadAbortController = abortController;
+
+        // 현재 store의 planId와 요청한 planId가 일치하는지 확인
+        const currentPlanId = get().planId;
+        if (currentPlanId !== planId) {
+            console.warn(`loadContentsFromAPI: planId 불일치 (store: ${currentPlanId}, 요청: ${planId}). 요청 취소.`);
+            abortController.abort();
+            return {};
+        }
+
         type SidebarItem = { name: string; number: string; title: string; subtitle: string };
         type SidebarSection = { title: string; items: SidebarItem[] };
         const allItems = (sections as SidebarSection[]).flatMap((section) => section.items);
@@ -71,9 +103,20 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
 
         // 모든 섹션을 병렬로 불러오기
         const requests = allItems.map(async (item: SidebarItem) => {
+            // 요청이 취소되었는지 확인
+            if (abortController.signal.aborted) {
+                return;
+            }
+
             try {
                 const subSectionType = getSubSectionTypeFromNumber(item.number);
-                const response = await getBusinessPlanSubsection(planId, subSectionType);
+                const response = await getBusinessPlanSubsection(planId, subSectionType, abortController.signal);
+
+                // 요청이 취소되었는지 다시 확인
+                if (abortController.signal.aborted) {
+                    return;
+                }
+
                 if (response.result === 'SUCCESS' && response.data?.content) {
                     const content = response.data.content;
                     const itemContent = convertResponseToItemContent(
@@ -82,21 +125,40 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                     );
                     contents[item.number] = itemContent;
                 }
-            } catch (error) {
+            } catch (error: any) {
+                // 요청 취소 에러는 정상적인 취소이므로 로그 출력하지 않음
+                // Axios의 CanceledError 또는 AbortError 모두 처리
+                const isCanceled =
+                    error?.name === 'AbortError' ||
+                    error?.name === 'CanceledError' ||
+                    error?.code === 'ERR_CANCELED' ||
+                    (error?.message && error.message.includes('canceled'));
+
+                if (isCanceled) {
+                    return;
+                }
                 console.error(`[${item.number}] 데이터 불러오기 실패:`, error);
             }
         });
 
         await Promise.allSettled(requests);
-        set({ contents });
-        return contents;
-    },
-    // localStorage 초기화
-    clearStorage: () => {
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem(PLAN_ID_KEY);
-            localStorage.removeItem('businessPlanTitle');
+
+        // 요청이 취소되었는지 최종 확인
+        if (abortController.signal.aborted) {
+            return {};
         }
+
+        // planId가 여전히 일치하는지 확인 (로딩 중에 변경되었을 수 있음)
+        const finalPlanId = get().planId;
+        if (finalPlanId !== planId) {
+            console.warn(`loadContentsFromAPI: 로딩 완료 후 planId 불일치 (store: ${finalPlanId}, 요청: ${planId}). 데이터 무시.`);
+            currentLoadAbortController = null;
+            return {};
+        }
+
+        set({ contents });
+        currentLoadAbortController = null;
+        return contents;
     },
     resetDraft: () => {
         if (typeof window !== 'undefined') {
@@ -156,6 +218,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         allItems.forEach((item: SidebarItem) => {
             const content = contents[item.number] || {};
             const requestBody = buildSubsectionRequest(item.number, item.title, content);
+            console.log(`[${item.number}] subsection request body:`, JSON.stringify(requestBody, null, 2));
             //console.log(`[${item.number}] requestBody:`, JSON.stringify(requestBody, null, 2));
 
             // contents에 해당 항목이 존재하면(한 번이라도 작성한 적이 있으면) 빈 값이어도 저장 요청 전송

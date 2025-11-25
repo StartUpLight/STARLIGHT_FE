@@ -110,7 +110,7 @@ export const downloadPDF = async (fileName: string = '사업계획서') => {
 
             // 각 페이지를 캡처
             const pageCanvas = await html2canvas(pageElement, {
-                scale: 1.5,
+                scale: 2,
                 useCORS: true,
                 allowTaint: false,
                 logging: false,

@@ -142,6 +142,7 @@ export const ResizableImage = Image.extend({
 
     addNodeView() {
         return ({ node, getPos, editor }) => {
+            let currentNode = node;
             const dom = document.createElement('div');
             dom.className = 'image-wrapper';
 
@@ -153,40 +154,67 @@ export const ResizableImage = Image.extend({
             const img = document.createElement('img');
             img.src = node.attrs.src;
             img.alt = node.attrs.alt || '';
-            img.style.display = 'block';
+            img.style.display = 'inline-block';
             img.style.maxWidth = '100%';
             img.style.height = 'auto';
             img.style.cursor = 'pointer';
 
-            const updateContainerWidth = () => {
-                if (img.offsetWidth > 0) {
-                    imgContainer.style.width = `${img.offsetWidth}px`;
+            const getAvailableWidth = () => {
+                const cell = img.closest('td, th') as HTMLElement | null;
+                if (cell) {
+                    const computed = window.getComputedStyle(cell);
+                    const paddingLeft = parseFloat(computed.paddingLeft || '0');
+                    const paddingRight = parseFloat(computed.paddingRight || '0');
+                    const available = cell.clientWidth - paddingLeft - paddingRight - 8;
+                    return Math.max(50, available);
                 }
+                const editorDom = editor.view.dom as HTMLElement | null;
+                if (editorDom) {
+                    const padding = 48;
+                    return Math.max(50, editorDom.clientWidth - padding);
+                }
+                return null;
             };
 
-            if (node.attrs.width) {
-                img.style.width = `${node.attrs.width}px`;
-                imgContainer.style.width = `${node.attrs.width}px`;
-            } else {
-                if (img.complete) {
-                    setTimeout(updateContainerWidth, 0);
-                } else {
-                    img.onload = updateContainerWidth;
+            const clampWidth = (width: number, height: number) => {
+                const availableWidth = getAvailableWidth();
+                if (availableWidth) {
+                    const maxWidth = Math.max(50, availableWidth);
+                    if (width > maxWidth) {
+                        const ratio = height > 0 ? height / width : 0;
+                        return {
+                            width: maxWidth,
+                            height: ratio ? Math.round(maxWidth * ratio) : height,
+                        };
+                    }
                 }
-            }
+                return { width, height };
+            };
 
-            if (node.attrs.height) {
-                img.style.height = `${node.attrs.height}px`;
-            }
+            const toNumber = (value: unknown): number | null => {
+                if (typeof value === 'number' && !Number.isNaN(value)) return value;
+                if (typeof value === 'string') {
+                    const parsed = parseFloat(value);
+                    return Number.isNaN(parsed) ? null : parsed;
+                }
+                return null;
+            };
 
-            const resizeHandle = document.createElement('div');
-            resizeHandle.className = 'image-resize-handle';
-            resizeHandle.style.display = 'none';
+            const applyExplicitSize = (width?: number | null, height?: number | null) => {
+                if (typeof width === 'number' && !Number.isNaN(width)) {
+                    img.style.width = `${width}px`;
+                    imgContainer.style.width = `${width}px`;
+                } else {
+                    img.style.width = '';
+                    imgContainer.style.width = 'auto';
+                }
 
-            let isResizing = false;
-            let startX = 0;
-            let startWidth = 0;
-            let startHeight = 0;
+                if (typeof height === 'number' && !Number.isNaN(height)) {
+                    img.style.height = `${height}px`;
+                } else {
+                    img.style.height = '';
+                }
+            };
 
             const updateImageSize = async (width: number, height: number) => {
                 const pos = typeof getPos === 'function' ? getPos() : null;
@@ -200,7 +228,46 @@ export const ResizableImage = Image.extend({
                 editor.emit('update', { editor, transaction });
             };
 
+            const ensureSizeWithinBounds = (sourceWidth?: number | null, sourceHeight?: number | null) => {
+                if (!img.naturalWidth || !img.naturalHeight) return;
+                const baseWidth = sourceWidth ?? img.naturalWidth;
+                const baseHeight = sourceHeight ?? img.naturalHeight;
+                const { width, height } = clampWidth(baseWidth, baseHeight);
+                const attrWidth = toNumber(currentNode.attrs.width);
+                const attrHeight = toNumber(currentNode.attrs.height);
+
+                applyExplicitSize(width, height);
+
+                if (attrWidth !== width || attrHeight !== height || attrWidth === null) {
+                    updateImageSize(width, height);
+                }
+            };
+
+            const initializeSize = () => {
+                const currentWidth = toNumber(currentNode.attrs.width);
+                const currentHeight = toNumber(currentNode.attrs.height);
+                ensureSizeWithinBounds(currentWidth, currentHeight);
+            };
+
+            if (img.complete) {
+                initializeSize();
+            } else {
+                img.addEventListener('load', initializeSize, { once: true });
+            }
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'image-resize-handle';
+            resizeHandle.style.display = 'none';
+
+            let isResizing = false;
+            let startX = 0;
+            let startWidth = 0;
+            let startHeight = 0;
+
+            const isInsideTable = () => Boolean(img.closest('td, th'));
+
             const handleMouseDown = (e: MouseEvent) => {
+                if (isInsideTable()) return;
                 e.preventDefault();
                 e.stopPropagation();
                 isResizing = true;
@@ -217,7 +284,11 @@ export const ResizableImage = Image.extend({
 
                 const deltaX = e.clientX - startX;
                 const aspectRatio = startHeight / startWidth;
-                const newWidth = Math.max(50, startWidth + deltaX);
+                let newWidth = Math.max(50, startWidth + deltaX);
+                const availableWidth = getAvailableWidth();
+                if (availableWidth) {
+                    newWidth = Math.min(newWidth, availableWidth);
+                }
                 const newHeight = newWidth * aspectRatio;
 
                 img.style.width = `${newWidth}px`;
@@ -252,12 +323,13 @@ export const ResizableImage = Image.extend({
                 const pos = typeof getPos === 'function' ? getPos() : null;
                 if (pos !== null && pos !== undefined) {
                     const isSelected = editor.state.selection.from === pos;
+                    const disallowResize = isInsideTable();
                     if (isSelected) {
-                        resizeHandle.style.display = 'block';
                         img.classList.add('selected');
+                        resizeHandle.style.display = disallowResize ? 'none' : 'block';
                     } else {
-                        resizeHandle.style.display = 'none';
                         img.classList.remove('selected');
+                        resizeHandle.style.display = 'none';
                     }
                 }
             };
@@ -269,6 +341,15 @@ export const ResizableImage = Image.extend({
             imgContainer.appendChild(resizeHandle);
             dom.appendChild(imgContainer);
 
+            const waitAndInitialize = () => {
+                if (!img.isConnected) return;
+                initializeSize();
+            };
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(waitAndInitialize);
+            });
+
             return {
                 dom,
                 update: (updatedNode) => {
@@ -276,27 +357,12 @@ export const ResizableImage = Image.extend({
                         return false;
                     }
 
+                    currentNode = updatedNode;
                     img.src = updatedNode.attrs.src;
                     img.alt = updatedNode.attrs.alt || '';
-
-                    if (updatedNode.attrs.width) {
-                        img.style.width = `${updatedNode.attrs.width}px`;
-                        imgContainer.style.width = `${updatedNode.attrs.width}px`;
-                    } else {
-                        img.style.width = '';
-                        imgContainer.style.width = '';
-                        if (img.complete) {
-                            setTimeout(updateContainerWidth, 0);
-                        } else {
-                            img.onload = updateContainerWidth;
-                        }
-                    }
-
-                    if (updatedNode.attrs.height) {
-                        img.style.height = `${updatedNode.attrs.height}px`;
-                    } else {
-                        img.style.height = '';
-                    }
+                    const updatedWidth = toNumber(updatedNode.attrs.width);
+                    const updatedHeight = toNumber(updatedNode.attrs.height);
+                    ensureSizeWithinBounds(updatedWidth, updatedHeight);
 
                     return true;
                 },

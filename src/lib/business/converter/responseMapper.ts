@@ -469,18 +469,60 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         const tableItem = item as TableContentItem;
         const rows: JSONNode[] = [];
 
+        const buildCellContent = (markdownText: string): JSONNode[] => {
+            const parsedNodes = parseMarkdownText(markdownText);
+            if (parsedNodes.length === 0) {
+                return [{
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: ' ' }],
+                }];
+            }
+
+            const blocks: JSONNode[] = [];
+            let inlineBuffer: JSONNode[] = [];
+
+            const flushInline = () => {
+                if (inlineBuffer.length === 0) return;
+                blocks.push({
+                    type: 'paragraph',
+                    content: inlineBuffer,
+                });
+                inlineBuffer = [];
+            };
+
+            parsedNodes.forEach((node) => {
+                if (
+                    node.type === 'image' ||
+                    node.type === 'table' ||
+                    node.type === 'bulletList' ||
+                    node.type === 'orderedList'
+                ) {
+                    flushInline();
+                    blocks.push(node);
+                } else {
+                    inlineBuffer.push(node);
+                }
+            });
+
+            flushInline();
+
+            if (blocks.length === 0) {
+                blocks.push({
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: ' ' }],
+                });
+            }
+
+            return blocks;
+        };
+
         const hasHeader = Array.isArray(tableItem.columns) && tableItem.columns.length > 0;
         if (hasHeader) {
             const headerCells = tableItem.columns.map(col => {
-                // 헤더 셀 내용도 마크다운으로 파싱하여 서식 정보 복원
                 const colText = String(col || ' ');
-                const parsedNodes = parseMarkdownText(colText);
                 return {
                     type: 'tableHeader',
-                    content: [{
-                        type: 'paragraph',
-                        content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
-                    }],
+                    content: buildCellContent(colText),
                 };
             });
             rows.push({
@@ -502,15 +544,10 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             }
             dataRows.forEach(row => {
                 const cells = row.map(cell => {
-                    // 셀 내용을 마크다운으로 파싱하여 서식 정보 복원
                     const cellText = String(cell || ' ');
-                    const parsedNodes = parseMarkdownText(cellText);
                     return {
                         type: 'tableCell',
-                        content: [{
-                            type: 'paragraph',
-                            content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
-                        }],
+                        content: buildCellContent(cellText),
                     };
                 });
                 rows.push({
@@ -571,11 +608,11 @@ export const convertResponseToItemContent = (
         };
 
         if (title === '아이템명') {
-            const textItem = block.content.find(c => c.type === 'text') as TextContentItem | undefined;
-            content.itemName = textItem?.value || '';
+            // JSONContent로 저장 (에디터 형식)
+            content.itemName = editorJson;
         } else if (title === '아이템 한줄 소개') {
-            const textItem = block.content.find(c => c.type === 'text') as TextContentItem | undefined;
-            content.oneLineIntro = textItem?.value || '';
+            // JSONContent로 저장 (에디터 형식)
+            content.oneLineIntro = editorJson;
         } else if (title === '아이템 / 아이디어 주요 기능') {
             content.editorFeatures = editorJson;
         } else if (title === '관련 보유 기술') {

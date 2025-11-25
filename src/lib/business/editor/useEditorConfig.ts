@@ -3,6 +3,7 @@ import type { EditorView } from '@tiptap/pm/view';
 import { uploadImage } from '@/lib/imageUpload';
 import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
 import { ImageCommandAttributes } from '@/lib/business/editor/types';
+import { getSelectionAvailableWidth } from './getSelectionAvailableWidth';
 
 type EditorViewWithEditor = EditorView & { editor?: Editor };
 
@@ -30,8 +31,10 @@ export const createPasteHandler = () => {
                         if (imageUrl) {
                             const editor = (view as EditorViewWithEditor).editor;
                             const { width, height } = await getImageDimensions(imageUrl);
-                            const maxWidth = view.dom?.clientWidth ? view.dom.clientWidth - 48 : undefined;
-                            const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
+                            const selectionWidth = getSelectionAvailableWidth(editor ?? null);
+                            const fallbackWidth = view.dom?.clientWidth ? view.dom.clientWidth - 48 : undefined;
+                            const maxWidth = selectionWidth ?? fallbackWidth;
+                            const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth ?? undefined);
                             const imageAttributes: ImageCommandAttributes = {
                                 src: imageUrl,
                                 width: clampedWidth ?? undefined,
