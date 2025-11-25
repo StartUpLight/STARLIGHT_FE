@@ -1,4 +1,4 @@
-import { Editor } from '@tiptap/core';
+import { Editor, JSONContent } from '@tiptap/core';
 import { useState, useRef } from 'react';
 import ToolButton from './ToolButton';
 import BoldIcon from '@/assets/icons/write-icons/bold.svg';
@@ -103,7 +103,7 @@ const WriteFormToolbar = ({
             const afterText = state.doc.textBetween(to, paragraphEnd);
 
             // 새 콘텐츠 구성
-            const newContent: any[] = [];
+            const newContent: JSONContent[] = [];
 
             // 앞부분 문단 (텍스트가 있을 때만)
             if (beforeText.trim()) {
