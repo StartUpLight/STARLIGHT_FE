@@ -29,7 +29,7 @@ export async function getMyBusinessPlans(
   return response.data;
 }
 
-export async function getOreder(): Promise<GetOrderProps[]> {
+export async function getOrders(): Promise<GetOrderProps[]> {
   const res = await api.get<GetOrderResponse>('/v1/orders');
 
   return res.data.data;

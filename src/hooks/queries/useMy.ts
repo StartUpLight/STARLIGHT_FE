@@ -1,7 +1,7 @@
 import {
   getMyBusinessPlans,
   GetMyBusinessPlansParams,
-  getOreder,
+  getOrders,
 } from '@/api/mypage';
 import { GetOrderProps } from '@/types/mypage/mypage.type';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,6 @@ export function useGetMyBusinessPlans(params: GetMyBusinessPlansParams) {
 export function useGetOrders() {
   return useQuery<GetOrderProps[]>({
     queryKey: ['GetOrder'],
-    queryFn: getOreder,
+    queryFn: getOrders,
   });
 }
