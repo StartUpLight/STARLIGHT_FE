@@ -66,7 +66,7 @@ const MyAccount = () => {
         <div className="flex w-full flex-col items-start gap-1.5">
           <div className="ds-text font-medium text-black">Lite 요금제</div>
           <div className="ds-subtext font-medium text-gray-500">
-            잔여횟수 총 2/5회
+            잔여횟수 총 1/5회
           </div>
         </div>
       </div>
