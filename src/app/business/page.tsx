@@ -247,15 +247,24 @@ const BusinessPageContent = () => {
     setPreview(!isPreview);
   }, [isPreview, setPreview]);
 
+  const openBusinessLoginModal = useCallback(() => {
+    setOpenLoginModal(true);
+  }, []);
+
   // 전역 미리보기 토글 함수 등록 (BusinessHeader에서 사용)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const win = window as Window & { togglePreview?: () => void };
+    const win = window as Window & {
+      togglePreview?: () => void;
+      openBusinessLoginModal?: () => void;
+    };
     win.togglePreview = handleTogglePreview;
+    win.openBusinessLoginModal = openBusinessLoginModal;
     return () => {
       delete win.togglePreview;
+      delete win.openBusinessLoginModal;
     };
-  }, [handleTogglePreview]);
+  }, [handleTogglePreview, openBusinessLoginModal]);
 
   return (
     <>
