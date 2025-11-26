@@ -11,7 +11,7 @@ const PaymentAmount = () => {
       </h2>
       <div className="mb-4 space-y-2.5">
         <div className="flex justify-between">
-          <span className="ds-text font-medium text-gray-700">결제 금액</span>
+          <span className="ds-text font-medium text-gray-700">Lite 요금제</span>
           <span className="ds-text font-medium text-gray-700">
             {unitPrice.toLocaleString()}원
           </span>
