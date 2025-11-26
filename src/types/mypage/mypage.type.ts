@@ -50,7 +50,6 @@ export interface GetOrderProps {
   paidAt: number;
   receiptUrl: string;
 }
-[];
 
 export interface GetOrderResponse {
   result: string;
