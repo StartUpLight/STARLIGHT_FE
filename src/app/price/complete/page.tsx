@@ -21,8 +21,8 @@ function PayComplete() {
   useEffect(() => {
     const paymentKey = searchParams.get('paymentKey');
     const orderId = searchParams.get('orderId');
-    const code = searchParams.get('code');
-    const message = searchParams.get('message');
+    // const code = searchParams.get('code');
+    // const message = searchParams.get('message');
 
     if (paymentKey && orderId) {
       const payload: OrderConfirmRequestPayload = {
@@ -49,13 +49,13 @@ function PayComplete() {
       return;
     }
 
-    if (code) {
-      const decoded =
-        message != null ? decodeURIComponent(message) : '결제에 실패했습니다.';
+    // if (code) {
+    //   const decoded =
+    //     message != null ? decodeURIComponent(message) : '결제에 실패했습니다.';
 
-      setState('FAIL');
-      return;
-    }
+    //   setState('FAIL');
+    //   return;
+    // }
 
     setState('FAIL');
   }, [searchParams]);
@@ -77,9 +77,8 @@ function PayComplete() {
             <main className="flex h-full items-center justify-center bg-white px-4">
               <div className="w-full max-w-xl rounded-2xl px-8 py-10 text-center">
                 <div className="mb-6">
-                  <div className="bg-primary-50 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                    <LoadingCheck />
-                  </div>
+                  <LoadingCheck />
+
                   <h1 className="ds-title mb-2 font-bold text-gray-900">
                     결제가 정상적으로 완료되었습니다.
                   </h1>
