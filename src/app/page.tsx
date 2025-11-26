@@ -10,6 +10,7 @@ const page = () => {
         <video
           className="absolute inset-0 h-full w-full object-cover"
           src="/images/landing/home.mp4"
+          poster="/images/video_thumbnail.png"
           autoPlay
           muted
           playsInline
