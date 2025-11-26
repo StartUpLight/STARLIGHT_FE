@@ -5,8 +5,11 @@ import WriteForm from './components/WriteForm';
 import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
 import CreateModal from './components/CreateModal';
+import LoginModal from '@/app/_components/common/LoginModal';
 
 const WRITE_MODAL_KEY = 'writeModalShown';
+const LOGIN_INIT_KEY = 'initBusinessAfterLogin';
+const LOGIN_REDIRECT_KEY = 'redirectAfterLogin';
 
 const BusinessPageContent = () => {
   const searchParams = useSearchParams();
@@ -16,6 +19,7 @@ const BusinessPageContent = () => {
   const [isMember, setIsMember] = useState(false);
   const [hasSeenModal, setHasSeenModal] = useState(false);
   const [modalReady, setModalReady] = useState(false);
+  const [openLoginModal, setOpenLoginModal] = useState(false);
   const hasInitializedPlanRef = useRef(false);
 
   useEffect(() => {
@@ -147,17 +151,58 @@ const BusinessPageContent = () => {
   };
 
   const handleCreatePlan = async () => {
-    try {
-      if (isMember) {
-        await initializePlan();
-        if (!hasSeenModal) markModalSeen();
+    if (!isMember) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(LOGIN_INIT_KEY, 'true');
+        const redirectPath = window.location.pathname + window.location.search;
+        sessionStorage.setItem(
+          LOGIN_REDIRECT_KEY,
+          redirectPath && redirectPath !== '' ? redirectPath : '/business'
+        );
       }
+      setIsModalOpen(false);
+      setOpenLoginModal(true);
+      return;
+    }
+    try {
+      await initializePlan();
+      if (!hasSeenModal) markModalSeen();
     } catch (error) {
       console.error('사업계획서 생성 실패:', error);
     } finally {
       setIsModalOpen(false);
     }
   };
+
+  useEffect(() => {
+    if (!modalReady || !isMember) return;
+    if (typeof window === 'undefined') return;
+    const shouldInitAfterLogin = sessionStorage.getItem(LOGIN_INIT_KEY) === 'true';
+    if (!shouldInitAfterLogin) return;
+
+    sessionStorage.removeItem(LOGIN_INIT_KEY);
+    setOpenLoginModal(false);
+    setIsModalOpen(false);
+
+    const createPlanAfterLogin = async () => {
+      try {
+        await initializePlan();
+        if (!hasSeenModal) markModalSeen();
+      } catch (error) {
+        console.error('사업계획서 생성 실패:', error);
+      }
+    };
+
+    createPlanAfterLogin();
+  }, [isMember, modalReady, initializePlan, hasSeenModal, markModalSeen]);
+
+  const handleCloseLoginModal = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(LOGIN_INIT_KEY);
+      sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+    }
+    setOpenLoginModal(false);
+  }, []);
 
   const handleTogglePreview = useCallback(() => {
     setPreview(!isPreview);
@@ -199,6 +244,7 @@ const BusinessPageContent = () => {
               buttonText="생성하기"
             />
           )}
+          <LoginModal open={openLoginModal} onClose={handleCloseLoginModal} />
         </div>
       )}
     </>
