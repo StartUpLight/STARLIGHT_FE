@@ -41,6 +41,7 @@ export interface BusinessStore {
 
     // 항목 내용 가져오기
     getItemContent: (number: string) => ItemContent;
+    hydrateContents: (payload: { contents?: Record<string, ItemContent>; title?: string }) => void;
 
     // 모든 항목 저장 (전역 저장 함수)
     saveAllItems: (planId?: number) => Promise<void>;

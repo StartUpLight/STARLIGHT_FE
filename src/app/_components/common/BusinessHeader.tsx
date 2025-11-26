@@ -1,16 +1,25 @@
 'use client';
-import React, { useState, useRef, useEffect, Suspense } from 'react';
+import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Back from '@/assets/icons/back_icon.svg';
 import Eye from '@/assets/icons/eye.svg';
 import Button from './Button';
 import CreateModal from '@/app/business/components/CreateModal';
+import LoginModal from './LoginModal';
 import Image from 'next/image';
 import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { downloadPDF } from '@/lib/pdfDownload';
 import { patchBusinessPlanTitle } from '@/api/business';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
+import { useAuthStore } from '@/store/auth.store';
+import {
+  GUEST_DRAFT_KEY,
+  GUEST_PENDING_ACTION_KEY,
+  LOGIN_REDIRECT_KEY,
+} from '@/lib/business/authKeys';
+
+type PendingAction = 'save' | 'grade';
 
 const BusinessHeaderContent = () => {
   const router = useRouter();
@@ -26,6 +35,7 @@ const BusinessHeaderContent = () => {
     setTitle,
     loadTitleFromAPI,
   } = useBusinessStore();
+  const { isAuthenticated, checkAuth } = useAuthStore();
 
   // URL의 planId 또는 store의 planId로 제목 조회
   useEffect(() => {
@@ -85,18 +95,54 @@ const BusinessHeaderContent = () => {
   const [inputWidth, setInputWidth] = useState(179);
   const spanRef = useRef<HTMLSpanElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openLoginModal, setOpenLoginModal] = useState(false);
   const isSaving = useBusinessStore((state) => state.isSaving);
 
   const { mutate: postGradeMutate, isPending: isGrading } = usePostGrade();
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  const handleOpenModal = useCallback(() => setIsModalOpen(true), []);
+  const handleCloseModal = useCallback(() => setIsModalOpen(false), []);
 
   const handleDownloadPDF = async () => {
     await downloadPDF(title || '사업계획서');
   };
 
-  const handleSave = async () => {
+  const persistGuestDraft = useCallback((action: PendingAction) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const { contents, title: currentTitle } = useBusinessStore.getState();
+      localStorage.setItem(
+        GUEST_DRAFT_KEY,
+        JSON.stringify({ contents, title: currentTitle })
+      );
+      localStorage.setItem(GUEST_PENDING_ACTION_KEY, action);
+      const redirectPath = window.location.pathname + window.location.search;
+      sessionStorage.setItem(
+        LOGIN_REDIRECT_KEY,
+        redirectPath && redirectPath.length > 0 ? redirectPath : '/business'
+      );
+    } catch (error) {
+      console.error('비회원 초안 저장 실패:', error);
+    }
+  }, []);
+
+  const requireLoginForAction = useCallback(
+    (action: PendingAction) => {
+      persistGuestDraft(action);
+      setOpenLoginModal(true);
+    },
+    [persistGuestDraft]
+  );
+
+  const handleSave = useCallback(async () => {
+    if (!isAuthenticated) {
+      requireLoginForAction('save');
+      return;
+    }
     try {
       setIsSaving(true);
       const currentPlanId = planId || (await initializePlan());
@@ -106,9 +152,13 @@ const BusinessHeaderContent = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [isAuthenticated, requireLoginForAction, setIsSaving, planId, initializePlan, saveAllItems]);
 
-  const handleGrade = async () => {
+  const handleGrade = useCallback(async () => {
+    if (!isAuthenticated) {
+      requireLoginForAction('grade');
+      return;
+    }
     try {
       setIsSaving(true);
       const id = planId ?? (await initializePlan());
@@ -123,7 +173,11 @@ const BusinessHeaderContent = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [isAuthenticated, requireLoginForAction, setIsSaving, planId, initializePlan, saveAllItems, handleOpenModal, postGradeMutate, router]);
+
+  const handleCloseLoginModal = useCallback(() => {
+    setOpenLoginModal(false);
+  }, []);
 
   useEffect(() => {
     if (spanRef.current) {
@@ -136,6 +190,16 @@ const BusinessHeaderContent = () => {
       }
     }
   }, [title, focused]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (typeof window === 'undefined') return;
+    const pendingAction = localStorage.getItem(GUEST_PENDING_ACTION_KEY) as PendingAction | null;
+    if (!pendingAction) return;
+
+    localStorage.removeItem(GUEST_PENDING_ACTION_KEY);
+    handleSave();
+  }, [isAuthenticated, handleSave]);
 
   return (
     <header className="fixed top-0 right-0 bottom-0 z-[100] h-[60px] w-full bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]">
@@ -245,7 +309,7 @@ const BusinessHeaderContent = () => {
                   disabled={isSaving}
                   className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${isSaving ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-50 cursor-pointer'}`}
                 >
-                  {isSaving ? '저장 중...' : '임시 저장'}
+                  {isSaving ? '저장 중...' : '저장하기'}
                 </button>
                 <Button
                   text={isGrading ? '채점 중...' : '채점하기'}
@@ -275,6 +339,7 @@ const BusinessHeaderContent = () => {
             }}
           />
         )}
+        <LoginModal open={openLoginModal} onClose={handleCloseLoginModal} />
       </div>
     </header>
   );

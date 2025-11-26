@@ -201,6 +201,15 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     getItemContent: (number: string) => {
         return get().contents[number] || {};
     },
+    hydrateContents: (payload: { contents?: Record<string, ItemContent>; title?: string } = {}) => {
+        set((state) => ({
+            contents: payload?.contents ?? state.contents,
+            title:
+                typeof payload?.title === 'string'
+                    ? payload.title
+                    : state.title,
+        }));
+    },
 
     saveAllItems: async (planId?: number) => {
         let targetPlanId = planId;

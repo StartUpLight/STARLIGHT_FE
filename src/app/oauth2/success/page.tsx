@@ -2,8 +2,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
-
-const LOGIN_REDIRECT_KEY = 'redirectAfterLogin';
+import { LOGIN_REDIRECT_KEY } from '@/lib/business/authKeys';
 
 const OAuthSuccessContent = () => {
     const router = useRouter();

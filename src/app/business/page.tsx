@@ -6,21 +6,37 @@ import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
 import CreateModal from './components/CreateModal';
 import LoginModal from '@/app/_components/common/LoginModal';
+import {
+  LOGIN_INIT_KEY,
+  LOGIN_REDIRECT_KEY,
+  GUEST_DRAFT_KEY,
+} from '@/lib/business/authKeys';
+import type { ItemContent } from '@/types/business/business.store.type';
 
 const WRITE_MODAL_KEY = 'writeModalShown';
-const LOGIN_INIT_KEY = 'initBusinessAfterLogin';
-const LOGIN_REDIRECT_KEY = 'redirectAfterLogin';
+type DraftSnapshot = { contents?: Record<string, ItemContent>; title?: string };
 
 const BusinessPageContent = () => {
   const searchParams = useSearchParams();
   const selectedItem = useBusinessStore((state) => state.selectedItem);
-  const { initializePlan, loadContentsFromAPI, resetDraft, isPreview, setPreview, planId, setPlanId, setSelectedItem } = useBusinessStore();
+  const {
+    initializePlan,
+    loadContentsFromAPI,
+    resetDraft,
+    isPreview,
+    setPreview,
+    planId,
+    setPlanId,
+    setSelectedItem,
+    hydrateContents,
+  } = useBusinessStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [hasSeenModal, setHasSeenModal] = useState(false);
   const [modalReady, setModalReady] = useState(false);
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const hasInitializedPlanRef = useRef(false);
+  const hasRestoredGuestDraftRef = useRef(false);
 
   useEffect(() => {
     setSelectedItem({
@@ -30,6 +46,27 @@ const BusinessPageContent = () => {
         '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
     });
   }, [setSelectedItem]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const snapshotRaw = localStorage.getItem(GUEST_DRAFT_KEY);
+    if (!snapshotRaw) {
+      return;
+    }
+
+    try {
+      const snapshot = JSON.parse(snapshotRaw) as DraftSnapshot;
+      hydrateContents({
+        contents: snapshot.contents,
+        title: typeof snapshot.title === 'string' ? snapshot.title : undefined,
+      });
+      hasRestoredGuestDraftRef.current = true;
+    } catch (error) {
+      console.error('비회원 초안 복원 실패:', error);
+    } finally {
+      localStorage.removeItem(GUEST_DRAFT_KEY);
+    }
+  }, [hydrateContents]);
 
   // 초기 설정: 로그인 상태 및 모달 표시 여부 확인
   useEffect(() => {
@@ -124,7 +161,9 @@ const BusinessPageContent = () => {
     clearRefreshFlags();
     if (shouldResetDraft) {
       sessionStorage.removeItem('shouldResetBusinessDraft');
-      resetDraftState();
+      if (!hasRestoredGuestDraftRef.current) {
+        resetDraftState();
+      }
     }
 
     setIsModalOpen(isMember ? !hasSeenModal : true);
