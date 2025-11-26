@@ -7,7 +7,7 @@ import {
   OrderConfirmRequestPayload,
   OrderConfirmResponseDto,
 } from '@/types/payment/payment.type';
-import Check from '@/assets/icons/puple_check.svg';
+import LoadingCheck from '@/assets/icons/blue_check.svg';
 
 type ViewState = 'LOADING' | 'SUCCESS' | 'FAIL';
 
@@ -17,7 +17,6 @@ function PayComplete() {
 
   const [state, setState] = useState<ViewState>('LOADING');
   const [data, setData] = useState<OrderConfirmResponseDto | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const paymentKey = searchParams.get('paymentKey');
@@ -32,7 +31,6 @@ function PayComplete() {
       };
 
       setState('LOADING');
-      setErrorMessage(null);
 
       postTossConfirm(payload)
         .then((result) => {
@@ -44,7 +42,7 @@ function PayComplete() {
             error instanceof Error
               ? error.message
               : '결제 승인 처리 중 오류가 발생했습니다.';
-          setErrorMessage(msg);
+
           setState('FAIL');
         });
 
@@ -54,12 +52,11 @@ function PayComplete() {
     if (code) {
       const decoded =
         message != null ? decodeURIComponent(message) : '결제에 실패했습니다.';
-      setErrorMessage(decoded);
+
       setState('FAIL');
       return;
     }
 
-    setErrorMessage('올바르지 않은 결제 완료 페이지 접근입니다.');
     setState('FAIL');
   }, [searchParams]);
 
@@ -81,7 +78,7 @@ function PayComplete() {
               <div className="w-full max-w-xl rounded-2xl px-8 py-10 text-center">
                 <div className="mb-6">
                   <div className="bg-primary-50 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                    <Check />
+                    <LoadingCheck />
                   </div>
                   <h1 className="ds-title mb-2 font-bold text-gray-900">
                     결제가 정상적으로 완료되었습니다.
@@ -189,12 +186,6 @@ function PayComplete() {
               </p>
             </div>
 
-            {errorMessage && (
-              <p className="ds-caption text-warning-400 mt-1 mb-2 whitespace-pre-line">
-                {errorMessage}
-              </p>
-            )}
-
             <div className="mb-5 flex w-full flex-col items-start rounded-lg bg-gray-100 px-8 py-5">
               <div className="font-medium text-gray-900">
                 💳 결제 실패 시 확인해주세요
@@ -236,7 +227,7 @@ export default function PayCompletePage() {
       fallback={
         <main className="flex h-full items-center justify-center bg-white px-4">
           <div className="w-full max-w-xl rounded-2xl px-8 py-10 text-center">
-            <h1 className="mb-2 text-xl font-semibold">결제 처리 중...</h1>
+            <h1 className="mb-2 text-xl font-semibold">결제 처리 중</h1>
             <p className="text-sm text-gray-700">
               결제 승인 상태를 확인하고 있습니다. 잠시만 기다려 주세요.
             </p>
