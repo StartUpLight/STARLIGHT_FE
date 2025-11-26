@@ -40,7 +40,7 @@ const pricingData: PricingDataItem[] = [
   {
     title: 'Standard',
     description: '여러 전문가 피드백으로 제출용 완성도를 높이고 싶은 분',
-    price: '99,000원',
+    price: '89,000원',
     cycle: '2회',
     highlight: 'Standard의 모든 기능',
     features: [

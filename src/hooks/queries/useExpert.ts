@@ -13,13 +13,18 @@ export function useGetFeedBackExpert(
   businessPlanId?: number,
   options?: { enabled?: boolean }
 ) {
-  const enabled =
+  const hasToken =
+    typeof window !== 'undefined' && !!localStorage.getItem('accessToken');
+
+  const hasPlanId =
     typeof businessPlanId === 'number' &&
     businessPlanId > 0 &&
     (options?.enabled ?? true);
 
+  const enabled = hasToken && hasPlanId;
+
   return useQuery<getFeedBackExpertResponse>({
-    queryKey: ['GetFeedBackExpert', enabled ? businessPlanId : 'none'],
+    queryKey: ['GetFeedBackExpert', enabled ? businessPlanId : 'disabled'],
     queryFn: () => GetFeedBackExpert(businessPlanId as number),
     enabled,
   });
