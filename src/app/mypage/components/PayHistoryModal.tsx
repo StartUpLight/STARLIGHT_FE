@@ -1,41 +1,22 @@
 'use client';
 import React from 'react';
 import Close from '@/assets/icons/close.svg';
-
-const sampleRows = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  productName: '라이트',
-  method: '신용카드',
-  amount: 4900,
-  paidAt: '25.10.07',
-  detail: '상세보기',
-}));
-
-const KRW = (n: number) => n.toLocaleString('ko-KR');
+import { useGetOrders } from '@/hooks/queries/useMy';
 
 interface PayHistoryModalProps {
-  open?: boolean;
   onClose?: () => void;
-  rows?: {
-    id: string | number;
-    productName: string;
-    method: string;
-    amount: number;
-    paidAt: string;
-    detail: string;
-  }[];
 }
 
-const PayHistoryModal = ({
-  open = true,
-  onClose,
-  rows = sampleRows,
-}: PayHistoryModalProps) => {
-  if (!open) return null;
+const PayHistoryModal = ({ onClose }: PayHistoryModalProps) => {
+  const { data: orders } = useGetOrders();
+
+  if (!orders) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="h-[422px] w-[800px] overflow-hidden rounded-[12px] bg-white">
+      <div className="h-[422px] w-[800px] overflow-hidden rounded-xl bg-white">
         <div className="sticky top-0 z-20 flex w-full items-center justify-between border-b border-gray-200 bg-white px-6 py-5">
           <div className="ds-title font-semibold text-gray-900">결제 내역</div>
           <button
@@ -70,28 +51,36 @@ const PayHistoryModal = ({
             </thead>
 
             <tbody className="ds-body text-gray-900">
-              {rows.map((row, index) => (
+              {orders.map((order, index) => (
                 <tr
-                  key={row.id ?? index}
+                  key={index}
                   className="ds-subtext h-[45px] border-t border-gray-100 py-3 text-gray-700"
                 >
                   <td className="py-2 text-center">{index + 1}</td>
-                  <td className="text-center">{row.productName}</td>
-                  <td className="text-center">{row.method}</td>
-                  <td className="text-center">{KRW(row.amount)}원</td>
-                  <td className="text-center">{row.paidAt}</td>
+                  <td className="text-center">{order.productName}</td>
+                  <td className="text-center">{order.paymentMethod}</td>
+                  <td className="text-center">{order.price}원</td>
+                  <td className="text-center">
+                    {new Date(order.paidAt * 1000).toLocaleDateString('ko-KR')}
+                  </td>
                   <td className="cursor-pointer text-center font-medium underline">
-                    {row.detail}
+                    <a
+                      href={order.receiptUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      상세보기
+                    </a>
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && (
+              {orders.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
                     className="ds-subtext py-8 text-center text-gray-600"
                   >
-                    구매 내역이 없습니다.
+                    결제 내역이 없어요.
                   </td>
                 </tr>
               )}

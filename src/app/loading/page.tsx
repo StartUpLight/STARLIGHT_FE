@@ -15,11 +15,11 @@ const Page = () => {
           />
         </div>
         <h1 className="ds-heading mb-2 font-bold text-gray-900">
-          사업계획서 분석중
+          사업계획서 채점중
         </h1>
         <div className="mb-11">
           <p className="ds-subtitle font-medium text-gray-600">
-            사업계획서를 분석 중이에요.
+            사업계획서를 채점 중이에요.
           </p>
           <p className="ds-subtitle font-medium text-gray-600">
             잠시만 기다려주세요!

@@ -18,7 +18,7 @@ const OrderDetails = ({ mentor }: OrderDetailsProps) => {
     <div className="mb-[11px] rounded-xl border border-gray-300 bg-white p-6">
       <h2 className="ds-subtitle mb-4 font-semibold text-gray-900">주문내역</h2>
       <div className="flex items-start gap-3">
-        <div className="rounded-xlpx-4 flex h-[115px] w-[103px] flex-col items-center justify-center gap-1">
+        <div className="flex h-[115px] w-[103px] flex-col items-center justify-center gap-1 rounded-xl px-4">
           <div className="relative h-full w-full">
             <Image
               src={image || '/images/sampleImage.png'}
