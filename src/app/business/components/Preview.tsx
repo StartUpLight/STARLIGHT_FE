@@ -132,41 +132,47 @@ const Preview = () => {
                                         )}
                                     </div>
 
-                                    {content.editorFeatures && (
-                                        <div className="mb-4">
-                                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                                    <div className="mb-4">
+                                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                                        {content.editorFeatures ? (
                                             <div
                                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                                 dangerouslySetInnerHTML={{
                                                     __html: convertEditorJsonToHtml(content.editorFeatures),
                                                 }}
                                             />
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                                        )}
+                                    </div>
 
-                                    {content.editorSkills && (
-                                        <div className="mb-4">
-                                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                                    <div className="mb-4">
+                                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                                        {content.editorSkills ? (
                                             <div
                                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                                 dangerouslySetInnerHTML={{
                                                     __html: convertEditorJsonToHtml(content.editorSkills),
                                                 }}
                                             />
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                                        )}
+                                    </div>
 
-                                    {content.editorGoals && (
-                                        <div className="mb-4">
-                                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                                    <div className="mb-4">
+                                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                                        {content.editorGoals ? (
                                             <div
                                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                                 dangerouslySetInnerHTML={{
                                                     __html: convertEditorJsonToHtml(content.editorGoals),
                                                 }}
                                             />
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         }
@@ -229,39 +235,45 @@ const Preview = () => {
                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                         )}
                     </div>
-                    {content.editorFeatures && (
-                        <div className="mb-4">
-                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                    <div className="mb-4">
+                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                        {content.editorFeatures ? (
                             <div
                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                 dangerouslySetInnerHTML={{
                                     __html: convertEditorJsonToHtml(content.editorFeatures),
                                 }}
                             />
-                        </div>
-                    )}
-                    {content.editorSkills && (
-                        <div className="mb-4">
-                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                        ) : (
+                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                        )}
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                        {content.editorSkills ? (
                             <div
                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                 dangerouslySetInnerHTML={{
                                     __html: convertEditorJsonToHtml(content.editorSkills),
                                 }}
                             />
-                        </div>
-                    )}
-                    {content.editorGoals && (
-                        <div className="mb-4">
-                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                        ) : (
+                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                        )}
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                        {content.editorGoals ? (
                             <div
                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                 dangerouslySetInnerHTML={{
                                     __html: convertEditorJsonToHtml(content.editorGoals),
                                 }}
                             />
-                        </div>
-                    )}
+                        ) : (
+                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                        )}
+                    </div>
                 </div>
             );
         }
