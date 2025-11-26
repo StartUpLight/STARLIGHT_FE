@@ -19,7 +19,7 @@ export async function postTossPrepare(
   payload: OrderPrepareRequestPayload
 ): Promise<OrderPrepareResponseDto> {
   const res = await api.post<ApiResponse<OrderPrepareResponseDto>>(
-    '/v1/toss/request',
+    '/v1/orders/request',
     payload
   );
 
@@ -30,7 +30,7 @@ export async function postTossConfirm(
   payload: OrderConfirmRequestPayload
 ): Promise<OrderConfirmResponseDto> {
   const res = await api.post<ApiResponse<OrderConfirmResponseDto>>(
-    '/v1/toss/confirm',
+    '/v1/orders/confirm',
     payload
   );
 
