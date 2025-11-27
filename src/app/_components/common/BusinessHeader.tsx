@@ -11,7 +11,6 @@ import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { downloadPDF } from '@/lib/pdfDownload';
 import { patchBusinessPlanTitle } from '@/api/business';
-import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 import { useAuthStore } from '@/store/auth.store';
 import {
   GUEST_DRAFT_KEY,
@@ -220,7 +219,6 @@ const BusinessHeaderContent = () => {
     initializePlan,
     saveAllItems,
     handleOpenModal,
-    router,
     allSectionsCompleted,
     showToast,
   ]);
