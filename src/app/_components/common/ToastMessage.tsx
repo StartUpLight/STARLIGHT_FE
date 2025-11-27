@@ -50,7 +50,7 @@ const ToastMessage = ({
     }, [anchorSelector, verticalOffset, horizontalOffset, message]);
 
     const baseClass =
-        'fixed z-[150] flex w-[748px] max-w-[90vw] items-center gap-3 rounded-[12px] bg-gray-900 px-[12px] py-[10px] text-center';
+        'fixed z-[150] flex w-[748px] max-w-[90vw] items-center gap-2 rounded-[12px] bg-gray-900 px-[12px] py-[10px] text-center';
 
     const inlineStyle = position
         ? { left: position.left, top: position.top }
