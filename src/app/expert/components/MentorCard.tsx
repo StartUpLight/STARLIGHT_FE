@@ -23,7 +23,6 @@ const MentorCard = ({
   image,
   workingperiod,
   id,
-  onApplied,
 }: MentorCardProps & ExtraProps) => {
   const router = useRouter();
   const planId = useBusinessStore((s) => s.planId);
@@ -33,10 +32,9 @@ const MentorCard = ({
 
   const { setSelectedMentor } = useExpertStore();
 
-  const [didApply, setDidApply] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const isDone = status === 'done' || didApply;
+  const isDone = status === 'done';
   const canUseExpert = isMember && hasExpertUnlocked;
 
   const disabled = !canUseExpert || isDone || uploading || planId == null;

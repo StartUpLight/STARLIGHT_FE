@@ -21,8 +21,7 @@ function PayComplete() {
   useEffect(() => {
     const paymentKey = searchParams.get('paymentKey');
     const orderId = searchParams.get('orderId');
-    // const code = searchParams.get('code');
-    // const message = searchParams.get('message');
+    const code = searchParams.get('code');
 
     if (paymentKey && orderId) {
       const payload: OrderConfirmRequestPayload = {
@@ -38,10 +37,9 @@ function PayComplete() {
           setState('SUCCESS');
         })
         .catch((error: unknown) => {
-          const msg =
-            error instanceof Error
-              ? error.message
-              : '결제 승인 처리 중 오류가 발생했습니다.';
+          error instanceof Error
+            ? error.message
+            : '결제 승인 처리 중 오류가 발생했습니다.';
 
           setState('FAIL');
         });
@@ -49,13 +47,10 @@ function PayComplete() {
       return;
     }
 
-    // if (code) {
-    //   const decoded =
-    //     message != null ? decodeURIComponent(message) : '결제에 실패했습니다.';
-
-    //   setState('FAIL');
-    //   return;
-    // }
+    if (code) {
+      setState('FAIL');
+      return;
+    }
 
     setState('FAIL');
   }, [searchParams]);

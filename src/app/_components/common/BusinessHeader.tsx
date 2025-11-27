@@ -10,7 +10,6 @@ import Download from '@/assets/icons/download.svg';
 import { useBusinessStore } from '@/store/business.store';
 import { downloadPDF } from '@/lib/pdfDownload';
 import { patchBusinessPlanTitle } from '@/api/business';
-import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 
 const BusinessHeaderContent = () => {
   const router = useRouter();
@@ -27,7 +26,6 @@ const BusinessHeaderContent = () => {
     loadTitleFromAPI,
   } = useBusinessStore();
 
-  // URL의 planId 또는 store의 planId로 제목 조회
   useEffect(() => {
     const planIdParam = searchParams.get('planId');
     const targetPlanId = planIdParam ? parseInt(planIdParam, 10) : planId;
@@ -37,13 +35,13 @@ const BusinessHeaderContent = () => {
       return;
     }
 
-    // planId가 변경되었을 때만 제목 로드 (중복 요청 방지)
     let isCancelled = false;
     loadTitleFromAPI(targetPlanId)
       .then((loadedTitle) => {
         if (!isCancelled && loadedTitle) {
-          // 제목이 로드되었을 때만 업데이트 (planId가 변경되지 않았는지 확인)
-          const currentPlanId = planIdParam ? parseInt(planIdParam, 10) : planId;
+          const currentPlanId = planIdParam
+            ? parseInt(planIdParam, 10)
+            : planId;
           if (currentPlanId === targetPlanId) {
             setTitle(loadedTitle);
           }
@@ -60,7 +58,6 @@ const BusinessHeaderContent = () => {
     };
   }, [searchParams, planId, loadTitleFromAPI, setTitle]);
 
-  // 제목 변경 시 API 요청 (debounce 적용)
   useEffect(() => {
     const trimmedTitle = title.trim();
 
@@ -87,7 +84,7 @@ const BusinessHeaderContent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isSaving = useBusinessStore((state) => state.isSaving);
 
-  const { mutate: postGradeMutate, isPending: isGrading } = usePostGrade();
+  const [gradingPlanId, setGradingPlanId] = useState<number | null>(null);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -115,11 +112,10 @@ const BusinessHeaderContent = () => {
       if (id == null) throw new Error('planId 생성에 실패했습니다.');
 
       await saveAllItems(id);
+      setGradingPlanId(id);
       handleOpenModal();
-      postGradeMutate(id, {
-        onSuccess: () => router.push('/report'),
-        onError: (e) => console.error('채점 실패:', e),
-      });
+    } catch (error) {
+      console.error('채점 준비 중 오류:', error);
     } finally {
       setIsSaving(false);
     }
@@ -142,14 +138,13 @@ const BusinessHeaderContent = () => {
       <div className="flex w-full items-center justify-between px-8 pt-3">
         <div
           onClick={() => {
-            // 미리보기 모드일 때는 작성 화면으로 전환
             if (isPreview) {
               setPreview(false);
             } else {
               router.back();
             }
           }}
-          className="flex cursor-pointer items-center justify-center gap-1 rounded-[8px] px-4 py-[6px] active:bg-gray-200"
+          className="flex cursor-pointer items-center justify-center gap-1 rounded-lg px-4 py-1.5 active:bg-gray-200"
         >
           <Back />
           <span className="ds-text font-medium whitespace-nowrap text-gray-600">
@@ -176,7 +171,7 @@ const BusinessHeaderContent = () => {
                 placeholder="제목을 입력하세요."
                 aria-label="문서 제목"
                 style={{ width: inputWidth }}
-                className="ds-text hover:border-primary-200 rounded-[8px] bg-white px-3 py-[6px] text-start font-medium overflow-ellipsis transition-[width] duration-200 ease-out placeholder:text-gray-400 hover:border-[1.2px] focus:outline-none"
+                className="ds-text hover:border-primary-200 rounded-lg bg-white px-3 py-1.5 text-start font-medium overflow-ellipsis transition-[width] duration-200 ease-out placeholder:text-gray-400 hover:border-[1.2px] focus:outline-none"
               />
             </>
           )}
@@ -188,17 +183,16 @@ const BusinessHeaderContent = () => {
               <button
                 type="button"
                 onClick={handleDownloadPDF}
-                className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
+                className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-lg border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
               >
                 <Download />
               </button>
-              <div className="h-[32px] w-[1.6px] bg-gray-200" />
+              <div className="h-8 w-[1.6px] bg-gray-200" />
               <Button
-                text={isGrading ? '채점 중...' : '채점하기'}
+                text="채점하기"
                 size="M"
                 color="primary"
-                className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isGrading ? 'pointer-events-none opacity-50' : ''}`}
-                disabled={isGrading}
+                className="ds-subtext h-[33px] rounded-lg px-4 py-1.5"
                 onClick={handleGrade}
               />
             </>
@@ -208,7 +202,6 @@ const BusinessHeaderContent = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    // window에 등록된 토글 함수 호출
                     if (typeof window !== 'undefined') {
                       const win = window as Window & {
                         togglePreview?: () => void;
@@ -218,12 +211,12 @@ const BusinessHeaderContent = () => {
                       }
                     }
                   }}
-                  className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-[8px] border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
+                  className="flex h-[33px] w-[33px] cursor-pointer items-center justify-center rounded-lg border-[1.2px] border-gray-200 transition-colors hover:bg-gray-100 focus:outline-none"
                 >
                   <Eye />
                 </button>
                 <div className="pointer-events-none absolute top-10 left-1/2 hidden -translate-x-1/2 group-hover:block">
-                  <div className="relative h-[44px] w-[73px] select-none">
+                  <div className="relative h-11 w-[73px] select-none">
                     <Image
                       src="/images/bubble.png"
                       alt="미리보기 호버 말풍선"
@@ -243,16 +236,22 @@ const BusinessHeaderContent = () => {
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${isSaving ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-50 cursor-pointer'}`}
+                  className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${
+                    isSaving
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'hover:bg-primary-50 cursor-pointer'
+                  }`}
                 >
                   {isSaving ? '저장 중...' : '임시 저장'}
                 </button>
                 <Button
-                  text={isGrading ? '채점 중...' : '채점하기'}
+                  text="채점하기"
                   size="M"
                   color="primary"
-                  className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isSaving || isGrading ? 'pointer-events-none opacity-50' : ''}`}
-                  disabled={isSaving || isGrading}
+                  className={`ds-subtext h-[33px] rounded-lg px-4 py-1.5 ${
+                    isSaving ? 'pointer-events-none opacity-50' : ''
+                  }`}
+                  disabled={isSaving}
                   onClick={handleGrade}
                 />
               </div>
@@ -260,7 +259,7 @@ const BusinessHeaderContent = () => {
           )}
         </div>
 
-        {isModalOpen && (
+        {isModalOpen && gradingPlanId && (
           <CreateModal
             title="AI로 사업계획서 채점하기"
             imageSrc="/images/grading_Image.png"
@@ -269,9 +268,9 @@ const BusinessHeaderContent = () => {
             imageHeight={202}
             subtitle={`방금 작성하신 사업계획서를 항목별로 분석해 점수·강점·리스크를 즉시 제공해드려요.\n70점 이상이면, 아이템에 맞는 전문가 추천까지 제공해드려요.`}
             onClose={handleCloseModal}
-            buttonText={isGrading ? '채점 중...' : '결과 보기'}
+            buttonText="채점하기"
             onClick={() => {
-              if (!isGrading) router.push('/report');
+              router.push(`/loading?planId=${gradingPlanId}`);
             }}
           />
         )}
