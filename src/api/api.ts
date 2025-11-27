@@ -47,17 +47,22 @@ api.interceptors.response.use(
               refreshTokenPromise = (async () => {
                 try {
                   // refreshToken으로 새로운 accessToken 재발급
-                  const response = await axios.post(
+                  const response = await axios.get(
                     `${process.env.NEXT_PUBLIC_BASE_URL}/v1/auth/recreate`,
-                    { refreshToken }
+                    {
+                      headers: {
+                        Authorization: `Bearer ${refreshToken}`,
+                      },
+                    }
                   );
 
-                  const newAccessToken = response.data.accessToken || response.data.access;
+                  const responseData = response.data?.data ?? response.data;
+                  const newAccessToken = responseData?.accessToken || responseData?.access;
 
                   if (newAccessToken) {
                     localStorage.setItem('accessToken', newAccessToken);
-                    if (response.data.refreshToken || response.data.refresh) {
-                      localStorage.setItem('refreshToken', response.data.refreshToken || response.data.refresh);
+                    if (responseData?.refreshToken || responseData?.refresh) {
+                      localStorage.setItem('refreshToken', responseData?.refreshToken || responseData?.refresh);
                     }
                     return newAccessToken;
                   }
