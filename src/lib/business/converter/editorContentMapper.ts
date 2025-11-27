@@ -6,7 +6,14 @@ import {
     TableColumnItem,
 } from '@/types/business/business.type';
 
-export type JSONAttrs = { [key: string]: string | number | boolean | null | undefined };
+export type JSONAttrValue =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | (number | null)[];
+export type JSONAttrs = { [key: string]: JSONAttrValue };
 export type JSONMark = { type: string; attrs?: JSONAttrs };
 export type JSONNode = { type?: string; text?: string; marks?: JSONMark[]; attrs?: JSONAttrs; content?: JSONNode[] };
 
@@ -278,9 +285,10 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
         const colwidth = Array.isArray(tableNode.attrs?.colwidth)
             ? (tableNode.attrs?.colwidth as Array<number | null | undefined>)
             : undefined;
-        const columns: TableColumnItem[] = Array.from({ length: columnCount }, (_, idx) => ({
-            width: colwidth && colwidth[idx] != null ? colwidth[idx] : null,
-        }));
+        const columns: TableColumnItem[] = Array.from({ length: columnCount }, (_, idx) => {
+            const width = colwidth && colwidth[idx] != null ? colwidth[idx] : null;
+            return width != null ? { width } : {};
+        });
         const rowspanState = new Array(columnCount).fill(0);
 
         const decrementRowspans = () => {
@@ -323,8 +331,20 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
                 if (colspan > 1) tableCell.colspan = colspan;
                 if (rowspan > 1) tableCell.rowspan = rowspan;
                 rowCells.push(tableCell);
+                const cellColwidth = Array.isArray(cell.attrs?.colwidth)
+                    ? (cell.attrs?.colwidth as Array<number | null | undefined>)
+                    : undefined;
                 for (let i = 0; i < colspan; i += 1) {
-                    rowspanState[colIndex + i] = rowspan > 1 ? rowspan : 0;
+                    const columnIdx = colIndex + i;
+                    rowspanState[columnIdx] = rowspan > 1 ? rowspan : 0;
+                    const widthValue = cellColwidth?.[i];
+                    if (
+                        typeof widthValue === 'number' &&
+                        columns[columnIdx] &&
+                        columns[columnIdx].width == null
+                    ) {
+                        columns[columnIdx].width = widthValue;
+                    }
                 }
                 colIndex += colspan;
             });

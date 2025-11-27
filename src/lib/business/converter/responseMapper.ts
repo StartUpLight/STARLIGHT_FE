@@ -7,7 +7,7 @@ import {
     ImageContentItem,
 } from '@/types/business/business.type';
 import { ItemContent } from '@/types/business/business.store.type';
-import { JSONNode, JSONMark } from './editorContentMapper';
+import { JSONNode, JSONMark, JSONAttrs } from './editorContentMapper';
 
 // 마크다운/인라인 HTML을 파싱하여 JSONNode 배열로 변환
 const parseMarkdownText = (text: string): JSONNode[] => {
@@ -474,6 +474,21 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
     }
     else if (item.type === 'table') {
         const tableItem = item as TableContentItem;
+        const deriveColumnCount = () => {
+            if (Array.isArray(tableItem.columns) && tableItem.columns.length > 0) {
+                return tableItem.columns.length;
+            }
+            const rowWidths = (tableItem.rows || []).map((row) =>
+                row.reduce(
+                    (sum, cell) => sum + Math.max(1, cell?.colspan ? cell.colspan : 1),
+                    0
+                )
+            );
+            return rowWidths.length > 0 ? Math.max(...rowWidths) : 0;
+        };
+
+        const columnCount = Math.max(1, deriveColumnCount());
+
         const buildCellNodes = (cell: TableCellContentItem | undefined): JSONNode[] => {
             if (!cell || !Array.isArray(cell.content) || cell.content.length === 0) {
                 return [{
@@ -508,17 +523,64 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
         };
 
         const tableRows: JSONNode[] = [];
+        const rowspanTracker = new Array(columnCount).fill(0);
+        const decrementRowspans = () => {
+            for (let i = 0; i < columnCount; i += 1) {
+                if (rowspanTracker[i] > 0) {
+                    rowspanTracker[i] -= 1;
+                }
+            }
+        };
+
         (tableItem.rows || []).forEach((row) => {
-            const cells = row.map((cell) => {
-                const attrs: Record<string, number> = {};
-                if (cell.rowspan && cell.rowspan > 1) attrs.rowspan = cell.rowspan;
-                if (cell.colspan && cell.colspan > 1) attrs.colspan = cell.colspan;
-                return {
+            const cells: JSONNode[] = [];
+            let colIndex = 0;
+
+            const advanceToNextAvailableColumn = () => {
+                while (colIndex < columnCount && rowspanTracker[colIndex] > 0) {
+                    colIndex += 1;
+                }
+            };
+
+            advanceToNextAvailableColumn();
+
+            row.forEach((cell) => {
+                advanceToNextAvailableColumn();
+                if (colIndex >= columnCount) {
+                    return;
+                }
+
+                const colspan = Math.max(1, cell?.colspan ?? 1);
+                const rowspan = Math.max(1, cell?.rowspan ?? 1);
+                const widthSlice: (number | null)[] = [];
+                for (let spanIndex = 0; spanIndex < colspan; spanIndex += 1) {
+                    const columnEntry = tableItem.columns?.[colIndex + spanIndex];
+                    const widthValue =
+                        columnEntry && typeof columnEntry.width === 'number'
+                            ? columnEntry.width
+                            : null;
+                    widthSlice.push(widthValue);
+                    rowspanTracker[colIndex + spanIndex] = rowspan > 1 ? rowspan : 0;
+                }
+
+                const cellAttrs: Record<string, unknown> = {};
+                if (rowspan > 1) cellAttrs.rowspan = rowspan;
+                if (colspan > 1) cellAttrs.colspan = colspan;
+                if (widthSlice.some((value) => typeof value === 'number')) {
+                    cellAttrs.colwidth = widthSlice;
+                }
+
+                cells.push({
                     type: 'tableCell',
-                    attrs: Object.keys(attrs).length ? attrs : undefined,
+                    attrs: Object.keys(cellAttrs).length ? cellAttrs as JSONAttrs : undefined,
                     content: buildCellNodes(cell),
-                };
+                });
+
+                colIndex += colspan;
             });
+
+            decrementRowspans();
+
             tableRows.push({
                 type: 'tableRow',
                 content: cells,

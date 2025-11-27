@@ -5,7 +5,13 @@ export interface SelectedItem {
 }
 
 // TipTap Editor JSON (간단 정의) - mapper의 JSONNode와 구조 호환
-type JSONAttrValue = string | number | boolean | null | undefined;
+type JSONAttrValue =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | (number | null)[];
 export type EditorJSON = {
     type?: string;
     text?: string;
