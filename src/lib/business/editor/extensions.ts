@@ -5,6 +5,16 @@ import { NodeSelection, Plugin, TextSelection } from '@tiptap/pm/state';
 import { EditorView } from '@tiptap/pm/view';
 import Image from '@tiptap/extension-image';
 
+const CaptionIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <path d="M15.5186 18.2002C15.9604 18.2002 16.3184 18.5582 16.3184 19C16.3184 19.4418 15.9604 19.7998 15.5186 19.7998H5.51855C5.07673 19.7998 4.71875 19.4418 4.71875 19C4.71875 18.5582 5.07673 18.2002 5.51855 18.2002H15.5186ZM18.5186 14.5703C18.9604 14.5703 19.3184 14.9283 19.3184 15.3701C19.3184 15.8119 18.9604 16.1699 18.5186 16.1699H5.51855C5.07673 16.1699 4.71875 15.8119 4.71875 15.3701C4.71875 14.9283 5.07673 14.5703 5.51855 14.5703H18.5186ZM15.9629 4C16.5356 4 17 4.46437 17 5.03711V11.9629C17 12.5356 16.5356 13 15.9629 13H6.03711L5.93066 12.9951C5.40787 12.9419 5 12.4997 5 11.9629V5.03711C5 4.50027 5.40787 4.05812 5.93066 4.00488L6.03711 4H15.9629ZM6.59961 11.4004H15.4004V5.59961H6.59961V11.4004Z" fill="#585F69"/>
+</svg>`
+const CaptionActiveIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <path d="M15.5186 18.2002C15.9604 18.2002 16.3184 18.5582 16.3184 19C16.3184 19.4418 15.9604 19.7998 15.5186 19.7998H5.51855C5.07673 19.7998 4.71875 19.4418 4.71875 19C4.71875 18.5582 5.07673 18.2002 5.51855 18.2002H15.5186ZM18.5186 14.5703C18.9604 14.5703 19.3184 14.9283 19.3184 15.3701C19.3184 15.8119 18.9604 16.1699 18.5186 16.1699H5.51855C5.07673 16.1699 4.71875 15.8119 4.71875 15.3701C4.71875 14.9283 5.07673 14.5703 5.51855 14.5703H18.5186ZM15.9629 4C16.5356 4 17 4.46437 17 5.03711V11.9629C17 12.5356 16.5356 13 15.9629 13H6.03711L5.93066 12.9951C5.40787 12.9419 5 12.4997 5 11.9629V5.03711C5 4.50027 5.40787 4.05812 5.93066 4.00488L6.03711 4H15.9629ZM6.59961 11.4004H15.4004V5.59961H6.59961V11.4004Z" fill="#6F55FF"/>
+</svg>`
+const CaptionTooltipSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="49" height="45" viewBox="0 0 49 45" fill="none">
+  <path d="M24.293 0.292804C24.6835 -0.0976015 25.3165 -0.0976014 25.707 0.292804L32.7148 7.30059H41C45.4182 7.30059 48.9999 10.8824 49 15.3006V36.3005C49 40.7187 45.4183 44.3005 41 44.3005H8C3.58172 44.3005 0 40.7187 0 36.3005V15.3006C7.35107e-05 10.8824 3.58177 7.30059 8 7.30059H17.2852L24.293 0.292804Z" fill="#191F28"/>
+</svg>`
+
 export const DeleteTableOnDelete = Extension.create({
     name: 'delete-table-on-delete',
     addKeyboardShortcuts() {
@@ -135,6 +145,9 @@ export const ResizableImage = Image.extend({
                         height: attributes.height,
                     };
                 },
+            },
+            caption: {
+                default: null,
             },
         };
     },
@@ -362,6 +375,106 @@ export const ResizableImage = Image.extend({
             imgContainer.appendChild(img);
             imgContainer.appendChild(resizeHandle);
             dom.appendChild(imgContainer);
+
+            // 캡션 기능 (표 안에 있으면 제외)
+            const isInTable = () => {
+                const pos = typeof getPos === 'function' ? getPos() : null;
+                if (pos === null) return img.closest('td, th') !== null;
+                const { state } = editor;
+                const resolved = state.doc.resolve(pos);
+                for (let d = resolved.depth; d > 0; d--) {
+                    if (resolved.node(d).type.name === 'table') return true;
+                }
+                return false;
+            };
+
+            if (!isInTable()) {
+                // 버튼
+                const btn = document.createElement('div');
+                btn.className = 'image-caption-btn';
+                btn.style.cssText = 'position:absolute;top:12px;right:12px;width:28px;height:28px;background:#fff;border-radius:4px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:20;';
+                const iconDiv = document.createElement('div');
+                iconDiv.style.cssText = 'width:24px;height:24px;display:flex;align-items:center;justify-content:center';
+                iconDiv.innerHTML = CaptionIconSvg;
+                btn.appendChild(iconDiv);
+
+                // 툴팁
+                const tooltip = document.createElement('div');
+                tooltip.className = 'image-caption-tooltip';
+                tooltip.style.cssText = 'position:absolute;top:44px;right:2px;z-index:21;display:none;pointer-events:none';
+                const tooltipSvg = document.createElement('div');
+                tooltipSvg.style.cssText = 'position:relative;display:inline-block';
+                tooltipSvg.innerHTML = CaptionTooltipSvg;
+                const tooltipText = document.createElement('div');
+                tooltipText.textContent = '캡션';
+                tooltipText.style.cssText = 'position:absolute;top:55%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;white-space:nowrap;pointer-events:none';
+                tooltipSvg.appendChild(tooltipText);
+                tooltip.appendChild(tooltipSvg);
+                // 입력 필드
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = '캡션을 입력하세요';
+                input.style.cssText = 'margin-top:8px;padding:8px 12px;width:100%;font-size:14px;border:1px solid #dadfe7;border-radius:6px;outline:none;display:none;box-sizing:border-box';
+
+                // 이벤트
+                let isEditing = false;
+                imgContainer.addEventListener('mouseenter', () => {
+                    if (!isEditing) btn.style.display = 'flex';
+                });
+                imgContainer.addEventListener('mouseleave', () => {
+                    if (!isEditing) {
+                        btn.style.display = 'none';
+                        tooltip.style.display = 'none';
+                        iconDiv.innerHTML = CaptionIconSvg;
+                    }
+                });
+                btn.addEventListener('mouseenter', () => {
+                    if (!isEditing) {
+                        tooltip.style.display = 'block';
+                        iconDiv.innerHTML = CaptionActiveIconSvg;
+                        btn.style.backgroundColor = '#EAE5FF';
+                    }
+                });
+                btn.addEventListener('mouseleave', () => {
+                    if (!isEditing) {
+                        tooltip.style.display = 'none';
+                        iconDiv.innerHTML = CaptionIconSvg;
+                        btn.style.backgroundColor = '#fff';
+                    }
+                });
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isEditing = true;
+                    input.value = currentNode.attrs.caption || '';
+                    input.style.display = 'block';
+                    btn.style.display = 'none';
+                    tooltip.style.display = 'none';
+                    setTimeout(() => input.focus(), 0);
+                });
+                const saveCaption = () => {
+                    const newCaption = input.value.trim();
+                    const pos = typeof getPos === 'function' ? getPos() : null;
+                    if (pos !== null) {
+                        editor.chain().setNodeSelection(pos).updateAttributes('image', { caption: newCaption || null }).run();
+                    }
+                    input.style.display = 'none';
+                    isEditing = false;
+                };
+                input.addEventListener('blur', saveCaption);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveCaption();
+                    } else if (e.key === 'Escape') {
+                        input.style.display = 'none';
+                        isEditing = false;
+                    }
+                });
+
+                imgContainer.appendChild(btn);
+                imgContainer.appendChild(tooltip);
+                dom.appendChild(input);
+            }
 
             const waitAndInitialize = () => {
                 if (!img.isConnected) return;

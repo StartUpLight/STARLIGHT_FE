@@ -192,6 +192,7 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
     if (node.type === 'image') {
         const src = node.attrs?.src || '';
         const alt = node.attrs?.alt || node.attrs?.title || '';
+        const caption = node.attrs?.caption as string | undefined;
         if (!src) return '';
 
         // 에디터에서 설정한 이미지 크기 가져오기
@@ -210,8 +211,13 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
             style = 'max-width: 400px; height: auto;';
         }
 
+        // 캡션이 있으면 포함
+        const captionHtml = caption
+            ? `<div style="margin-top: 8px; padding: 8px 12px; font-size: 14px; color: #585f69; line-height: 1.5; text-align: center;">${caption}</div>`
+            : '';
+
         // 중앙 정렬을 위한 wrapper div 추가
-        return `<div style="text-align: center; margin: 1rem 0;"><img src="${src}" alt="${alt}" style="${style}" /></div>`;
+        return `<div style="text-align: center; margin: 1rem 0;"><img src="${src}" alt="${alt}" style="${style}" />${captionHtml}</div>`;
     }
 
     if (node.content && Array.isArray(node.content)) {
