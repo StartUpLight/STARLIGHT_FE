@@ -165,21 +165,25 @@ export const convertToMarkdown = (
 
 // TipTap 문서(JSON)를 API 전송용 BlockContentItem 배열로 변환합니다.
 const collectInlineImages = (node: JSONNode | undefined, target: ImageContentItem[]) => {
-    if (!node || !Array.isArray(node.content)) return;
+    if (!node) return;
+
+    if (node.type === 'image') {
+        const src = (node.attrs?.src as string) || '';
+        if (!src) return;
+        target.push({
+            type: 'image',
+            src,
+            caption: (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
+            width: parseDimension(node.attrs?.width),
+            height: parseDimension(node.attrs?.height),
+        });
+        return;
+    }
+
+    if (!Array.isArray(node.content)) return;
+
     node.content.forEach((child) => {
-        if (child.type === 'image') {
-            const src = (child.attrs?.src as string) || '';
-            if (!src) return;
-            target.push({
-                type: 'image',
-                src,
-                caption: (child.attrs?.alt as string) || (child.attrs?.title as string) || '',
-                width: parseDimension(child.attrs?.width),
-                height: parseDimension(child.attrs?.height),
-            });
-        } else {
-            collectInlineImages(child, target);
-        }
+        collectInlineImages(child, target);
     });
 };
 

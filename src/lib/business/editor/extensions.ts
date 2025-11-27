@@ -264,10 +264,7 @@ export const ResizableImage = Image.extend({
             let startWidth = 0;
             let startHeight = 0;
 
-            const isInsideTable = () => Boolean(img.closest('td, th'));
-
             const handleMouseDown = (e: MouseEvent) => {
-                if (isInsideTable()) return;
                 e.preventDefault();
                 e.stopPropagation();
                 isResizing = true;
@@ -323,10 +320,9 @@ export const ResizableImage = Image.extend({
                 const pos = typeof getPos === 'function' ? getPos() : null;
                 if (pos !== null && pos !== undefined) {
                     const isSelected = editor.state.selection.from === pos;
-                    const disallowResize = isInsideTable();
                     if (isSelected) {
                         img.classList.add('selected');
-                        resizeHandle.style.display = disallowResize ? 'none' : 'block';
+                        resizeHandle.style.display = 'block';
                     } else {
                         img.classList.remove('selected');
                         resizeHandle.style.display = 'none';
