@@ -560,7 +560,10 @@ const WriteForm = ({
   };
 
   return (
-    <div className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white">
+    <div
+      data-toast-anchor
+      className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white"
+    >
       <WriteFormHeader number={number} title={title} subtitle={subtitle} />
       <WriteFormToolbar
         activeEditor={activeEditor}
