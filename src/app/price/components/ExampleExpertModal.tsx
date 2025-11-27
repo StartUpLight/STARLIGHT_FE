@@ -23,13 +23,13 @@ const ExampleExpertModal = ({ onClose }: ExampleExpertModalProps) => {
           </button>
         </div>
 
-        <div className="bg-gray-80 h-[409px] w-full rounded-b-xl p-6">
+        <div className="bg-gray-80 h-[464px] w-full rounded-b-xl p-6">
           <p className="ds-subtext text-primary-500 font-semibold">
-            총점 및 강약점
+            전문가 리포트
           </p>
 
           <p className="ds-subtext mt-1 font-semibold text-gray-900">
-            어쩌구저쩌구어쩌구어쩌구저쩌구어쩌구어쩌구저쩌구어쩌구
+            검증된 전문가에게 직접 피드백을 받아 개선 방향을 명확히 제시
           </p>
 
           <div className="mt-4 flex flex-col items-center">
