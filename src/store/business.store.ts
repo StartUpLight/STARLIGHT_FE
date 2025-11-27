@@ -137,7 +137,7 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                 if (isCanceled) {
                     return;
                 }
-                console.error(`[${item.number}] 데이터 불러오기 실패:`, error);
+                //console.error(`[${item.number}] 데이터 불러오기 실패:`, error);
             }
         });
 

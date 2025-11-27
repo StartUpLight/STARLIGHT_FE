@@ -139,7 +139,7 @@ const BusinessPageContent = () => {
       try {
         await loadContentsFromAPI(id);
       } catch (error) {
-        console.error('데이터 불러오기 실패:', error);
+        //console.error('데이터 불러오기 실패:', error);
       }
     };
 
@@ -280,7 +280,6 @@ const BusinessPageContent = () => {
               subtitle={selectedItem.subtitle}
             />
           </main>
-
           {isModalOpen && (
             <CreateModal
               title="사업계획서 쉽게 생성하기"
