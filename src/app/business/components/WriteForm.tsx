@@ -22,7 +22,7 @@ import { applySpellHighlights, clearSpellErrors } from '@/util/spellMark';
 import SpellError from '@/util/spellError';
 import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
-import { DeleteTableOnDelete, ImageCutPaste, ResizableImage, SelectTableOnBorderClick } from '../../../lib/business/editor/extensions';
+import { DeleteTableOnDelete, ResizableImage, SelectTableOnBorderClick } from '../../../lib/business/editor/extensions';
 import { createPasteHandler } from '../../../lib/business/editor/useEditorConfig';
 import { ImageCommandAttributes } from '@/lib/business/editor/types';
 import WriteFormHeader from './editor/WriteFormHeader';
@@ -45,7 +45,6 @@ const WriteForm = ({
       StarterKit,
       SpellError,
       DeleteTableOnDelete,
-      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -73,7 +72,6 @@ const WriteForm = ({
       StarterKit,
       SpellError,
       DeleteTableOnDelete,
-      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -101,7 +99,6 @@ const WriteForm = ({
       StarterKit,
       SpellError,
       DeleteTableOnDelete,
-      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,

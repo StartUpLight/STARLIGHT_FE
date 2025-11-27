@@ -302,6 +302,11 @@
   display: inline-block;
 }
 
+.ProseMirror .image-caption-textarea::placeholder {
+  color: #B4BBC7;
+  opacity: 1;
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;

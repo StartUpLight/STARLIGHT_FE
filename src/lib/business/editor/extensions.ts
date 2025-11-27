@@ -30,94 +30,94 @@ export const DeleteTableOnDelete = Extension.create({
 });
 
 // 이미지 잘라내기/복사 Extension
-export const ImageCutPaste = Extension.create({
-    name: 'imageCutPaste',
-    addKeyboardShortcuts() {
-        const copyImageToClipboard = (imageSrc: string) => {
-            if (
-                typeof navigator !== 'undefined' &&
-                navigator.clipboard &&
-                navigator.clipboard.write
-            ) {
-                fetch(imageSrc)
-                    .then((res) => res.blob())
-                    .then((blob) => {
-                        const clipboardItem = new ClipboardItem({
-                            [blob.type || 'image/png']: blob,
-                        });
-                        return navigator.clipboard.write([clipboardItem]);
-                    })
-                    .catch(() => { });
-            }
-        };
+// export const ImageCutPaste = Extension.create({
+//     name: 'imageCutPaste',
+//     addKeyboardShortcuts() {
+//         const copyImageToClipboard = (imageSrc: string) => {
+//             if (
+//                 typeof navigator !== 'undefined' &&
+//                 navigator.clipboard &&
+//                 navigator.clipboard.write
+//             ) {
+//                 fetch(imageSrc)
+//                     .then((res) => res.blob())
+//                     .then((blob) => {
+//                         const clipboardItem = new ClipboardItem({
+//                             [blob.type || 'image/png']: blob,
+//                         });
+//                         return navigator.clipboard.write([clipboardItem]);
+//                     })
+//                     .catch(() => { });
+//             }
+//         };
 
-        const findImageNode = (state: EditorState, selection: Selection) => {
-            const { $from } = selection;
-            let imageNode: PMNode | null = null;
-            let imagePos = -1;
+//         const findImageNode = (state: EditorState, selection: Selection) => {
+//             const { $from } = selection;
+//             let imageNode: PMNode | null = null;
+//             let imagePos = -1;
 
-            if (selection.empty) {
-                for (let d = $from.depth; d > 0; d--) {
-                    const node = $from.node(d);
-                    if (node.type.name === 'image') {
-                        imageNode = node;
-                        imagePos = $from.before(d);
-                        break;
-                    }
-                }
-            } else {
-                state.doc.nodesBetween(selection.from, selection.to, (node: PMNode, pos: number) => {
-                    if (node.type.name === 'image') {
-                        imageNode = node;
-                        imagePos = pos;
-                    }
-                });
-            }
+//             if (selection.empty) {
+//                 for (let d = $from.depth; d > 0; d--) {
+//                     const node = $from.node(d);
+//                     if (node.type.name === 'image') {
+//                         imageNode = node;
+//                         imagePos = $from.before(d);
+//                         break;
+//                     }
+//                 }
+//             } else {
+//                 state.doc.nodesBetween(selection.from, selection.to, (node: PMNode, pos: number) => {
+//                     if (node.type.name === 'image') {
+//                         imageNode = node;
+//                         imagePos = pos;
+//                     }
+//                 });
+//             }
 
-            return { imageNode, imagePos };
-        };
+//             return { imageNode, imagePos };
+//         };
 
-        return {
-            'Mod-x': ({ editor }) => {
-                const { state } = editor;
-                const { selection } = state;
-                const { imageNode, imagePos } = findImageNode(state, selection);
+//         return {
+//             'Mod-x': ({ editor }) => {
+//                 const { state } = editor;
+//                 const { selection } = state;
+//                 const { imageNode, imagePos } = findImageNode(state, selection);
 
-                if (imageNode && imageNode.attrs.src) {
-                    copyImageToClipboard(imageNode.attrs.src);
+//                 if (imageNode && imageNode.attrs.src) {
+//                     copyImageToClipboard(imageNode.attrs.src);
 
-                    setTimeout(() => {
-                        editor
-                            .chain()
-                            .focus()
-                            .setTextSelection({
-                                from: imagePos,
-                                to: imagePos + imageNode.nodeSize,
-                            })
-                            .deleteSelection()
-                            .run();
-                    }, 10);
+//                     setTimeout(() => {
+//                         editor
+//                             .chain()
+//                             .focus()
+//                             .setTextSelection({
+//                                 from: imagePos,
+//                                 to: imagePos + imageNode.nodeSize,
+//                             })
+//                             .deleteSelection()
+//                             .run();
+//                     }, 10);
 
-                    return true;
-                }
+//                     return true;
+//                 }
 
-                return false;
-            },
-            'Mod-c': ({ editor }) => {
-                const { state } = editor;
-                const { selection } = state;
-                const { imageNode } = findImageNode(state, selection);
+//                 return false;
+//             },
+//             'Mod-c': ({ editor }) => {
+//                 const { state } = editor;
+//                 const { selection } = state;
+//                 const { imageNode } = findImageNode(state, selection);
 
-                if (imageNode && imageNode.attrs.src) {
-                    copyImageToClipboard(imageNode.attrs.src);
-                    return true;
-                }
+//                 if (imageNode && imageNode.attrs.src) {
+//                     copyImageToClipboard(imageNode.attrs.src);
+//                     return true;
+//                 }
 
-                return false;
-            },
-        };
-    },
-});
+//                 return false;
+//             },
+//         };
+//     },
+// });
 
 // 리사이즈 가능한 이미지 Extension
 export const ResizableImage = Image.extend({
@@ -155,8 +155,10 @@ export const ResizableImage = Image.extend({
     addNodeView() {
         return ({ node, getPos, editor }) => {
             let currentNode = node;
+            let resizeObserver: ResizeObserver | null = null;
             const dom = document.createElement('div');
             dom.className = 'image-wrapper';
+            dom.style.textAlign = 'center';
 
             const imgContainer = document.createElement('div');
             imgContainer.className = 'image-container';
@@ -338,9 +340,24 @@ export const ResizableImage = Image.extend({
             img.addEventListener('click', handleImageClick);
             editor.on('focus', handlePointerDown);
 
+            // 캡션 편집 상태 (상위 스코프에 선언)
+            let isEditingCaption = false;
+
             const updateResizeHandle = () => {
                 const pos = typeof getPos === 'function' ? getPos() : null;
                 if (pos === null || pos === undefined) return;
+
+                // 캡션 편집 중일 때는 이미지 선택 해제
+                if (isEditingCaption) {
+                    const currentSelection = editor.state.selection;
+                    if (currentSelection instanceof NodeSelection && currentSelection.from === pos) {
+                        // 이미지가 선택되어 있으면 선택 해제
+                        editor.commands.setTextSelection(pos);
+                    }
+                    img.classList.remove('selected');
+                    resizeHandle.style.display = 'none';
+                    return;
+                }
 
                 const selection = editor.state.selection;
                 const viewFocused = editor.view.hasFocus();
@@ -410,18 +427,75 @@ export const ResizableImage = Image.extend({
                 tooltipText.style.cssText = 'position:absolute;top:55%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;white-space:nowrap;pointer-events:none';
                 tooltipSvg.appendChild(tooltipText);
                 tooltip.appendChild(tooltipSvg);
-                // 입력 필드
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.placeholder = '캡션을 입력하세요';
-                input.style.cssText = 'margin-top:8px;padding:8px 12px;width:100%;font-size:14px;border:1px solid #dadfe7;border-radius:6px;outline:none;display:none;box-sizing:border-box';
+
+                // 캡션 입력 필드 (입력/표시 통합)
+                const input = document.createElement('textarea');
+                input.className = 'image-caption-textarea';
+                input.placeholder = '캡션 작성';
+                input.style.cssText = 'margin-top:8px;font-size:12px;border:none;background:transparent;outline:none;box-sizing:border-box;text-align:center;color:#6C727E;display:none;margin-left:auto;margin-right:auto;resize:none;overflow:hidden;word-wrap:break-word;white-space:pre-wrap;line-height:1.5;min-height:20px;';
+
+                // 초기 캡션 값 설정 및 너비 설정
+                if (currentNode.attrs.caption) {
+                    input.value = currentNode.attrs.caption;
+                }
+
+                // 초기 너비 설정 (이미지 로드 후)
+                const setInitialWidth = () => {
+                    const imgWidth = img.offsetWidth || imgContainer.offsetWidth;
+                    if (imgWidth > 0) {
+                        input.style.width = `${imgWidth}px`;
+                        input.style.display = 'block';
+                        input.style.marginLeft = 'auto';
+                        input.style.marginRight = 'auto';
+                        // textarea 높이 자동 조절
+                        input.style.height = 'auto';
+                        input.style.height = `${input.scrollHeight}px`;
+                    }
+                };
+                if (img.complete) {
+                    setInitialWidth();
+                } else {
+                    img.addEventListener('load', setInitialWidth, { once: true });
+                }
+
+                const updateInputStyle = (isFocused: boolean) => {
+                    input.style.border = 'none';
+                    input.style.borderRadius = '0';
+                    input.style.background = 'transparent';
+                };
+
+                // 입력 필드 너비를 이미지 너비에 맞추는 함수
+                const updateInputWidth = () => {
+                    const imgWidth = img.offsetWidth || imgContainer.offsetWidth;
+                    if (imgWidth > 0) {
+                        input.style.width = `${imgWidth}px`;
+                        input.style.display = input.style.display === 'none' ? 'none' : 'block';
+                        input.style.marginLeft = 'auto';
+                        input.style.marginRight = 'auto';
+                        // textarea 높이 자동 조절
+                        input.style.height = 'auto';
+                        input.style.height = `${input.scrollHeight}px`;
+                    }
+                };
 
                 // 이벤트
                 let isEditing = false;
+                isEditingCaption = false; // 초기화
                 imgContainer.addEventListener('mouseenter', () => {
                     if (!isEditing) btn.style.display = 'flex';
                 });
-                imgContainer.addEventListener('mouseleave', () => {
+                imgContainer.addEventListener('mouseleave', (e) => {
+                    // 입력 필드나 버튼으로 이동하는 경우는 무시
+                    const relatedTarget = e.relatedTarget as HTMLElement;
+                    if (relatedTarget && (
+                        relatedTarget === input ||
+                        relatedTarget === btn ||
+                        btn.contains(relatedTarget) ||
+                        input.contains(relatedTarget) ||
+                        tooltip.contains(relatedTarget)
+                    )) {
+                        return;
+                    }
                     if (!isEditing) {
                         btn.style.display = 'none';
                         tooltip.style.display = 'none';
@@ -435,7 +509,17 @@ export const ResizableImage = Image.extend({
                         btn.style.backgroundColor = '#EAE5FF';
                     }
                 });
-                btn.addEventListener('mouseleave', () => {
+                btn.addEventListener('mouseleave', (e) => {
+                    // 툴팁이나 입력 필드로 이동하는 경우는 무시
+                    const relatedTarget = e.relatedTarget as HTMLElement;
+                    if (relatedTarget && (
+                        relatedTarget === tooltip ||
+                        relatedTarget === input ||
+                        tooltip.contains(relatedTarget) ||
+                        input.contains(relatedTarget)
+                    )) {
+                        return;
+                    }
                     if (!isEditing) {
                         tooltip.style.display = 'none';
                         iconDiv.innerHTML = CaptionIconSvg;
@@ -444,32 +528,127 @@ export const ResizableImage = Image.extend({
                 });
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     isEditing = true;
+                    isEditingCaption = true;
+
+                    // 이미지 선택 해제
+                    const pos = typeof getPos === 'function' ? getPos() : null;
+                    if (pos !== null && pos !== undefined) {
+                        editor.commands.setTextSelection(pos);
+                    }
+
                     input.value = currentNode.attrs.caption || '';
+                    const imgWidth = img.offsetWidth || imgContainer.offsetWidth;
+                    if (imgWidth > 0) {
+                        input.style.width = `${imgWidth}px`;
+                    }
                     input.style.display = 'block';
+                    input.style.marginLeft = 'auto';
+                    input.style.marginRight = 'auto';
+                    // textarea 높이 자동 조절
+                    input.style.height = 'auto';
+                    input.style.height = `${input.scrollHeight}px`;
                     btn.style.display = 'none';
                     tooltip.style.display = 'none';
-                    setTimeout(() => input.focus(), 0);
+
+                    setTimeout(() => {
+                        input.focus();
+                        updateInputStyle(true);
+                    }, 0);
                 });
+
+                // 입력 필드 클릭 시 편집 모드로 전환
+                input.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!isEditing) {
+                        isEditing = true;
+                        isEditingCaption = true;
+                        const pos = typeof getPos === 'function' ? getPos() : null;
+                        if (pos !== null && pos !== undefined) {
+                            editor.commands.setTextSelection(pos);
+                        }
+                        updateInputWidth();
+                        updateInputStyle(true);
+                        input.focus();
+                    }
+                });
+                input.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                });
+                input.addEventListener('focus', () => {
+                    isEditing = true;
+                    isEditingCaption = true;
+                    updateInputStyle(true);
+                });
+                // textarea 입력 시 높이 자동 조절
+                input.addEventListener('input', () => {
+                    input.style.height = 'auto';
+                    input.style.height = `${input.scrollHeight}px`;
+                });
+                input.addEventListener('blur', () => {
+                    updateInputStyle(false);
+                    setTimeout(() => {
+                        if (document.activeElement !== input) {
+                            saveCaption();
+                        }
+                    }, 200);
+                });
+
                 const saveCaption = () => {
                     const newCaption = input.value.trim();
                     const pos = typeof getPos === 'function' ? getPos() : null;
                     if (pos !== null) {
                         editor.chain().setNodeSelection(pos).updateAttributes('image', { caption: newCaption || null }).run();
                     }
-                    input.style.display = 'none';
+
+                    // 캡션이 없으면 숨기기
+                    if (!newCaption) {
+                        input.style.display = 'none';
+                    } else {
+                        input.style.display = 'block';
+                        input.style.marginLeft = 'auto';
+                        input.style.marginRight = 'auto';
+                        updateInputWidth();
+                        // textarea 높이 자동 조절
+                        input.style.height = 'auto';
+                        input.style.height = `${input.scrollHeight}px`;
+                    }
+
                     isEditing = false;
+                    isEditingCaption = false;
                 };
-                input.addEventListener('blur', saveCaption);
                 input.addEventListener('keydown', (e) => {
+                    e.stopPropagation();
                     if (e.key === 'Enter') {
                         e.preventDefault();
+                        input.blur();
                         saveCaption();
                     } else if (e.key === 'Escape') {
-                        input.style.display = 'none';
+                        e.preventDefault();
+                        input.value = currentNode.attrs.caption || '';
+                        input.blur();
                         isEditing = false;
+                        isEditingCaption = false;
                     }
                 });
+
+                // 이미지 크기 변경 시 입력 필드 너비 업데이트
+                if (typeof ResizeObserver !== 'undefined') {
+                    resizeObserver = new ResizeObserver(() => {
+                        if (input.style.display === 'block') {
+                            updateInputWidth();
+                        }
+                    });
+                    resizeObserver.observe(img);
+                }
+
+                // 초기 너비 설정
+                setTimeout(() => {
+                    if (input.style.display === 'block') {
+                        updateInputWidth();
+                    }
+                }, 0);
 
                 imgContainer.appendChild(btn);
                 imgContainer.appendChild(tooltip);
@@ -499,6 +678,31 @@ export const ResizableImage = Image.extend({
                     const updatedHeight = toNumber(updatedNode.attrs.height);
                     ensureSizeWithinBounds(updatedWidth, updatedHeight);
 
+                    // 캡션 업데이트
+                    const captionInput = dom.querySelector('textarea') as HTMLTextAreaElement;
+                    if (captionInput) {
+                        const caption = updatedNode.attrs.caption;
+                        if (caption) {
+                            captionInput.value = caption;
+                            captionInput.style.display = 'block';
+                            const imgWidth = img.offsetWidth || imgContainer.offsetWidth;
+                            if (imgWidth > 0) {
+                                captionInput.style.width = `${imgWidth}px`;
+                                captionInput.style.marginLeft = 'auto';
+                                captionInput.style.marginRight = 'auto';
+                                // textarea 높이 자동 조절
+                                captionInput.style.height = 'auto';
+                                captionInput.style.height = `${captionInput.scrollHeight}px`;
+                            }
+                        } else {
+                            captionInput.value = '';
+                            // 편집 중이 아니면 숨기기 (포커스가 없을 때)
+                            if (document.activeElement !== captionInput) {
+                                captionInput.style.display = 'none';
+                            }
+                        }
+                    }
+
                     return true;
                 },
                 destroy: () => {
@@ -507,6 +711,9 @@ export const ResizableImage = Image.extend({
                     img.removeEventListener('pointerdown', handlePointerDown);
                     document.removeEventListener('mousemove', handleMouseMove);
                     document.removeEventListener('mouseup', handleMouseUp);
+                    if (resizeObserver) {
+                        resizeObserver.disconnect();
+                    }
                 },
             };
         };
