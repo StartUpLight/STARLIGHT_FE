@@ -1,4 +1,11 @@
-import { Block, BlockContentItem, TextContentItem, TableContentItem, ImageContentItem } from '@/types/business/business.type';
+import {
+    Block,
+    BlockContentItem,
+    TextContentItem,
+    TableContentItem,
+    TableCellContentItem,
+    ImageContentItem,
+} from '@/types/business/business.type';
 import { ItemContent } from '@/types/business/business.store.type';
 import { JSONNode, JSONMark } from './editorContentMapper';
 
@@ -467,100 +474,63 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
     }
     else if (item.type === 'table') {
         const tableItem = item as TableContentItem;
-        const rows: JSONNode[] = [];
-
-        const buildCellContent = (markdownText: string): JSONNode[] => {
-            const parsedNodes = parseMarkdownText(markdownText);
-            if (parsedNodes.length === 0) {
+        const buildCellNodes = (cell: TableCellContentItem | undefined): JSONNode[] => {
+            if (!cell || !Array.isArray(cell.content) || cell.content.length === 0) {
                 return [{
                     type: 'paragraph',
                     content: [{ type: 'text', text: ' ' }],
                 }];
             }
-
-            const blocks: JSONNode[] = [];
-            let inlineBuffer: JSONNode[] = [];
-
-            const flushInline = () => {
-                if (inlineBuffer.length === 0) return;
-                blocks.push({
-                    type: 'paragraph',
-                    content: inlineBuffer,
-                });
-                inlineBuffer = [];
-            };
-
-            parsedNodes.forEach((node) => {
-                if (
-                    node.type === 'image' ||
-                    node.type === 'table' ||
-                    node.type === 'bulletList' ||
-                    node.type === 'orderedList'
-                ) {
-                    flushInline();
-                    blocks.push(node);
-                } else {
-                    inlineBuffer.push(node);
+            const nodes: JSONNode[] = [];
+            cell.content.forEach((contentItem) => {
+                if (contentItem.type === 'text') {
+                    const parsedNodes = parseMarkdownText(contentItem.value || '');
+                    nodes.push({
+                        type: 'paragraph',
+                        content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
+                    });
+                } else if (contentItem.type === 'image') {
+                    nodes.push({
+                        type: 'image',
+                        attrs: {
+                            src: contentItem.src || '',
+                            alt: contentItem.caption || '',
+                            width: contentItem.width ?? null,
+                            height: contentItem.height ?? null,
+                        },
+                    });
                 }
             });
-
-            flushInline();
-
-            if (blocks.length === 0) {
-                blocks.push({
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: ' ' }],
-                });
-            }
-
-            return blocks;
+            return nodes.length > 0 ? nodes : [{
+                type: 'paragraph',
+                content: [{ type: 'text', text: ' ' }],
+            }];
         };
 
-        const hasHeader = Array.isArray(tableItem.columns) && tableItem.columns.length > 0;
-        if (hasHeader) {
-            const headerCells = tableItem.columns.map(col => {
-                const colText = String(col || ' ');
+        const tableRows: JSONNode[] = [];
+        (tableItem.rows || []).forEach((row) => {
+            const cells = row.map((cell) => {
+                const attrs: Record<string, number> = {};
+                if (cell.rowspan && cell.rowspan > 1) attrs.rowspan = cell.rowspan;
+                if (cell.colspan && cell.colspan > 1) attrs.colspan = cell.colspan;
                 return {
-                    type: 'tableHeader',
-                    content: buildCellContent(colText),
+                    type: 'tableCell',
+                    attrs: Object.keys(attrs).length ? attrs : undefined,
+                    content: buildCellNodes(cell),
                 };
             });
-            rows.push({
+            tableRows.push({
                 type: 'tableRow',
-                content: headerCells,
+                content: cells,
             });
-        }
+        });
 
-        if (tableItem.rows && tableItem.rows.length > 0) {
-            let dataRows = tableItem.rows;
-            if (hasHeader) {
-                const firstEqualsHeader =
-                    Array.isArray(dataRows[0]) &&
-                    dataRows[0].length === tableItem.columns.length &&
-                    dataRows[0].every((cell, idx) => String(cell ?? '') === String(tableItem.columns[idx] ?? ''));
-                if (firstEqualsHeader) {
-                    dataRows = dataRows.slice(1);
-                }
-            }
-            dataRows.forEach(row => {
-                const cells = row.map(cell => {
-                    const cellText = String(cell || ' ');
-                    return {
-                        type: 'tableCell',
-                        content: buildCellContent(cellText),
-                    };
-                });
-                rows.push({
-                    type: 'tableRow',
-                    content: cells,
-                });
-            });
-        }
-
-        return [{
-            type: 'table',
-            content: rows,
-        }];
+        return [
+            {
+                type: 'table',
+                content: tableRows.length > 0 ? tableRows : [{ type: 'tableRow', content: [] }],
+            },
+        ];
     } else if (item.type === 'image') {
         const imageItem = item as ImageContentItem;
         const width = typeof imageItem.width === 'number' ? imageItem.width : null;

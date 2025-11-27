@@ -14,10 +14,9 @@ export type SectionItem = {
 export type Section = { title: string; items: SectionItem[] };
 
 ///
-type Content =
-  | { type: 'image'; src: string; caption?: string; width?: number | null; height?: number | null }
-  | { type: 'table'; columns: string[]; rows: string[][] }
-  | { type: 'text'; value: string };
+import { TableContentItem, ImageContentItem, TextContentItem } from './business.type';
+
+type Content = TextContentItem | ImageContentItem | TableContentItem;
 
 type Block = {
   meta: { title: string };

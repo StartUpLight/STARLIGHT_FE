@@ -1,4 +1,10 @@
-import { BlockContentItem, TextContentItem, ImageContentItem } from '@/types/business/business.type';
+import {
+    BlockContentItem,
+    TextContentItem,
+    ImageContentItem,
+    TableCellContentItem,
+    TableColumnItem,
+} from '@/types/business/business.type';
 
 export type JSONAttrs = { [key: string]: string | number | boolean | null | undefined };
 export type JSONMark = { type: string; attrs?: JSONAttrs };
@@ -215,30 +221,122 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
     if (!editorJson || !Array.isArray(editorJson.content)) return [];
     const contents: BlockContentItem[] = [];
 
-    const extractTableData = (tableNode: JSONNode) => {
-        const rows: string[][] = [];
-        let columns: string[] = [];
-        if (tableNode.content && Array.isArray(tableNode.content)) {
-            tableNode.content.forEach((row, rowIndex: number) => {
-                if (row.type === 'tableRow') {
-                    const rowData: string[] = [];
-                    if (row.content && Array.isArray(row.content)) {
-                        row.content.forEach((cell) => {
-                            if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                                const cellContent = (cell.content || []).map((child) => convertToMarkdown(child)).join('').trim();
-                                rowData.push(cellContent);
-                                if (rowIndex === 0 && cell.type === 'tableHeader') {
-                                    columns.push(cellContent);
-                                }
-                            }
-                        });
-                    }
-                    if (rowData.length > 0) rows.push(rowData);
-                }
+    const buildCellContentItems = (cellNode: JSONNode): TableCellContentItem['content'] => {
+        const items: TableCellContentItem['content'] = [];
+        const pushText = (value: string) => {
+            items.push({ type: 'text', value } as TextContentItem);
+        };
+        const pushImage = (image: ImageContentItem) => {
+            if (!image.src) return;
+            items.push({
+                type: 'image',
+                src: image.src,
+                caption: image.caption || '',
+                width: image.width ?? null,
+                height: image.height ?? null,
             });
+        };
+
+        const serializeNode = (node: JSONNode | undefined) => {
+            if (!node) return;
+            const inlineImages: ImageContentItem[] = [];
+            collectInlineImages(node, inlineImages);
+            const markdown = convertToMarkdown(node);
+            splitMarkdownByImages(
+                markdown,
+                inlineImages,
+                (text) => pushText(text),
+                (image) =>
+                    pushImage({
+                        type: 'image',
+                        src: image.src,
+                        caption: image.caption || '',
+                        width: image.width ?? null,
+                        height: image.height ?? null,
+                    })
+            );
+        };
+
+        if (!Array.isArray(cellNode.content) || cellNode.content.length === 0) {
+            pushText('');
+            return items;
         }
-        if (columns.length === 0 && rows.length > 0) columns = rows[0] || [];
-        return { columns, rows };
+
+        cellNode.content.forEach((child) => serializeNode(child));
+
+        return items.length > 0 ? items : [{ type: 'text', value: '' }];
+    };
+
+    const extractTableData = (tableNode: JSONNode) => {
+        const tableRows: TableCellContentItem[][] = [];
+        const firstRow = tableNode.content?.find((row) => row.type === 'tableRow');
+        const inferredColumnCount =
+            firstRow && Array.isArray(firstRow.content)
+                ? firstRow.content.reduce((sum, cell) => sum + (Number(cell.attrs?.colspan) || 1), 0)
+                : 0;
+        const columnCount = Math.max(1, inferredColumnCount);
+        const colwidth = Array.isArray(tableNode.attrs?.colwidth)
+            ? (tableNode.attrs?.colwidth as Array<number | null | undefined>)
+            : undefined;
+        const columns: TableColumnItem[] = Array.from({ length: columnCount }, (_, idx) => ({
+            width: colwidth && colwidth[idx] != null ? colwidth[idx] : null,
+        }));
+        const rowspanState = new Array(columnCount).fill(0);
+
+        const decrementRowspans = () => {
+            for (let i = 0; i < columnCount; i += 1) {
+                if (rowspanState[i] > 0) {
+                    rowspanState[i] -= 1;
+                }
+            }
+        };
+
+        (tableNode.content || []).forEach((row) => {
+            if (row.type !== 'tableRow') {
+                return;
+            }
+            const rowCells: TableCellContentItem[] = [];
+            let colIndex = 0;
+
+            const advanceToNextAvailableColumn = () => {
+                while (colIndex < columnCount && rowspanState[colIndex] > 0) {
+                    colIndex += 1;
+                }
+            };
+
+            advanceToNextAvailableColumn();
+
+            (row.content || []).forEach((cell) => {
+                if (cell.type !== 'tableCell' && cell.type !== 'tableHeader') {
+                    return;
+                }
+                advanceToNextAvailableColumn();
+                if (colIndex >= columnCount) {
+                    return;
+                }
+                const colspan = Math.max(1, Number(cell.attrs?.colspan) || 1);
+                const rowspan = Math.max(1, Number(cell.attrs?.rowspan) || 1);
+                const cellContent = buildCellContentItems(cell);
+                const tableCell: TableCellContentItem = {
+                    content: cellContent,
+                };
+                if (colspan > 1) tableCell.colspan = colspan;
+                if (rowspan > 1) tableCell.rowspan = rowspan;
+                rowCells.push(tableCell);
+                for (let i = 0; i < colspan; i += 1) {
+                    rowspanState[colIndex + i] = rowspan > 1 ? rowspan : 0;
+                }
+                colIndex += colspan;
+            });
+
+            decrementRowspans();
+            tableRows.push(rowCells);
+        });
+
+        return {
+            columns,
+            rows: tableRows,
+        };
     };
 
     // 노드의 순서를 유지하면서 처리
