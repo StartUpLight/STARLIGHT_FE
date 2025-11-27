@@ -1,5 +1,4 @@
 'use client';
-import SmallLogo from '@/assets/icons/small_logo.svg';
 import { SelectedMentor } from '@/store/expert.store';
 import Image from 'next/image';
 

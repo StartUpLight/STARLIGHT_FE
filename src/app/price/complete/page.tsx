@@ -37,10 +37,9 @@ function PayComplete() {
           setState('SUCCESS');
         })
         .catch((error: unknown) => {
-          const msg =
-            error instanceof Error
-              ? error.message
-              : '결제 승인 처리 중 오류가 발생했습니다.';
+          error instanceof Error
+            ? error.message
+            : '결제 승인 처리 중 오류가 발생했습니다.';
 
           setState('FAIL');
         });

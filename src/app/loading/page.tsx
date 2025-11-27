@@ -3,9 +3,9 @@ import Lottie from 'lottie-react';
 import loadingAnimation from '@/assets/lotties/loading.json';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 
-const LoadingPage = () => {
+const LoadingInner = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planIdParam = searchParams.get('planId');
@@ -65,6 +65,14 @@ const LoadingPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const LoadingPage = () => {
+  return (
+    <Suspense fallback={null}>
+      <LoadingInner />
+    </Suspense>
   );
 };
 
