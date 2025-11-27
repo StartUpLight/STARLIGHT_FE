@@ -444,12 +444,17 @@ export const ResizableImage = Image.extend({
                     const imgWidth = img.offsetWidth || imgContainer.offsetWidth;
                     if (imgWidth > 0) {
                         input.style.width = `${imgWidth}px`;
-                        input.style.display = 'block';
                         input.style.marginLeft = 'auto';
                         input.style.marginRight = 'auto';
-                        // textarea 높이 자동 조절
-                        input.style.height = 'auto';
-                        input.style.height = `${input.scrollHeight}px`;
+                        // 캡션이 있으면 표시
+                        if (currentNode.attrs.caption) {
+                            input.style.display = 'block';
+                            // textarea 높이 자동 조절
+                            input.style.height = 'auto';
+                            input.style.height = `${input.scrollHeight}px`;
+                        } else {
+                            input.style.display = 'none';
+                        }
                     }
                 };
                 if (img.complete) {
@@ -643,9 +648,19 @@ export const ResizableImage = Image.extend({
                     resizeObserver.observe(img);
                 }
 
-                // 초기 너비 설정
+                // 초기 너비 설정 (캡션이 있는 경우)
                 setTimeout(() => {
-                    if (input.style.display === 'block') {
+                    if (currentNode.attrs.caption && input.style.display !== 'block') {
+                        const imgWidth = img.offsetWidth || imgContainer.offsetWidth;
+                        if (imgWidth > 0) {
+                            input.style.width = `${imgWidth}px`;
+                            input.style.display = 'block';
+                            input.style.marginLeft = 'auto';
+                            input.style.marginRight = 'auto';
+                            input.style.height = 'auto';
+                            input.style.height = `${input.scrollHeight}px`;
+                        }
+                    } else if (input.style.display === 'block') {
                         updateInputWidth();
                     }
                 }, 0);

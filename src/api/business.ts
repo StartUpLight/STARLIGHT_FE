@@ -42,25 +42,25 @@ export async function getBusinessPlanSubsection(
     return res.data as BusinessPlanSubsectionResponse;
     //404 에러 처리(임시로 404에러를 무시하도록 처리합니다.)
   } catch (error) {
-    const axiosError = error as AxiosError;
-    if (axiosError.response?.status === 404) {
-      return {
-        result: 'SUCCESS',
-        data: {
-          message: 'NOT_FOUND',
-          content: {
-            subSectionType,
-            checks: [],
-            meta: {
-              author: '',
-              createdAt: new Date().toISOString().split('T')[0],
-            },
-            blocks: [],
-          },
-        },
-        error: null,
-      };
-    }
+    // const axiosError = error as AxiosError;
+    // if (axiosError.response?.status === 404) {
+    //   return {
+    //     result: 'SUCCESS',
+    //     data: {
+    //       message: 'NOT_FOUND',
+    //       content: {
+    //         subSectionType,
+    //         checks: [],
+    //         meta: {
+    //           author: '',
+    //           createdAt: new Date().toISOString().split('T')[0],
+    //         },
+    //         blocks: [],
+    //       },
+    //     },
+    //     error: null,
+    //   };
+    // }
     throw error;
   }
 }
