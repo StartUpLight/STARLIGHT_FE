@@ -57,8 +57,9 @@ const BusinessHeaderContent = () => {
     loadTitleFromAPI(targetPlanId)
       .then((loadedTitle) => {
         if (!isCancelled && loadedTitle) {
-          // 제목이 로드되었을 때만 업데이트 (planId가 변경되지 않았는지 확인)
-          const currentPlanId = planIdParam ? parseInt(planIdParam, 10) : planId;
+          const currentPlanId = planIdParam
+            ? parseInt(planIdParam, 10)
+            : planId;
           if (currentPlanId === targetPlanId) {
             setTitle(loadedTitle);
           }
@@ -104,8 +105,7 @@ const BusinessHeaderContent = () => {
   const isSaving = useBusinessStore((state) => state.isSaving);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const { mutate: postGradeMutate, isPending: isGrading } = usePostGrade();
+  const [gradingPlanId, setGradingPlanId] = useState<number | null>(null);
 
   const allSectionItems = useMemo(() => {
     type SidebarItem = { number: string };
@@ -139,18 +139,9 @@ const BusinessHeaderContent = () => {
     }, 2000);
   }, []);
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
 
-  useEffect(() => {
-    return () => {
-      clearToast();
-    };
-  }, [clearToast]);
-
-  const handleOpenModal = useCallback(() => setIsModalOpen(true), []);
-  const handleCloseModal = useCallback(() => setIsModalOpen(false), []);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
   const handleDownloadPDF = async () => {
     await downloadPDF(title || '사업계획서');
@@ -214,11 +205,10 @@ const BusinessHeaderContent = () => {
       if (id == null) throw new Error('planId 생성에 실패했습니다.');
 
       await saveAllItems(id);
+      setGradingPlanId(id);
       handleOpenModal();
-      postGradeMutate(id, {
-        onSuccess: () => router.push('/report'),
-        onError: (e) => console.error('채점 실패:', e),
-      });
+    } catch (error) {
+      console.error('채점 준비 중 오류:', error);
     } finally {
       setIsSaving(false);
     }
@@ -230,7 +220,6 @@ const BusinessHeaderContent = () => {
     initializePlan,
     saveAllItems,
     handleOpenModal,
-    postGradeMutate,
     router,
     allSectionsCompleted,
     showToast,
@@ -239,6 +228,16 @@ const BusinessHeaderContent = () => {
   const handleCloseLoginModal = useCallback(() => {
     setOpenLoginModal(false);
   }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    return () => {
+      clearToast();
+    };
+  }, [clearToast]);
 
   useEffect(() => {
     if (spanRef.current) {
@@ -320,11 +319,10 @@ const BusinessHeaderContent = () => {
                 </button>
                 <div className="h-[32px] w-[1.6px] bg-gray-200" />
                 <Button
-                  text={isGrading ? '채점 중...' : '채점하기'}
+                  text="채점하기"
                   size="M"
                   color="primary"
-                  className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isGrading ? 'pointer-events-none opacity-50' : ''}`}
-                  disabled={isGrading}
+                  className="ds-subtext h-[33px] rounded-lg px-4 py-1.5"
                   onClick={handleGrade}
                 />
               </>
@@ -369,16 +367,20 @@ const BusinessHeaderContent = () => {
                     type="button"
                     onClick={handleSave}
                     disabled={isSaving}
-                    className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${isSaving ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-50 cursor-pointer'}`}
+                    className={`text-primary-500 border-primary-500 ds-subtext flex h-[33px] items-center justify-center rounded-[8px] border-[1.2px] px-3 py-2 font-medium transition ${isSaving
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'hover:bg-primary-50 cursor-pointer'
+                      }`}
                   >
                     {isSaving ? '저장 중...' : '저장하기'}
                   </button>
                   <Button
-                    text={isGrading ? '채점 중...' : '채점하기'}
+                    text="채점하기"
                     size="M"
                     color="primary"
-                    className={`ds-subtext h-[33px] rounded-[8px] px-4 py-[6px] ${isSaving || isGrading ? 'pointer-events-none opacity-50' : ''}`}
-                    disabled={isSaving || isGrading}
+                    className={`ds-subtext h-[33px] rounded-lg px-4 py-1.5 ${isSaving ? 'pointer-events-none opacity-50' : ''
+                      }`}
+                    disabled={isSaving}
                     onClick={handleGrade}
                   />
                 </div>
@@ -386,7 +388,7 @@ const BusinessHeaderContent = () => {
             )}
           </div>
 
-          {isModalOpen && (
+          {isModalOpen && gradingPlanId && (
             <CreateModal
               title="AI로 사업계획서 채점하기"
               imageSrc="/images/grading_Image.png"
@@ -395,9 +397,9 @@ const BusinessHeaderContent = () => {
               imageHeight={202}
               subtitle={`방금 작성하신 사업계획서를 항목별로 분석해 점수·강점·리스크를 즉시 제공해드려요.\n70점 이상이면, 아이템에 맞는 전문가 추천까지 제공해드려요.`}
               onClose={handleCloseModal}
-              buttonText={isGrading ? '채점 중...' : '결과 보기'}
+              buttonText="채점하기"
               onClick={() => {
-                if (!isGrading) router.push('/report');
+                router.push(`/loading?planId=${gradingPlanId}`);
               }}
             />
           )}

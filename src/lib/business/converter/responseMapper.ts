@@ -19,7 +19,12 @@ const parseMarkdownText = (text: string): JSONNode[] => {
     // 이미지 마크다운 파싱: ![alt](src)
     const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
     let imageMatch: RegExpExecArray | null;
-    const imageMatches: Array<{ start: number; end: number; alt: string; src: string }> = [];
+    const imageMatches: Array<{
+        start: number;
+        end: number;
+        alt: string;
+        src: string;
+    }> = [];
 
     while ((imageMatch = imageRegex.exec(text)) !== null) {
         imageMatches.push({
@@ -33,7 +38,12 @@ const parseMarkdownText = (text: string): JSONNode[] => {
     // 이미지와 span을 함께 처리하기 위해 모든 매치를 정렬
     const spanRegex = /<span([^>]*)>(.*?)<\/span>/gi;
     let spanMatch: RegExpExecArray | null;
-    const spanMatches: Array<{ start: number; end: number; attrs: string; inner: string }> = [];
+    const spanMatches: Array<{
+        start: number;
+        end: number;
+        attrs: string;
+        inner: string;
+    }> = [];
 
     while ((spanMatch = spanRegex.exec(text)) !== null) {
         spanMatches.push({
@@ -46,8 +56,8 @@ const parseMarkdownText = (text: string): JSONNode[] => {
 
     // 모든 매치를 시작 위치로 정렬
     const allMatches = [
-        ...imageMatches.map(m => ({ ...m, type: 'image' as const })),
-        ...spanMatches.map(m => ({ ...m, type: 'span' as const })),
+        ...imageMatches.map((m) => ({ ...m, type: 'image' as const })),
+        ...spanMatches.map((m) => ({ ...m, type: 'span' as const })),
     ].sort((a, b) => a.start - b.start);
 
     // 매치를 순서대로 처리
@@ -66,13 +76,25 @@ const parseMarkdownText = (text: string): JSONNode[] => {
                 },
             });
         } else if (match.type === 'span') {
-            const hasSpell = /class=["'][^"']*spell-error[^"']*["']/i.test(match.attrs);
-            const colorMatch = /style=["'][^"']*color\s*:\s*([^;"']+)/i.exec(match.attrs);
+            const hasSpell = /class=["'][^"']*spell-error[^"']*["']/i.test(
+                match.attrs
+            );
+            const colorMatch = /style=["'][^"']*color\s*:\s*([^;"']+)/i.exec(
+                match.attrs
+            );
             if (hasSpell) {
-                nodes.push({ type: 'text', text: match.inner, marks: [{ type: 'spellError' }] as JSONMark[] });
+                nodes.push({
+                    type: 'text',
+                    text: match.inner,
+                    marks: [{ type: 'spellError' }] as JSONMark[],
+                });
             } else if (colorMatch) {
                 const color = colorMatch[1].trim();
-                nodes.push({ type: 'text', text: match.inner, marks: [{ type: 'textStyle', attrs: { color } }] as JSONMark[] });
+                nodes.push({
+                    type: 'text',
+                    text: match.inner,
+                    marks: [{ type: 'textStyle', attrs: { color } }] as JSONMark[],
+                });
             } else {
                 nodes.push({ type: 'text', text: match.inner });
             }
@@ -86,7 +108,11 @@ const parseMarkdownText = (text: string): JSONNode[] => {
         if (remain) nodes.push({ type: 'text', text: remain });
     }
 
-    const applyMarkerAcrossNodes = (srcNodes: JSONNode[], marker: string, mark: JSONMark): JSONNode[] => {
+    const applyMarkerAcrossNodes = (
+        srcNodes: JSONNode[],
+        marker: string,
+        mark: JSONMark
+    ): JSONNode[] => {
         const out: JSONNode[] = [];
         let open = false;
         let carry: JSONMark[] = [];
@@ -103,7 +129,11 @@ const parseMarkdownText = (text: string): JSONNode[] => {
                 if (before) {
                     const baseMarks = node.marks || [];
                     const combined = open ? [...baseMarks, ...carry] : baseMarks;
-                    out.push({ type: 'text', text: before, marks: combined.length ? combined : undefined });
+                    out.push({
+                        type: 'text',
+                        text: before,
+                        marks: combined.length ? combined : undefined,
+                    });
                 }
                 open = !open;
                 if (open) {
@@ -116,14 +146,21 @@ const parseMarkdownText = (text: string): JSONNode[] => {
             if (text) {
                 const baseMarks = node.marks || [];
                 const combined = open ? [...baseMarks, ...carry] : baseMarks;
-                out.push({ type: 'text', text, marks: combined.length ? combined : undefined });
+                out.push({
+                    type: 'text',
+                    text,
+                    marks: combined.length ? combined : undefined,
+                });
             }
         }
         return out;
     };
     let processed = nodes;
     processed = applyMarkerAcrossNodes(processed, '**', { type: 'bold' });
-    processed = applyMarkerAcrossNodes(processed, '==', { type: 'highlight', attrs: { color: '#FFF59D' } });
+    processed = applyMarkerAcrossNodes(processed, '==', {
+        type: 'highlight',
+        attrs: { color: '#FFF59D' },
+    });
     processed = applyMarkerAcrossNodes(processed, '*', { type: 'italic' });
     processed = applyMarkerAcrossNodes(processed, '`', { type: 'code' });
     return processed.length ? processed : [{ type: 'text', text: ' ' }];
@@ -170,12 +207,17 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
         }
     };
 
+    // 들여쓰기 공백 수를 계산하여 깊이 반환
     const getIndentDepth = (line: string): number => {
         let depth = 0;
-        for (let i = 0; i < line.length; i += 1) {
-            if (line[i] === ' ') depth += 1;
-            else break;
+        for (let i = 0; i < line.length; i++) {
+            if (line[i] === ' ') {
+                depth++;
+            } else {
+                break;
+            }
         }
+        // 공백 2개 = 깊이 1
         return Math.floor(depth / 2);
     };
 
@@ -185,6 +227,7 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
         const trimmedLine = line.trim();
 
         if (trimmedLine === '') {
+            // 빈 줄: 현재 블록과 리스트 저장 후 새 paragraph 추가
             if (hasContent(currentBlock)) {
                 nodes.push(currentBlock);
                 currentBlock = null;
@@ -194,8 +237,10 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
             return;
         }
 
+        // Heading 마크다운 체크 (#, ##, ###)
         const headingMatch = trimmedLine.match(/^(#{1,3})\s+(.+)$/);
         if (headingMatch) {
+            // 이전 블록과 리스트 저장
             if (hasContent(currentBlock)) {
                 nodes.push(currentBlock);
                 currentBlock = null;
@@ -213,15 +258,18 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
             return;
         }
 
+        // OrderedList 마크다운 체크 (들여쓰기 고려)
         const orderedListMatch = line.match(/^(\s*)(\d+)\.\s+(.+)$/);
         if (orderedListMatch) {
+            // 이전 블록 저장
             if (hasContent(currentBlock)) {
                 nodes.push(currentBlock);
                 currentBlock = null;
             }
 
-            const depth = getIndentDepth(line);
+            // const indent = orderedListMatch[1];
             const itemText = orderedListMatch[3];
+            const depth = getIndentDepth(line);
             const parsedNodes = parseMarkdownText(itemText);
 
             const listItem: JSONNode = {
@@ -229,18 +277,27 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
                 content: [
                     {
                         type: 'paragraph',
-                        content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
+                        content:
+                            parsedNodes.length > 0
+                                ? parsedNodes
+                                : [{ type: 'text', text: ' ' }],
                     },
                 ],
             };
 
-            while (listStack.length > 0 && listStack[listStack.length - 1].depth > depth) {
+            // 현재 깊이보다 깊은 리스트들을 상위로 병합
+            while (
+                listStack.length > 0 &&
+                listStack[listStack.length - 1].depth > depth
+            ) {
                 const child = listStack.pop()!;
                 if (listStack.length > 0) {
                     const parent = listStack[listStack.length - 1];
                     if (parent.list.content && parent.list.content.length > 0) {
-                        const lastItem = parent.list.content[parent.list.content.length - 1];
+                        const lastItem =
+                            parent.list.content[parent.list.content.length - 1];
                         if (lastItem.type === 'listItem' && lastItem.content) {
+                            // 이미 중첩 리스트가 있는지 확인
                             const hasNestedList = lastItem.content.some(
                                 (c) => c.type === 'orderedList' || c.type === 'bulletList'
                             );
@@ -254,58 +311,89 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
                 }
             }
 
+            // 현재 깊이에 맞는 리스트 찾기 또는 생성
             if (listStack.length === 0) {
+                // 새 리스트 시작
                 flushAllLists();
                 const newList: JSONNode = { type: 'orderedList', content: [] };
                 listStack.push({ list: newList, listType: 'orderedList', depth });
             } else {
                 const topStack = listStack[listStack.length - 1];
                 if (topStack.depth < depth) {
+                    // 중첩 리스트 생성: 부모 리스트의 마지막 아이템에 추가
                     if (topStack.list.content && topStack.list.content.length > 0) {
-                        const lastItem = topStack.list.content[topStack.list.content.length - 1];
+                        const lastItem =
+                            topStack.list.content[topStack.list.content.length - 1];
                         if (lastItem.type === 'listItem' && lastItem.content) {
+                            // 이미 중첩 리스트가 있는지 확인
                             const existingNestedList = lastItem.content.find(
                                 (c) => c.type === 'orderedList' || c.type === 'bulletList'
                             ) as JSONNode | undefined;
 
-                            if (existingNestedList && existingNestedList.type === 'orderedList') {
-                                listStack.push({ list: existingNestedList, listType: 'orderedList', depth });
+                            if (
+                                existingNestedList &&
+                                existingNestedList.type === 'orderedList'
+                            ) {
+                                // 이미 중첩 번호 리스트가 있으면 그 리스트를 스택에 추가
+                                listStack.push({
+                                    list: existingNestedList,
+                                    listType: 'orderedList',
+                                    depth,
+                                });
                             } else if (!existingNestedList) {
-                                const nestedList: JSONNode = { type: 'orderedList', content: [] };
+                                // 중첩 리스트가 없으면 새로 생성
+                                const nestedList: JSONNode = {
+                                    type: 'orderedList',
+                                    content: [],
+                                };
                                 lastItem.content.push(nestedList);
-                                listStack.push({ list: nestedList, listType: 'orderedList', depth });
+                                listStack.push({
+                                    list: nestedList,
+                                    listType: 'orderedList',
+                                    depth,
+                                });
                             }
                         }
                     }
-                } else if (topStack.depth === depth && topStack.listType !== 'orderedList') {
+                } else if (
+                    topStack.depth === depth &&
+                    topStack.listType !== 'orderedList'
+                ) {
+                    // 같은 깊이지만 타입이 다르면 이전 리스트 종료 후 새로 시작
                     flushAllLists();
                     const newList: JSONNode = { type: 'orderedList', content: [] };
                     listStack.push({ list: newList, listType: 'orderedList', depth });
                 }
+                // 같은 깊이, 같은 타입이면 현재 리스트에 추가 (아래에서 처리)
             }
 
+            // 현재 리스트에 아이템 추가
             if (listStack.length > 0) {
                 const currentListStack = listStack[listStack.length - 1];
+                // 깊이가 일치하는지 확인
                 if (
                     currentListStack.depth === depth &&
-                    currentListStack.listType === 'orderedList' &&
-                    currentListStack.list.content
+                    currentListStack.listType === 'orderedList'
                 ) {
-                    currentListStack.list.content.push(listItem);
+                    if (currentListStack.list.content) {
+                        currentListStack.list.content.push(listItem);
+                    }
                 }
             }
             return;
         }
 
+        // BulletList 마크다운 체크 (들여쓰기 고려)
         const bulletListMatch = line.match(/^(\s*)[-*]\s+(.+)$/);
         if (bulletListMatch) {
+            // 이전 블록 저장
             if (hasContent(currentBlock)) {
                 nodes.push(currentBlock);
                 currentBlock = null;
             }
 
-            const depth = getIndentDepth(line);
             const itemText = bulletListMatch[2];
+            const depth = getIndentDepth(line);
             const parsedNodes = parseMarkdownText(itemText);
 
             const listItem: JSONNode = {
@@ -313,18 +401,27 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
                 content: [
                     {
                         type: 'paragraph',
-                        content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
+                        content:
+                            parsedNodes.length > 0
+                                ? parsedNodes
+                                : [{ type: 'text', text: ' ' }],
                     },
                 ],
             };
 
-            while (listStack.length > 0 && listStack[listStack.length - 1].depth > depth) {
+            // 현재 깊이보다 깊은 리스트들을 상위로 병합
+            while (
+                listStack.length > 0 &&
+                listStack[listStack.length - 1].depth > depth
+            ) {
                 const child = listStack.pop()!;
                 if (listStack.length > 0) {
                     const parent = listStack[listStack.length - 1];
                     if (parent.list.content && parent.list.content.length > 0) {
-                        const lastItem = parent.list.content[parent.list.content.length - 1];
+                        const lastItem =
+                            parent.list.content[parent.list.content.length - 1];
                         if (lastItem.type === 'listItem' && lastItem.content) {
+                            // 이미 중첩 리스트가 있는지 확인
                             const hasNestedList = lastItem.content.some(
                                 (c) => c.type === 'orderedList' || c.type === 'bulletList'
                             );
@@ -337,52 +434,86 @@ const convertTextValueToNodes = (textValue: string): JSONNode[] => {
                     nodes.push(child.list);
                 }
             }
+
+            // 현재 깊이에 맞는 리스트 찾기 또는 생성
             if (listStack.length === 0) {
+                // 새 리스트 시작
                 flushAllLists();
                 const newList: JSONNode = { type: 'bulletList', content: [] };
                 listStack.push({ list: newList, listType: 'bulletList', depth });
             } else {
                 const topStack = listStack[listStack.length - 1];
                 if (topStack.depth < depth) {
+                    // 중첩 리스트 생성: 부모 리스트의 마지막 아이템에 추가
                     if (topStack.list.content && topStack.list.content.length > 0) {
-                        const lastItem = topStack.list.content[topStack.list.content.length - 1];
+                        const lastItem =
+                            topStack.list.content[topStack.list.content.length - 1];
                         if (lastItem.type === 'listItem' && lastItem.content) {
+                            // 이미 중첩 리스트가 있는지 확인
                             const existingNestedList = lastItem.content.find(
                                 (c) => c.type === 'bulletList' || c.type === 'orderedList'
                             ) as JSONNode | undefined;
 
-                            if (existingNestedList && existingNestedList.type === 'bulletList') {
-                                listStack.push({ list: existingNestedList, listType: 'bulletList', depth });
+                            if (
+                                existingNestedList &&
+                                existingNestedList.type === 'bulletList'
+                            ) {
+                                // 이미 중첩 불렛 리스트가 있으면 그 리스트를 스택에 추가
+                                listStack.push({
+                                    list: existingNestedList,
+                                    listType: 'bulletList',
+                                    depth,
+                                });
                             } else if (!existingNestedList) {
-                                const nestedList: JSONNode = { type: 'bulletList', content: [] };
+                                // 중첩 리스트가 없으면 새로 생성
+                                const nestedList: JSONNode = {
+                                    type: 'bulletList',
+                                    content: [],
+                                };
                                 lastItem.content.push(nestedList);
-                                listStack.push({ list: nestedList, listType: 'bulletList', depth });
+                                listStack.push({
+                                    list: nestedList,
+                                    listType: 'bulletList',
+                                    depth,
+                                });
                             }
                         }
                     }
-                } else if (topStack.depth === depth && topStack.listType !== 'bulletList') {
+                } else if (
+                    topStack.depth === depth &&
+                    topStack.listType !== 'bulletList'
+                ) {
+                    // 같은 깊이지만 타입이 다르면 이전 리스트 종료 후 새로 시작
                     flushAllLists();
                     const newList: JSONNode = { type: 'bulletList', content: [] };
                     listStack.push({ list: newList, listType: 'bulletList', depth });
                 }
+                // 같은 깊이, 같은 타입이면 현재 리스트에 추가 (아래에서 처리)
             }
 
+            // 현재 리스트에 아이템 추가
             if (listStack.length > 0) {
                 const currentListStack = listStack[listStack.length - 1];
+                // 깊이가 일치하는지 확인
                 if (
                     currentListStack.depth === depth &&
-                    currentListStack.listType === 'bulletList' &&
-                    currentListStack.list.content
+                    currentListStack.listType === 'bulletList'
                 ) {
-                    currentListStack.list.content.push(listItem);
+                    if (currentListStack.list.content) {
+                        currentListStack.list.content.push(listItem);
+                    }
                 }
             }
             return;
         }
 
+        // 리스트가 진행 중이면 리스트 종료
         flushAllLists();
 
+        // 일반 텍스트 줄: 각 줄을 별도의 paragraph로 처리
         const parsedNodes = parseMarkdownText(line);
+
+        // 현재 블록이 있으면 먼저 저장
         if (hasContent(currentBlock)) {
             nodes.push(currentBlock);
             currentBlock = null;
@@ -559,7 +690,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
 
 const convertBlockToEditorJson = (block: Block): JSONNode[] => {
     const nodes: JSONNode[] = [];
-    block.content.forEach(item => {
+    block.content.forEach((item) => {
         nodes.push(...convertContentItemToEditorJson(item));
     });
     return nodes.length > 0 ? nodes : [{ type: 'paragraph' }];
@@ -575,7 +706,7 @@ export const convertResponseToItemContent = (
 
     // number === '0'인 경우 특별 처리
     // 블록의 meta.title을 기준으로 분류
-    blocks.forEach(block => {
+    blocks.forEach((block) => {
         const title = block.meta?.title || '';
         const editorNodes = convertBlockToEditorJson(block);
         const editorJson: JSONNode = {

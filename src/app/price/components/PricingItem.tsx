@@ -9,9 +9,12 @@ interface PricingItemProps {
   highlight: string;
   features: string[];
   background?: string;
+
+  onClick?: () => void;
+  disabled?: boolean;
 }
 
-export default function PricingItem({
+const PricingItem = ({
   title,
   description,
   price,
@@ -19,7 +22,9 @@ export default function PricingItem({
   highlight,
   features,
   background,
-}: PricingItemProps) {
+  onClick,
+  disabled,
+}: PricingItemProps) => {
   return (
     <div
       className={`flex w-full flex-col items-start gap-6 rounded-xl border border-gray-300 px-6 pt-6 pb-8 ${
@@ -45,6 +50,10 @@ export default function PricingItem({
         size="L"
         color="primary"
         className="ds-text h-11 w-full rounded-lg px-8 py-2.5"
+        onClick={() => {
+          onClick?.();
+        }}
+        disabled={disabled}
       />
 
       <div className="flex w-full flex-col items-start gap-2">
@@ -67,4 +76,5 @@ export default function PricingItem({
       </div>
     </div>
   );
-}
+};
+export default PricingItem;

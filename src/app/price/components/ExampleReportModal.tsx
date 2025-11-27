@@ -8,18 +8,18 @@ interface ExampleReportModalProps {
 
 const REPORT_SLIDES = [
   {
-    title: '총점 및 평가항목',
-    description: '어쩌구저쩌구어쩌구어쩌구1',
+    title: 'AI 채점 리포트',
+    description: 'AI 진단 기반으로 내 사업계획서의 강·약점을 정확하게 분석',
     image: '/images/price/example_report_1.webp',
   },
   {
-    title: '총점 및 평가항목',
-    description: '어쩌구저쩌구어쩌구어쩌구2',
+    title: 'AI 채점 리포트',
+    description: 'AI 진단 기반으로 내 사업계획서의 강·약점을 정확하게 분석',
     image: '/images/price/example_report_2.webp',
   },
   {
-    title: '총점 및 평가항목',
-    description: '어쩌구저쩌구어쩌구어쩌구3',
+    title: 'AI 채점 리포트',
+    description: 'AI 진단 기반으로 내 사업계획서의 강·약점을 정확하게 분석',
     image: '/images/price/example_report_3.webp',
   },
 ];

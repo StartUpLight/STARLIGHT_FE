@@ -1,12 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { MentorCardProps } from '@/types/expert/expert.props';
-import { ApplyFeedback } from '@/api/expert';
-import {
-  getBusinessPlanSubsections,
-  getBusinessPlanTitle,
-} from '@/api/business';
-import { generatePdfFromSubsections } from '@/lib/generatePdf';
 import Image from 'next/image';
 import Check from '@/assets/icons/gray_check.svg';
 import GrayPlus from '@/assets/icons/gray_plus.svg';
@@ -15,6 +9,7 @@ import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
 import { useRouter } from 'next/navigation';
+import { useExpertStore } from '@/store/expert.store';
 
 type ExtraProps = {
   onApplied?: () => void;
@@ -28,20 +23,18 @@ const MentorCard = ({
   image,
   workingperiod,
   id,
-  onApplied,
 }: MentorCardProps & ExtraProps) => {
   const router = useRouter();
   const planId = useBusinessStore((s) => s.planId);
-
   const hasExpertUnlocked = useEvaluationStore((s) => s.hasExpertUnlocked);
-
   const user = useUserStore((s) => s.user);
   const isMember = !!user;
 
-  const [didApply, setDidApply] = useState(false);
+  const { setSelectedMentor } = useExpertStore();
+
   const [uploading, setUploading] = useState(false);
 
-  const isDone = status === 'done' || didApply;
+  const isDone = status === 'done';
   const canUseExpert = isMember && hasExpertUnlocked;
 
   const disabled = !canUseExpert || isDone || uploading || planId == null;
@@ -56,64 +49,20 @@ const MentorCard = ({
     disabledReason = '피드백을 요청할 수 있는 사업계획서가 없습니다.';
   }
 
-  const handleClick = async () => {
+  const handleClick = () => {
     if (disabled) return;
 
-    try {
-      setUploading(true);
+    setUploading(true);
+    setSelectedMentor({
+      id,
+      name,
+      careers,
+      tags,
+      image,
+      workingperiod,
+    });
 
-      const response = await getBusinessPlanSubsections(planId!);
-
-      let title = response.data?.title;
-      if (!title) {
-        try {
-          const titleResponse = await getBusinessPlanTitle(planId!);
-          if (titleResponse.result === 'SUCCESS' && titleResponse.data) {
-            title = titleResponse.data;
-          }
-        } catch (e) {
-          console.warn('제목 조회 실패:', e);
-        }
-      }
-
-      let pdfFile: File;
-      try {
-        pdfFile = await generatePdfFromSubsections(response, title);
-      } catch (pdfError) {
-        console.error('PDF 생성 실패, 빈 파일로 대체합니다:', pdfError);
-        pdfFile = new File([new Uint8Array()], 'empty.pdf', {
-          type: 'application/pdf',
-        });
-      }
-      // //
-      // try {
-      //   const downloadUrl = URL.createObjectURL(pdfFile);
-      //   const link = document.createElement('a');
-      //   link.href = downloadUrl;
-      //   link.download = pdfFile.name || '사업계획서.pdf';
-      //   document.body.appendChild(link);
-      //   link.click();
-      //   document.body.removeChild(link);
-      //   URL.revokeObjectURL(downloadUrl);
-      // } catch (downloadError) {
-      //   console.warn('PDF 자동 다운로드 실패:', downloadError);
-      // }
-      // //
-      await ApplyFeedback({
-        expertId: id,
-        businessPlanId: planId!,
-        file: pdfFile,
-      });
-
-      setDidApply(true);
-      onApplied?.();
-      router.push('/expert/loading');
-    } catch (e) {
-      console.error('전문가 연결 실패:', e);
-      alert('전문가 연결에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setUploading(false);
-    }
+    router.push(`/pay`);
   };
 
   return (

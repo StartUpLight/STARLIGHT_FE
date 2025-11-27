@@ -42,3 +42,20 @@ export interface GetMyBusinessPlansResponse {
     message: string;
   } | null;
 }
+
+export interface GetOrderProps {
+  productName: string;
+  paymentMethod: string;
+  price: number;
+  paidAt: number;
+  receiptUrl: string;
+}
+
+export interface GetOrderResponse {
+  result: string;
+  data: GetOrderProps[];
+  error: {
+    code: string;
+    message: string;
+  };
+}

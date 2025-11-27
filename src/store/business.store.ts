@@ -1,9 +1,17 @@
-"use client";
+'use client';
 import { create } from 'zustand';
 import { buildSubsectionRequest } from '@/lib/business/requestBuilder';
-import { postBusinessPlan, postBusinessPlanSubsections, getBusinessPlanSubsection, getBusinessPlanTitle } from '@/api/business';
+import {
+    postBusinessPlan,
+    postBusinessPlanSubsections,
+    getBusinessPlanSubsection,
+    getBusinessPlanTitle,
+} from '@/api/business';
 import sections from '@/data/sidebar.json';
-import { BusinessStore, ItemContent } from '@/types/business/business.store.type';
+import {
+    BusinessStore,
+    ItemContent,
+} from '@/types/business/business.store.type';
 import { convertResponseToItemContent } from '@/lib/business/converter/responseMapper';
 import { getSubSectionTypeFromNumber } from '@/lib/business/mappers/getSubsection';
 
@@ -90,14 +98,23 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         // 현재 store의 planId와 요청한 planId가 일치하는지 확인
         const currentPlanId = get().planId;
         if (currentPlanId !== planId) {
-            console.warn(`loadContentsFromAPI: planId 불일치 (store: ${currentPlanId}, 요청: ${planId}). 요청 취소.`);
+            console.warn(
+                `loadContentsFromAPI: planId 불일치 (store: ${currentPlanId}, 요청: ${planId}). 요청 취소.`
+            );
             abortController.abort();
             return {};
         }
 
-        type SidebarItem = { name: string; number: string; title: string; subtitle: string };
+        type SidebarItem = {
+            name: string;
+            number: string;
+            title: string;
+            subtitle: string;
+        };
         type SidebarSection = { title: string; items: SidebarItem[] };
-        const allItems = (sections as SidebarSection[]).flatMap((section) => section.items);
+        const allItems = (sections as SidebarSection[]).flatMap(
+            (section) => section.items
+        );
 
         const contents: Record<string, ItemContent> = {};
 
@@ -110,7 +127,11 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
 
             try {
                 const subSectionType = getSubSectionTypeFromNumber(item.number);
-                const response = await getBusinessPlanSubsection(planId, subSectionType, abortController.signal);
+                const response = await getBusinessPlanSubsection(
+                    planId,
+                    subSectionType,
+                    abortController.signal
+                );
 
                 // 요청이 취소되었는지 다시 확인
                 if (abortController.signal.aborted) {
@@ -149,7 +170,9 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         // planId가 여전히 일치하는지 확인 (로딩 중에 변경되었을 수 있음)
         const finalPlanId = get().planId;
         if (finalPlanId !== planId) {
-            console.warn(`loadContentsFromAPI: 로딩 완료 후 planId 불일치 (store: ${finalPlanId}, 요청: ${planId}). 데이터 무시.`);
+            console.warn(
+                `loadContentsFromAPI: 로딩 완료 후 planId 불일치 (store: ${finalPlanId}, 요청: ${planId}). 데이터 무시.`
+            );
             currentLoadAbortController = null;
             return {};
         }
@@ -168,7 +191,8 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
             selectedItem: {
                 number: '0',
                 title: '개요',
-                subtitle: '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
+                subtitle:
+                    '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
             },
             contents: {},
             title: '',
@@ -177,7 +201,8 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     selectedItem: {
         number: '0',
         title: '개요',
-        subtitle: '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
+        subtitle:
+            '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
     },
     setSelectedItem: (item) => set({ selectedItem: item }),
 
@@ -216,16 +241,35 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         }
         const { contents } = get();
 
-        type SidebarChecklist = { title: string; content: string; checked?: boolean };
-        type SidebarItem = { name: string; number: string; title: string; subtitle: string; checklist?: SidebarChecklist[] };
+        type SidebarChecklist = {
+            title: string;
+            content: string;
+            checked?: boolean;
+        };
+        type SidebarItem = {
+            name: string;
+            number: string;
+            title: string;
+            subtitle: string;
+            checklist?: SidebarChecklist[];
+        };
         type SidebarSection = { title: string; items: SidebarItem[] };
-        const allItems = (sections as SidebarSection[]).flatMap((section) => section.items);
+        const allItems = (sections as SidebarSection[]).flatMap(
+            (section) => section.items
+        );
 
         const requests: Promise<void>[] = [];
         allItems.forEach((item: SidebarItem) => {
             const content = contents[item.number] || {};
-            const requestBody = buildSubsectionRequest(item.number, item.title, content);
-            console.log(`[${item.number}] subsection request body:`, JSON.stringify(requestBody, null, 2));
+            const requestBody = buildSubsectionRequest(
+                item.number,
+                item.title,
+                content
+            );
+            console.log(
+                `[${item.number}] subsection request body:`,
+                JSON.stringify(requestBody, null, 2)
+            );
             //console.log(`[${item.number}] requestBody:`, JSON.stringify(requestBody, null, 2));
 
             // contents에 해당 항목이 존재하면(한 번이라도 작성한 적이 있으면) 빈 값이어도 저장 요청 전송
@@ -239,9 +283,16 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
                 //console.log(`[${item.number}] 빈 값이지만 저장 요청 전송 (작성 이력 있음)`);
             }
 
-            const req = postBusinessPlanSubsections(targetPlanId as number, requestBody)
-                .then(() => { console.log(`[${item.number}] 저장 성공, planId: ${targetPlanId},`); })
-                .catch((err) => { console.error(`[${item.number}] 저장 실패`, err); });
+            const req = postBusinessPlanSubsections(
+                targetPlanId as number,
+                requestBody
+            )
+                .then(() => {
+                    console.log(`[${item.number}] 저장 성공, planId: ${targetPlanId},`);
+                })
+                .catch((err) => {
+                    console.error(`[${item.number}] 저장 실패`, err);
+                });
             requests.push(req);
         });
 
@@ -263,6 +314,9 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     isSaving: false,
     setIsSaving: (isSaving: boolean) => set({ isSaving }),
 
+    isGrading: false,
+    setIsGrading: (isGrading: boolean) => set({ isGrading }),
+
     // 제목 관리
     title: '',
     setTitle: (title: string) => set({ title }),
@@ -281,4 +335,3 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
         }
     },
 }));
-

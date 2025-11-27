@@ -1,4 +1,9 @@
-import { getMemberResponse, GetMyBusinessPlansResponse } from '@/types/mypage/mypage.type';
+import {
+  getMemberResponse,
+  GetMyBusinessPlansResponse,
+  GetOrderProps,
+  GetOrderResponse,
+} from '@/types/mypage/mypage.type';
 import api from './api';
 
 export async function getMember(): Promise<getMemberResponse> {
@@ -12,9 +17,20 @@ export interface GetMyBusinessPlansParams {
   size?: number;
 }
 
-export async function getMyBusinessPlans(params: GetMyBusinessPlansParams): Promise<GetMyBusinessPlansResponse> {
-  const response = await api.get<GetMyBusinessPlansResponse>('/v1/business-plans', {
-    params,
-  });
+export async function getMyBusinessPlans(
+  params: GetMyBusinessPlansParams
+): Promise<GetMyBusinessPlansResponse> {
+  const response = await api.get<GetMyBusinessPlansResponse>(
+    '/v1/business-plans',
+    {
+      params,
+    }
+  );
   return response.data;
+}
+
+export async function getOrders(): Promise<GetOrderProps[]> {
+  const res = await api.get<GetOrderResponse>('/v1/orders');
+
+  return res.data.data;
 }

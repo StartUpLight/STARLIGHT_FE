@@ -1,19 +1,23 @@
 'use client';
-import LoadingPoint from '@/assets/icons/loading_point.svg';
+import Lottie from 'lottie-react';
+import loadingAnimation from '@/assets/lotties/loading.json';
 
-const page = () => {
+const Page = () => {
   return (
     <div className="flex justify-center bg-white">
       <div className="mt-[220px] text-center">
-        <div className="bg-primary-500 mx-auto mb-6 flex h-[60px] w-[60px] items-center justify-center gap-[6px] rounded-full">
-          <LoadingPoint />
-          <LoadingPoint />
-          <LoadingPoint />
+        <div className="mx-auto mb-6 h-[60px] w-[60px]">
+          <Lottie
+            animationData={loadingAnimation}
+            loop
+            autoplay
+            style={{ width: '100%', height: '100%' }}
+          />
         </div>
         <h1 className="ds-heading mb-2 font-bold text-gray-900">
           사업계획서 분석중
         </h1>
-        <div className="mb-[44px]">
+        <div className="mb-11">
           <p className="ds-subtitle font-medium text-gray-600">
             사업계획서를 분석 중이에요.
           </p>
@@ -26,4 +30,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
