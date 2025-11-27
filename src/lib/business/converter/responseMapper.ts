@@ -493,13 +493,17 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             if (!cell || !Array.isArray(cell.content) || cell.content.length === 0) {
                 return [{
                     type: 'paragraph',
-                    content: [{ type: 'text', text: ' ' }],
+                    content: [],
                 }];
             }
             const nodes: JSONNode[] = [];
             cell.content.forEach((contentItem) => {
                 if (contentItem.type === 'text') {
-                    const parsedNodes = parseMarkdownText(contentItem.value || '');
+                    const rawValue = (contentItem.value || '').replace(/\u00a0/g, ' ');
+                    if (!rawValue.trim()) {
+                        return;
+                    }
+                    const parsedNodes = parseMarkdownText(rawValue);
                     nodes.push({
                         type: 'paragraph',
                         content: parsedNodes.length > 0 ? parsedNodes : [{ type: 'text', text: ' ' }],
@@ -518,7 +522,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             });
             return nodes.length > 0 ? nodes : [{
                 type: 'paragraph',
-                content: [{ type: 'text', text: ' ' }],
+                content: [],
             }];
         };
 
