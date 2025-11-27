@@ -14,10 +14,20 @@ export interface ImageContentItem {
   height?: number | null;
 }
 
+export interface TableColumnItem {
+  width?: number | string | null;
+}
+
+export interface TableCellContentItem {
+  content: Array<TextContentItem | ImageContentItem>;
+  rowspan?: number;
+  colspan?: number;
+}
+
 export interface TableContentItem {
   type: 'table';
-  columns: string[];
-  rows: string[][];
+  columns: TableColumnItem[];
+  rows: TableCellContentItem[][];
 }
 
 export type BlockContentItem =
@@ -125,18 +135,8 @@ export interface BusinessSpellCheckResponse {
 
 export type SpellContent =
   | { type: 'text'; value: string }
-  | {
-      type: 'table';
-      columns: string[];
-      rows: (string | number | null)[][];
-    }
-  | {
-      type: 'image';
-      src: string;
-      caption?: string;
-      width?: number | null;
-      height?: number | null;
-    };
+  | TableContentItem
+  | ImageContentItem;
 
 export interface BusinessSpellCheckRequest {
   subSectionType: string;

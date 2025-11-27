@@ -218,6 +218,28 @@ const renderPreviewHtml = (
                 .prose ul { list-style-type: disc; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
                 .prose ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
                 .prose li { margin: 0.15rem 0; }
+                .prose table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                    border: 1px solid #E5E7EB;
+                }
+                .prose th,
+                .prose td {
+                    padding: 8px;
+                    border: 1px solid #E5E7EB;
+                    min-height: 25px;
+                    vertical-align: top;
+                    box-sizing: border-box;
+                }
+                .prose th > div,
+                .prose td > div {
+                    min-height: 25px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-start;
+                    height: 100%;
+                }
             </style>
         </head>
         <body>
@@ -281,6 +303,28 @@ const renderPageHtml = (
                 .prose ul { list-style-type: disc; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
                 .prose ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
                 .prose li { margin: 0.15rem 0; }
+                .prose table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                    border: 1px solid #E5E7EB;
+                }
+                .prose th,
+                .prose td {
+                    padding: 8px;
+                    border: 1px solid #E5E7EB;
+                    min-height: 25px;
+                    vertical-align: top;
+                    box-sizing: border-box;
+                }
+                .prose th > div,
+                .prose td > div {
+                    min-height: 25px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-start;
+                    height: 100%;
+                }
             </style>
         </head>
         <body>
@@ -617,7 +661,7 @@ export const generatePdfFromSubsections = async (
                                                 
                                                 /* 하이라이트 추가 여백 */
                                                 mark {
-                                                    padding-top: 0.05em !important;
+                                                    padding-top: 0.1em !important;
                                                     padding-bottom: 0.05em !important;
                                                     margin: 0 !important;
                                                 }
@@ -670,17 +714,19 @@ export const generatePdfFromSubsections = async (
                                             });
 
                                             // 하이라이트 배경색 위치 조정 (텍스트는 그대로, 배경만 조정)
-                                            const highlightWrappers = clonedDoc.querySelectorAll('span[style*="position: relative"][style*="display: inline-block"]');
+                                            const highlightWrappers = clonedDoc.querySelectorAll(
+                                                'span[style*="position: relative"][style*="display: inline-block"]'
+                                            );
                                             highlightWrappers.forEach((wrapper) => {
                                                 const wrapperEl = wrapper as HTMLElement;
                                                 // 첫 번째 자식이 배경색 span
                                                 const bgSpan = wrapperEl.firstElementChild as HTMLElement;
                                                 if (bgSpan && bgSpan.style.backgroundColor) {
                                                     // 배경색 span의 top 값 조정 가능
-                                                    bgSpan.style.setProperty('top', '0.8em', 'important');
+                                                    bgSpan.style.setProperty('top', '0.5em', 'important');
                                                     bgSpan.style.setProperty('left', '0', 'important');
                                                     bgSpan.style.setProperty('right', '0', 'important');
-                                                    bgSpan.style.setProperty('bottom', '0', 'important');
+                                                    bgSpan.style.setProperty('height', '1.3em', 'important');
                                                     bgSpan.style.setProperty('z-index', '0', 'important');
                                                     bgSpan.style.setProperty('pointer-events', 'none', 'important');
                                                     bgSpan.style.setProperty('background-color', bgSpan.style.backgroundColor || '', 'important');

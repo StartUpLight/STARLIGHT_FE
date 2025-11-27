@@ -13,6 +13,7 @@ import Heading3Icon from '@/assets/icons/write-icons/heading3.svg';
 import GrammerIcon from '@/assets/icons/write-icons/grammer.svg';
 import GrammerActiveIcon from '@/assets/icons/write-icons/grammer-active.svg';
 import TableGridSelector from './TableGridSelector';
+import { useAuthStore } from '@/store/auth.store';
 
 interface WriteFormToolbarProps {
     activeEditor: Editor | null;
@@ -39,7 +40,9 @@ const WriteFormToolbar = ({
 }: WriteFormToolbarProps) => {
     // 아이템명 또는 한줄소개 에디터인지 확인
     const isSimpleEditor = activeEditor === editorItemName || activeEditor === editorOneLineIntro;
+    const { isAuthenticated } = useAuthStore();
     const [showTableGrid, setShowTableGrid] = useState(false);
+    const spellButtonDisabled = spellChecking || !isAuthenticated;
     const tableButtonRef = useRef<HTMLButtonElement>(null);
 
     const handleTableClick = () => {
@@ -282,14 +285,15 @@ const WriteFormToolbar = ({
             <ToolButton
                 label={<ImageIcon />}
                 onClick={onImageClick}
-                disabled={isSimpleEditor}
+                disabled={isSimpleEditor || !isAuthenticated}
             />
             <button
                 type="button"
                 onClick={onSpellCheckClick}
                 aria-pressed={grammarActive}
-                disabled={spellChecking}
-                className={`flex cursor-pointer items-center gap-1 rounded-[4px] py-[2px] pr-[6px] pl-[2px] font-semibold transition-colors ${grammarActive ? 'bg-primary-50 text-primary-500' : 'text-gray-700'} ${spellChecking ? 'cursor-not-allowed opacity-60' : ''} `}
+                disabled={spellButtonDisabled}
+                className={`flex items-center gap-1 rounded-[4px] py-[2px] pr-[6px] pl-[2px] font-semibold transition-colors ${grammarActive ? 'bg-primary-50 text-primary-500' : 'text-gray-700'
+                    } ${spellButtonDisabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'} `}
             >
                 {grammarActive ? <GrammerActiveIcon /> : <GrammerIcon />}
                 <span className="ds-subtext">

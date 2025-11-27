@@ -1,5 +1,6 @@
 import { CheckListResponse } from '@/types/business/checklist.type';
 import api from './api';
+import type { AxiosError } from 'axios';
 import {
   BusinessPlanCreateResponse,
   BusinessPlanSubsectionRequest,
@@ -33,11 +34,35 @@ export async function getBusinessPlanSubsection(
   subSectionType: SubSectionType,
   signal?: AbortSignal
 ): Promise<BusinessPlanSubsectionResponse> {
-  const res = await api.get(
-    `/v1/business-plans/${planId}/subsections/${subSectionType}`,
-    { signal }
-  );
-  return res.data as BusinessPlanSubsectionResponse;
+  try {
+    const res = await api.get(
+      `/v1/business-plans/${planId}/subsections/${subSectionType}`,
+      { signal }
+    );
+    return res.data as BusinessPlanSubsectionResponse;
+    //404 에러 처리(임시로 404에러를 무시하도록 처리합니다.)
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    if (axiosError.response?.status === 404) {
+      return {
+        result: 'SUCCESS',
+        data: {
+          message: 'NOT_FOUND',
+          content: {
+            subSectionType,
+            checks: [],
+            meta: {
+              author: '',
+              createdAt: new Date().toISOString().split('T')[0],
+            },
+            blocks: [],
+          },
+        },
+        error: null,
+      };
+    }
+    throw error;
+  }
 }
 
 export async function getBusinessPlanSubsections(

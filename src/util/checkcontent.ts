@@ -1,4 +1,10 @@
-type JSONAttrValue = string | number | boolean | null | undefined;
+type JSONAttrValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | (number | null)[];
 
 export interface Editor {
   type?: string;

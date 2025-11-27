@@ -103,22 +103,90 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
 
     if (node.type === 'table') {
         const rows: string[] = [];
+        const columnWidths: Array<number | null> = [];
+
+        const ensureColumnLength = (count: number) => {
+            while (columnWidths.length < count) {
+                columnWidths.push(null);
+            }
+        };
+
         (node.content || []).forEach((row) => {
-            if (row.type === 'tableRow') {
-                const cells: string[] = [];
-                (row.content || []).forEach((cell) => {
-                    if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                        const cellContent = (cell.content || []).map((child) => convertToHtml(child)).join('');
-                        const tag = cell.type === 'tableHeader' ? 'th' : 'td';
-                        cells.push(`<${tag}>${cellContent || '&nbsp;'}</${tag}>`);
+            if (row.type !== 'tableRow') return;
+            const cells: string[] = [];
+            let columnIndex = 0;
+
+            (row.content || []).forEach((cell) => {
+                if (cell.type !== 'tableCell' && cell.type !== 'tableHeader') return;
+
+                const colspan = Math.max(1, Number(cell.attrs?.colspan) || 1);
+                const rowspan = Math.max(1, Number(cell.attrs?.rowspan) || 1);
+                ensureColumnLength(columnIndex + colspan);
+
+                const colwidthArray = Array.isArray(cell.attrs?.colwidth)
+                    ? (cell.attrs?.colwidth as Array<number | null | undefined>)
+                    : undefined;
+                colwidthArray?.forEach((widthValue, idx) => {
+                    const targetIndex = columnIndex + idx;
+                    if (
+                        typeof widthValue === 'number' &&
+                        (columnWidths[targetIndex] === null ||
+                            columnWidths[targetIndex] === undefined)
+                    ) {
+                        columnWidths[targetIndex] = widthValue;
                     }
                 });
-                if (cells.length > 0) {
-                    rows.push(`<tr>${cells.join('')}</tr>`);
-                }
+
+                const cellContent = (cell.content || []).map((child) => convertToHtml(child)).join('');
+                const tag = cell.type === 'tableHeader' ? 'th' : 'td';
+                const attrs: string[] = [];
+                if (colspan > 1) attrs.push(`colspan="${colspan}"`);
+                if (rowspan > 1) attrs.push(`rowspan="${rowspan}"`);
+
+                const cellStyle = [
+                    'border: 1px solid #E5E7EB',
+                    'vertical-align: top',
+                    'box-sizing: border-box',
+                ].join('; ');
+                const contentHtml = [
+                    '<div style="min-height: 25px; display: flex; flex-direction: column; justify-content: flex-start; height: 100%;">',
+                    cellContent,
+                    '</div>',
+                ].join('');
+
+                const attrString = attrs.filter(Boolean).join(' ').trim();
+
+                cells.push(
+                    `<${tag} ${attrString} style="${cellStyle}">${contentHtml}</${tag}>`
+                );
+                columnIndex += colspan;
+            });
+
+            if (cells.length > 0) {
+                rows.push(`<tr>${cells.join('')}</tr>`);
             }
         });
-        return rows.length > 0 ? `<table><tbody>${rows.join('')}</tbody></table>` : '';
+
+        if (rows.length === 0) return '';
+
+        const colgroup =
+            columnWidths.length > 0
+                ? `<colgroup>${columnWidths
+                    .map((width) =>
+                        typeof width === 'number' && width > 0
+                            ? `<col style="width: ${width}px">`
+                            : '<col>'
+                    )
+                    .join('')}</colgroup>`
+                : '';
+
+        const tableStyle = [
+            'border-collapse: collapse',
+            'width: 100%',
+            'table-layout: fixed',
+        ].join('; ');
+
+        return `<table style="${tableStyle}">${colgroup}<tbody>${rows.join('')}</tbody></table>`;
     }
 
     if (node.type === 'image') {

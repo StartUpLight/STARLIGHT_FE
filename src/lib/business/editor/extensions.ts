@@ -1,8 +1,7 @@
 import { Extension } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import type { EditorState, Selection } from '@tiptap/pm/state';
-import { Plugin } from '@tiptap/pm/state';
-import { TextSelection } from '@tiptap/pm/state';
+import { NodeSelection, Plugin, TextSelection } from '@tiptap/pm/state';
 import { EditorView } from '@tiptap/pm/view';
 import Image from '@tiptap/extension-image';
 
@@ -263,11 +262,16 @@ export const ResizableImage = Image.extend({
             let startX = 0;
             let startWidth = 0;
             let startHeight = 0;
+            let hasUserInteraction = false;
 
-            const isInsideTable = () => Boolean(img.closest('td, th'));
+            const handlePointerDown = () => {
+                hasUserInteraction = true;
+                if (!editor.view.hasFocus()) {
+                    editor.view.focus();
+                }
+            };
 
             const handleMouseDown = (e: MouseEvent) => {
-                if (isInsideTable()) return;
                 e.preventDefault();
                 e.stopPropagation();
                 isResizing = true;
@@ -317,20 +321,38 @@ export const ResizableImage = Image.extend({
                 }
             };
 
+            img.addEventListener('pointerdown', handlePointerDown);
             img.addEventListener('click', handleImageClick);
+            editor.on('focus', handlePointerDown);
 
             const updateResizeHandle = () => {
                 const pos = typeof getPos === 'function' ? getPos() : null;
-                if (pos !== null && pos !== undefined) {
-                    const isSelected = editor.state.selection.from === pos;
-                    const disallowResize = isInsideTable();
-                    if (isSelected) {
-                        img.classList.add('selected');
-                        resizeHandle.style.display = disallowResize ? 'none' : 'block';
-                    } else {
-                        img.classList.remove('selected');
-                        resizeHandle.style.display = 'none';
-                    }
+                if (pos === null || pos === undefined) return;
+
+                const selection = editor.state.selection;
+                const viewFocused = editor.view.hasFocus();
+
+                if (
+                    !hasUserInteraction &&
+                    !viewFocused &&
+                    selection instanceof NodeSelection &&
+                    selection.from === pos
+                ) {
+                    editor.commands.setTextSelection(selection.from);
+                    return;
+                }
+
+                const allowSelection = viewFocused || hasUserInteraction;
+                const isSelected =
+                    allowSelection &&
+                    selection instanceof NodeSelection &&
+                    selection.from === pos;
+                if (isSelected) {
+                    img.classList.add('selected');
+                    resizeHandle.style.display = 'block';
+                } else {
+                    img.classList.remove('selected');
+                    resizeHandle.style.display = 'none';
                 }
             };
 
@@ -368,6 +390,8 @@ export const ResizableImage = Image.extend({
                 },
                 destroy: () => {
                     editor.off('selectionUpdate', updateResizeHandle);
+                    editor.off('focus', handlePointerDown);
+                    img.removeEventListener('pointerdown', handlePointerDown);
                     document.removeEventListener('mousemove', handleMouseMove);
                     document.removeEventListener('mouseup', handleMouseUp);
                 },

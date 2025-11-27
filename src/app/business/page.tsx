@@ -5,18 +5,38 @@ import WriteForm from './components/WriteForm';
 import Preview from './components/Preview';
 import { useBusinessStore } from '@/store/business.store';
 import CreateModal from './components/CreateModal';
+import LoginModal from '@/app/_components/common/LoginModal';
+import {
+  LOGIN_INIT_KEY,
+  LOGIN_REDIRECT_KEY,
+  GUEST_DRAFT_KEY,
+} from '@/lib/business/authKeys';
+import type { ItemContent } from '@/types/business/business.store.type';
 
 const WRITE_MODAL_KEY = 'writeModalShown';
+type DraftSnapshot = { contents?: Record<string, ItemContent>; title?: string };
 
 const BusinessPageContent = () => {
   const searchParams = useSearchParams();
   const selectedItem = useBusinessStore((state) => state.selectedItem);
-  const { initializePlan, loadContentsFromAPI, resetDraft, isPreview, setPreview, planId, setPlanId, setSelectedItem } = useBusinessStore();
+  const {
+    initializePlan,
+    loadContentsFromAPI,
+    resetDraft,
+    isPreview,
+    setPreview,
+    planId,
+    setPlanId,
+    setSelectedItem,
+    hydrateContents,
+  } = useBusinessStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [hasSeenModal, setHasSeenModal] = useState(false);
   const [modalReady, setModalReady] = useState(false);
+  const [openLoginModal, setOpenLoginModal] = useState(false);
   const hasInitializedPlanRef = useRef(false);
+  const hasRestoredGuestDraftRef = useRef(false);
 
   useEffect(() => {
     setSelectedItem({
@@ -26,6 +46,27 @@ const BusinessPageContent = () => {
         '구성원의 담당업무, 사업화와 관련하여 보유한 전문성(기술력, 노하우) 위주로 작성.',
     });
   }, [setSelectedItem]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const snapshotRaw = localStorage.getItem(GUEST_DRAFT_KEY);
+    if (!snapshotRaw) {
+      return;
+    }
+
+    try {
+      const snapshot = JSON.parse(snapshotRaw) as DraftSnapshot;
+      hydrateContents({
+        contents: snapshot.contents,
+        title: typeof snapshot.title === 'string' ? snapshot.title : undefined,
+      });
+      hasRestoredGuestDraftRef.current = true;
+    } catch (error) {
+      console.error('비회원 초안 복원 실패:', error);
+    } finally {
+      localStorage.removeItem(GUEST_DRAFT_KEY);
+    }
+  }, [hydrateContents]);
 
   // 초기 설정: 로그인 상태 및 모달 표시 여부 확인
   useEffect(() => {
@@ -98,7 +139,7 @@ const BusinessPageContent = () => {
       try {
         await loadContentsFromAPI(id);
       } catch (error) {
-        console.error('데이터 불러오기 실패:', error);
+        //console.error('데이터 불러오기 실패:', error);
       }
     };
 
@@ -120,7 +161,9 @@ const BusinessPageContent = () => {
     clearRefreshFlags();
     if (shouldResetDraft) {
       sessionStorage.removeItem('shouldResetBusinessDraft');
-      resetDraftState();
+      if (!hasRestoredGuestDraftRef.current) {
+        resetDraftState();
+      }
     }
 
     setIsModalOpen(isMember ? !hasSeenModal : true);
@@ -147,11 +190,22 @@ const BusinessPageContent = () => {
   };
 
   const handleCreatePlan = async () => {
-    try {
-      if (isMember) {
-        await initializePlan();
-        if (!hasSeenModal) markModalSeen();
+    if (!isMember) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(LOGIN_INIT_KEY, 'true');
+        const redirectPath = window.location.pathname + window.location.search;
+        sessionStorage.setItem(
+          LOGIN_REDIRECT_KEY,
+          redirectPath && redirectPath !== '' ? redirectPath : '/business'
+        );
       }
+      setIsModalOpen(false);
+      setOpenLoginModal(true);
+      return;
+    }
+    try {
+      await initializePlan();
+      if (!hasSeenModal) markModalSeen();
     } catch (error) {
       console.error('사업계획서 생성 실패:', error);
     } finally {
@@ -159,19 +213,58 @@ const BusinessPageContent = () => {
     }
   };
 
+  useEffect(() => {
+    if (!modalReady || !isMember) return;
+    if (typeof window === 'undefined') return;
+    const shouldInitAfterLogin = sessionStorage.getItem(LOGIN_INIT_KEY) === 'true';
+    if (!shouldInitAfterLogin) return;
+
+    sessionStorage.removeItem(LOGIN_INIT_KEY);
+    setOpenLoginModal(false);
+    setIsModalOpen(false);
+
+    const createPlanAfterLogin = async () => {
+      try {
+        await initializePlan();
+        if (!hasSeenModal) markModalSeen();
+      } catch (error) {
+        console.error('사업계획서 생성 실패:', error);
+      }
+    };
+
+    createPlanAfterLogin();
+  }, [isMember, modalReady, initializePlan, hasSeenModal, markModalSeen]);
+
+  const handleCloseLoginModal = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(LOGIN_INIT_KEY);
+      sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+    }
+    setOpenLoginModal(false);
+  }, []);
+
   const handleTogglePreview = useCallback(() => {
     setPreview(!isPreview);
   }, [isPreview, setPreview]);
 
+  const openBusinessLoginModal = useCallback(() => {
+    setOpenLoginModal(true);
+  }, []);
+
   // 전역 미리보기 토글 함수 등록 (BusinessHeader에서 사용)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const win = window as Window & { togglePreview?: () => void };
+    const win = window as Window & {
+      togglePreview?: () => void;
+      openBusinessLoginModal?: () => void;
+    };
     win.togglePreview = handleTogglePreview;
+    win.openBusinessLoginModal = openBusinessLoginModal;
     return () => {
       delete win.togglePreview;
+      delete win.openBusinessLoginModal;
     };
-  }, [handleTogglePreview]);
+  }, [handleTogglePreview, openBusinessLoginModal]);
 
   return (
     <>
@@ -187,7 +280,6 @@ const BusinessPageContent = () => {
               subtitle={selectedItem.subtitle}
             />
           </main>
-
           {isModalOpen && (
             <CreateModal
               title="사업계획서 쉽게 생성하기"
@@ -199,6 +291,7 @@ const BusinessPageContent = () => {
               buttonText="생성하기"
             />
           )}
+          <LoginModal open={openLoginModal} onClose={handleCloseLoginModal} />
         </div>
       )}
     </>

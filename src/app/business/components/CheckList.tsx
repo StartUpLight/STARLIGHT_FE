@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Button from '@/app/_components/common/Button';
 import Check from '@/assets/icons/white_check.svg';
 import { useBusinessStore } from '@/store/business.store';
@@ -8,6 +8,12 @@ import { CheckListResponse, Section } from '@/types/business/checklist.type';
 import { usePostCheckList } from '@/hooks/mutation/usePostChecklist';
 import { getSubSectionTypeFromNumber } from '@/lib/business/mappers/getSubsection';
 import { buildSubsectionRequest } from '@/lib/business/requestBuilder';
+import { useAuthStore } from '@/store/auth.store';
+import {
+  GUEST_DRAFT_KEY,
+  GUEST_PENDING_ACTION_KEY,
+  LOGIN_REDIRECT_KEY,
+} from '@/lib/business/authKeys';
 
 const CheckList = () => {
   const selected = useBusinessStore((s) => s.selectedItem);
@@ -15,6 +21,7 @@ const CheckList = () => {
   const saveAllItems = useBusinessStore((s) => s.saveAllItems);
   const getItemContent = useBusinessStore((s) => s.getItemContent);
   const updateItemContent = useBusinessStore((s) => s.updateItemContent);
+  const { isAuthenticated } = useAuthStore();
   const { mutate: checkListConfirm, isPending } = usePostCheckList();
 
   const [items, setItems] = useState<
@@ -48,8 +55,40 @@ const CheckList = () => {
     setItems([]);
   }, [selected.number, getItemContent]);
 
+  const persistGuestDraft = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const { contents, title } = useBusinessStore.getState();
+      localStorage.setItem(
+        GUEST_DRAFT_KEY,
+        JSON.stringify({ contents, title })
+      );
+      localStorage.setItem(GUEST_PENDING_ACTION_KEY, 'save');
+      const redirectPath = window.location.pathname + window.location.search;
+      sessionStorage.setItem(
+        LOGIN_REDIRECT_KEY,
+        redirectPath && redirectPath.length > 0 ? redirectPath : '/business'
+      );
+    } catch (error) {
+      console.error('비회원 초안 저장 실패:', error);
+    }
+  }, []);
+
+  const openLoginModal = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const win = window as Window & { openBusinessLoginModal?: () => void };
+    win.openBusinessLoginModal?.();
+  }, []);
+
   const handleCheck = async () => {
-    if (!planId || items.length === 0) return;
+    if (items.length === 0) return;
+    if (!isAuthenticated) {
+      persistGuestDraft();
+      openLoginModal();
+      return;
+    }
+
+    if (!planId) return;
 
     await saveAllItems(planId);
 

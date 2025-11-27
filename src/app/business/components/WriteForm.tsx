@@ -206,25 +206,6 @@ const WriteForm = ({
         // content가 없으면 에디터를 빈 상태로 초기화
         editor.commands.clearContent(false);
       }
-
-      // setTimeout(() => {
-      //   if (!editor || editor.isDestroyed) return;
-
-      //   const { doc } = editor.state;
-      //   if (doc.content.size === 0) return;
-
-      //   // 마지막 노드 확인
-      //   const lastNode = doc.lastChild;
-      //   if (lastNode && lastNode.type.name === 'table') {
-      //     // 표가 마지막이면 표 아래에 빈 문단 추가
-      //     const endPos = doc.content.size;
-      //     editor.commands.insertContentAt(
-      //       endPos,
-      //       { type: 'paragraph' },
-      //       { updateSelection: false }
-      //     );
-      //   }
-      // }, 0);
     } catch (e) {
       console.error('에디터 내용 복원 실패:', e);
     }
@@ -560,7 +541,10 @@ const WriteForm = ({
   };
 
   return (
-    <div className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white">
+    <div
+      data-toast-anchor
+      className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white"
+    >
       <WriteFormHeader number={number} title={title} subtitle={subtitle} />
       <WriteFormToolbar
         activeEditor={activeEditor}
