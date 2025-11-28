@@ -991,3 +991,35 @@ export const SelectTableOnBorderClick = Extension.create({
     },
 });
 
+// 문서 끝에 항상 빈 paragraph 유지
+export const EnsureTrailingParagraph = Extension.create({
+    name: 'ensure-trailing-paragraph',
+    addProseMirrorPlugins() {
+        return [
+            new Plugin({
+                appendTransaction: (transactions, oldState, newState) => {
+                    if (!transactions.some((tr) => tr.docChanged)) {
+                        return null;
+                    }
+
+                    const doc = newState.doc;
+                    const paragraphType = newState.schema.nodes.paragraph;
+
+                    if (!paragraphType) {
+                        return null;
+                    }
+
+                    const lastChild = doc.lastChild;
+
+                    if (!lastChild || lastChild.type === paragraphType) {
+                        return null;
+                    }
+
+                    const tr = newState.tr.insert(doc.content.size, paragraphType.create());
+                    return tr;
+                },
+            }),
+        ];
+    },
+});
+
