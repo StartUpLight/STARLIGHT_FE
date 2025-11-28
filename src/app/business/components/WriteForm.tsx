@@ -176,6 +176,36 @@ const WriteForm = ({
     content: '<p></p>',
     immediatelyRender: false,
   });
+
+  const editorGeneral = useEditor({
+    extensions: [
+      StarterKit,
+      SpellError,
+      DeleteTableOnDelete,
+      Highlight.configure({ multicolor: true }),
+      TextStyle,
+      Color,
+      ResizableImage.configure({ inline: false }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      SelectTableOnBorderClick,
+      EnsureTrailingParagraph,
+      Placeholder.configure({
+        placeholder:
+          '세부 항목별 체크리스트를 참고하며 작성해주시면, 리포트 점수가 올라갑니다.',
+        includeChildren: false,
+        showOnlyWhenEditable: true,
+      }),
+    ],
+    content: '<p></p>',
+    editorProps: {
+      handlePaste: createPasteHandler(),
+    },
+    immediatelyRender: false,
+  });
+
   const {
     updateItemContent,
     getItemContent,
@@ -186,9 +216,7 @@ const WriteForm = ({
   } = useBusinessStore();
   // 현재 섹션의 contents만 구독하여 변경 감지
   const currentContent = useBusinessStore((state) => state.contents[number]);
-  const [activeEditor, setActiveEditor] = useState<
-    typeof editorFeatures | null
-  >(null);
+  const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
   const [grammarActive, setGrammarActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -228,12 +256,10 @@ const WriteForm = ({
 
   // number가 변경되거나 contents가 업데이트될 때 store에서 내용 불러오기
   useEffect(() => {
-    if (!editorFeatures) return;
-
     const content = getItemContent(number);
-
     // 에디터 내용 복원
     if (isOverview) {
+      // 개요 섹션: editorFeatures, editorSkills, editorGoals 모두 복원
       // itemName과 oneLineIntro는 JSONContent로 저장되어 있을 수 있음
       restoreEditorContent(
         editorItemName,
@@ -271,18 +297,20 @@ const WriteForm = ({
       restoreEditorContent(editorSkills, content.editorSkills);
       restoreEditorContent(editorGoals, content.editorGoals);
     } else {
-      restoreEditorContent(editorFeatures, content.editorContent);
+      // 일반 섹션: editorGeneral만 복원
+      restoreEditorContent(editorGeneral, content.editorContent);
     }
   }, [
     number,
+    isOverview,
     editorFeatures,
+    editorGeneral,
     editorSkills,
     editorGoals,
     editorItemName,
     editorOneLineIntro,
     currentContent,
     getItemContent,
-    isOverview,
     restoreEditorContent,
   ]);
 
@@ -309,7 +337,8 @@ const WriteForm = ({
           };
         };
 
-        const mainSelection = saveSelection(editorFeatures);
+        const primaryEditor = isOverview ? editorFeatures : editorGeneral;
+        const mainSelection = saveSelection(primaryEditor);
         const skillsSelection = saveSelection(editorSkills);
         const goalsSelection = saveSelection(editorGoals);
         const itemNameSelection = saveSelection(editorItemName);
@@ -320,22 +349,23 @@ const WriteForm = ({
           updateItemContent(number, {
             itemName: editorItemName?.getJSON() || null,
             oneLineIntro: editorOneLineIntro?.getJSON() || null,
-            editorFeatures: editorFeatures?.getJSON() || null,
+            editorFeatures: primaryEditor?.getJSON() || null,
             editorSkills: editorSkills?.getJSON() || null,
             editorGoals: editorGoals?.getJSON() || null,
           });
         } else {
           updateItemContent(number, {
-            editorContent: editorFeatures?.getJSON() || null,
+            editorContent: primaryEditor?.getJSON() || null,
           });
         }
 
         // 커서 위치 복원 로직
         requestAnimationFrame(() => {
-          const currentActiveEditor = activeEditor || editorFeatures;
+          const fallbackEditor = primaryEditor;
+          const currentActiveEditor = activeEditor || fallbackEditor;
           if (currentActiveEditor && !currentActiveEditor.isDestroyed) {
             let selectionToRestore = null;
-            if (currentActiveEditor === editorFeatures && mainSelection) {
+            if (currentActiveEditor === fallbackEditor && mainSelection) {
               selectionToRestore = mainSelection;
             } else if (
               currentActiveEditor === editorSkills &&
@@ -386,6 +416,7 @@ const WriteForm = ({
       editorItemName,
       editorOneLineIntro,
       editorFeatures,
+      editorGeneral,
       editorSkills,
       editorGoals,
       updateItemContent,
@@ -402,15 +433,16 @@ const WriteForm = ({
   const oneLineIntroTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!editorFeatures) return;
+    const mainEditorInstance = isOverview ? editorFeatures : editorGeneral;
+    if (!mainEditorInstance) return;
 
     const handleMainUpdate = createUpdateHandler(mainTimeoutRef);
-    editorFeatures.on('update', handleMainUpdate);
+    mainEditorInstance.on('update', handleMainUpdate);
 
     const cleanup: (() => void)[] = [
       () => {
         if (mainTimeoutRef.current) clearTimeout(mainTimeoutRef.current);
-        editorFeatures.off('update', handleMainUpdate);
+        mainEditorInstance.off('update', handleMainUpdate);
       },
     ];
 
@@ -463,6 +495,7 @@ const WriteForm = ({
     };
   }, [
     editorFeatures,
+    editorGeneral,
     editorSkills,
     editorGoals,
     editorItemName,
@@ -522,9 +555,10 @@ const WriteForm = ({
   const handleImageButtonClick = () => {
     if (!activeEditor) {
       // activeEditor가 없으면 기본 에디터에 포커스
-      if (editorFeatures && !editorFeatures.isDestroyed) {
-        editorFeatures.commands.focus();
-        setActiveEditor(editorFeatures);
+      const defaultEditor = isOverview ? editorFeatures : editorGeneral;
+      if (defaultEditor && !defaultEditor.isDestroyed) {
+        defaultEditor.commands.focus();
+        setActiveEditor(defaultEditor);
       }
     }
     fileInputRef.current?.click();
@@ -548,9 +582,9 @@ const WriteForm = ({
     () =>
       (isOverview
         ? [editorFeatures, editorSkills, editorGoals]
-        : [editorFeatures]
+        : [editorGeneral]
       ).filter((e): e is Editor => !!e && !e.isDestroyed),
-    [isOverview, editorFeatures, editorSkills, editorGoals]
+    [isOverview, editorFeatures, editorSkills, editorGoals, editorGeneral]
   );
 
   const resetSpellVisuals = useCallback((edit: Editor[]) => {
@@ -573,11 +607,19 @@ const WriteForm = ({
   useEffect(() => {
     register({
       sectionNumber: number,
-      features: editorFeatures ?? null,
+      features: (isOverview ? editorFeatures : editorGeneral) ?? null,
       skills: isOverview ? (editorSkills ?? null) : null,
       goals: isOverview ? (editorGoals ?? null) : null,
     });
-  }, [number, isOverview, editorFeatures, editorSkills, editorGoals, register]);
+  }, [
+    number,
+    isOverview,
+    editorFeatures,
+    editorGeneral,
+    editorSkills,
+    editorGoals,
+    register,
+  ]);
 
   useEffect(() => {
     resetSpell();
@@ -600,9 +642,9 @@ const WriteForm = ({
       title,
       itemName: editorItemName?.getText() || '',
       oneLineIntro: editorOneLineIntro?.getText() || '',
-      editorFeatures,
-      editorSkills,
-      editorGoals,
+      editorFeatures: (isOverview ? editorFeatures : editorGeneral) ?? null,
+      editorSkills: isOverview ? editorSkills : null,
+      editorGoals: isOverview ? editorGoals : null,
     });
 
     spellcheck(payload, {
@@ -657,7 +699,7 @@ const WriteForm = ({
             />
           ) : (
             <GeneralSection
-              editor={editorFeatures}
+              editor={editorGeneral}
               onEditorFocus={setActiveEditor}
             />
           )}
