@@ -3,7 +3,10 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
 import { useBusinessStore } from '@/store/business.store';
 import { uploadImage } from '@/lib/imageUpload';
-import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
+import {
+  getImageDimensions,
+  clampImageDimensions,
+} from '@/lib/getImageDimensions';
 import { getSelectionAvailableWidth } from '@/lib/business/editor/getSelectionAvailableWidth';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
@@ -22,7 +25,12 @@ import { applySpellHighlights, clearSpellErrors } from '@/util/spellMark';
 import SpellError from '@/util/spellError';
 import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
-import { DeleteTableOnDelete, ImageCutPaste, ResizableImage, SelectTableOnBorderClick } from '../../../lib/business/editor/extensions';
+import {
+  DeleteTableOnDelete,
+  ImageCutPaste,
+  ResizableImage,
+  SelectTableOnBorderClick,
+} from '../../../lib/business/editor/extensions';
 import { createPasteHandler } from '../../../lib/business/editor/useEditorConfig';
 import { ImageCommandAttributes } from '@/lib/business/editor/types';
 import WriteFormHeader from './editor/WriteFormHeader';
@@ -66,6 +74,7 @@ const WriteForm = ({
     editorProps: {
       handlePaste: createPasteHandler(),
     },
+    immediatelyRender: false,
   });
 
   const editorSkills = useEditor({
@@ -94,6 +103,7 @@ const WriteForm = ({
     editorProps: {
       handlePaste: createPasteHandler(),
     },
+    immediatelyRender: false,
   });
 
   const editorGoals = useEditor({
@@ -121,6 +131,7 @@ const WriteForm = ({
     editorProps: {
       handlePaste: createPasteHandler(),
     },
+    immediatelyRender: false,
   });
 
   // 아이템명 에디터 (하이라이트, 볼드, 색상만 가능, 헤딩/표/이미지 비활성화)
@@ -144,6 +155,7 @@ const WriteForm = ({
       }),
     ],
     content: '<p></p>',
+    immediatelyRender: false,
   });
 
   // 아이템 한줄소개 에디터 (하이라이트, 볼드, 색상만 가능, 헤딩/표/이미지 비활성화)
@@ -167,8 +179,16 @@ const WriteForm = ({
       }),
     ],
     content: '<p></p>',
+    immediatelyRender: false,
   });
-  const { updateItemContent, getItemContent, lastSavedTime, isSaving, saveAllItems, planId } = useBusinessStore();
+  const {
+    updateItemContent,
+    getItemContent,
+    lastSavedTime,
+    isSaving,
+    saveAllItems,
+    planId,
+  } = useBusinessStore();
   // 현재 섹션의 contents만 구독하여 변경 감지
   const currentContent = useBusinessStore((state) => state.contents[number]);
   const [activeEditor, setActiveEditor] = useState<
@@ -183,33 +203,37 @@ const WriteForm = ({
   const savedContent = getItemContent(number);
 
   // 에디터 내용 복원 헬퍼 함수
-  const restoreEditorContent = useCallback((editor: Editor | null, content: JSONContent | null | undefined) => {
-    if (!editor || editor.isDestroyed) return;
-    try {
-      if (content) {
-        const currentJSON = editor.getJSON();
-        const nextJSON = JSON.parse(JSON.stringify(content));
-        if (JSON.stringify(currentJSON) === JSON.stringify(nextJSON)) {
-          return;
+  const restoreEditorContent = useCallback(
+    (editor: Editor | null, content: JSONContent | null | undefined) => {
+      if (!editor || editor.isDestroyed) return;
+      try {
+        if (content) {
+          const currentJSON = editor.getJSON();
+          const nextJSON = JSON.parse(JSON.stringify(content));
+          if (JSON.stringify(currentJSON) === JSON.stringify(nextJSON)) {
+            return;
+          }
+          editor.commands.setContent(nextJSON, false);
+        } else {
+          const currentJSON = editor.getJSON();
+          const isAlreadyEmpty =
+            !currentJSON ||
+            !Array.isArray(currentJSON.content) ||
+            currentJSON.content.length === 0 ||
+            (currentJSON.content.length === 1 &&
+              currentJSON.content[0]?.type === 'paragraph' &&
+              (!currentJSON.content[0]?.content ||
+                currentJSON.content[0]?.content?.length === 0));
+          if (isAlreadyEmpty) return;
+          // content가 없으면 에디터를 빈 상태로 초기화
+          editor.commands.clearContent(false);
         }
-        editor.commands.setContent(nextJSON, false);
-      } else {
-        const currentJSON = editor.getJSON();
-        const isAlreadyEmpty =
-          !currentJSON ||
-          !Array.isArray(currentJSON.content) ||
-          currentJSON.content.length === 0 ||
-          (currentJSON.content.length === 1 &&
-            currentJSON.content[0]?.type === 'paragraph' &&
-            (!currentJSON.content[0]?.content || currentJSON.content[0]?.content?.length === 0));
-        if (isAlreadyEmpty) return;
-        // content가 없으면 에디터를 빈 상태로 초기화
-        editor.commands.clearContent(false);
+      } catch (e) {
+        console.error('에디터 내용 복원 실패:', e);
       }
-    } catch (e) {
-      console.error('에디터 내용 복원 실패:', e);
-    }
-  }, []);
+    },
+    []
+  );
 
   // number가 변경되거나 contents가 업데이트될 때 store에서 내용 불러오기
   useEffect(() => {
@@ -220,15 +244,56 @@ const WriteForm = ({
     // 에디터 내용 복원
     if (isOverview) {
       // itemName과 oneLineIntro는 JSONContent로 저장되어 있을 수 있음
-      restoreEditorContent(editorItemName, content.itemName ? (typeof content.itemName === 'string' ? { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: content.itemName }] }] } : content.itemName) : null);
-      restoreEditorContent(editorOneLineIntro, content.oneLineIntro ? (typeof content.oneLineIntro === 'string' ? { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: content.oneLineIntro }] }] } : content.oneLineIntro) : null);
+      restoreEditorContent(
+        editorItemName,
+        content.itemName
+          ? typeof content.itemName === 'string'
+            ? {
+                type: 'doc',
+                content: [
+                  {
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: content.itemName }],
+                  },
+                ],
+              }
+            : content.itemName
+          : null
+      );
+      restoreEditorContent(
+        editorOneLineIntro,
+        content.oneLineIntro
+          ? typeof content.oneLineIntro === 'string'
+            ? {
+                type: 'doc',
+                content: [
+                  {
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: content.oneLineIntro }],
+                  },
+                ],
+              }
+            : content.oneLineIntro
+          : null
+      );
       restoreEditorContent(editorFeatures, content.editorFeatures);
       restoreEditorContent(editorSkills, content.editorSkills);
       restoreEditorContent(editorGoals, content.editorGoals);
     } else {
       restoreEditorContent(editorFeatures, content.editorContent);
     }
-  }, [number, editorFeatures, editorSkills, editorGoals, editorItemName, editorOneLineIntro, currentContent, getItemContent, isOverview, restoreEditorContent]);
+  }, [
+    number,
+    editorFeatures,
+    editorSkills,
+    editorGoals,
+    editorItemName,
+    editorOneLineIntro,
+    currentContent,
+    getItemContent,
+    isOverview,
+    restoreEditorContent,
+  ]);
 
   // 공통 저장 함수 (디바운스 적용)
   const debouncedSave = useCallback(async () => {
@@ -241,76 +306,102 @@ const WriteForm = ({
   }, [planId, saveAllItems]);
 
   // 에디터 업데이트 핸들러 생성
-  const createUpdateHandler = useCallback((timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
-    return () => {
-      // 저장 전 커서 위치 저장
-      const saveSelection = (editor: Editor | null) => {
-        if (!editor || editor.isDestroyed) return null;
-        return {
-          from: editor.state.selection.from,
-          to: editor.state.selection.to,
+  const createUpdateHandler = useCallback(
+    (timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
+      return () => {
+        // 저장 전 커서 위치 저장
+        const saveSelection = (editor: Editor | null) => {
+          if (!editor || editor.isDestroyed) return null;
+          return {
+            from: editor.state.selection.from,
+            to: editor.state.selection.to,
+          };
         };
-      };
 
-      const mainSelection = saveSelection(editorFeatures);
-      const skillsSelection = saveSelection(editorSkills);
-      const goalsSelection = saveSelection(editorGoals);
-      const itemNameSelection = saveSelection(editorItemName);
-      const oneLineIntroSelection = saveSelection(editorOneLineIntro);
+        const mainSelection = saveSelection(editorFeatures);
+        const skillsSelection = saveSelection(editorSkills);
+        const goalsSelection = saveSelection(editorGoals);
+        const itemNameSelection = saveSelection(editorItemName);
+        const oneLineIntroSelection = saveSelection(editorOneLineIntro);
 
-      // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
-      if (isOverview) {
-        updateItemContent(number, {
-          itemName: editorItemName?.getJSON() || null,
-          oneLineIntro: editorOneLineIntro?.getJSON() || null,
-          editorFeatures: editorFeatures?.getJSON() || null,
-          editorSkills: editorSkills?.getJSON() || null,
-          editorGoals: editorGoals?.getJSON() || null,
-        });
-      } else {
-        updateItemContent(number, {
-          editorContent: editorFeatures?.getJSON() || null,
-        });
-      }
+        // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
+        if (isOverview) {
+          updateItemContent(number, {
+            itemName: editorItemName?.getJSON() || null,
+            oneLineIntro: editorOneLineIntro?.getJSON() || null,
+            editorFeatures: editorFeatures?.getJSON() || null,
+            editorSkills: editorSkills?.getJSON() || null,
+            editorGoals: editorGoals?.getJSON() || null,
+          });
+        } else {
+          updateItemContent(number, {
+            editorContent: editorFeatures?.getJSON() || null,
+          });
+        }
 
-      // 커서 위치 복원 로직
-      requestAnimationFrame(() => {
-        const currentActiveEditor = activeEditor || editorFeatures;
-        if (currentActiveEditor && !currentActiveEditor.isDestroyed) {
-          let selectionToRestore = null;
-          if (currentActiveEditor === editorFeatures && mainSelection) {
-            selectionToRestore = mainSelection;
-          } else if (currentActiveEditor === editorSkills && skillsSelection) {
-            selectionToRestore = skillsSelection;
-          } else if (currentActiveEditor === editorGoals && goalsSelection) {
-            selectionToRestore = goalsSelection;
-          } else if (currentActiveEditor === editorItemName && itemNameSelection) {
-            selectionToRestore = itemNameSelection;
-          } else if (currentActiveEditor === editorOneLineIntro && oneLineIntroSelection) {
-            selectionToRestore = oneLineIntroSelection;
-          }
-          if (selectionToRestore) {
-            try {
-              currentActiveEditor
-                .chain()
-                .focus()
-                .setTextSelection({ from: selectionToRestore.from, to: selectionToRestore.to })
-                .run();
-            } catch (e) {
-              // 커서 위치 복원 실패 시 무시
+        // 커서 위치 복원 로직
+        requestAnimationFrame(() => {
+          const currentActiveEditor = activeEditor || editorFeatures;
+          if (currentActiveEditor && !currentActiveEditor.isDestroyed) {
+            let selectionToRestore = null;
+            if (currentActiveEditor === editorFeatures && mainSelection) {
+              selectionToRestore = mainSelection;
+            } else if (
+              currentActiveEditor === editorSkills &&
+              skillsSelection
+            ) {
+              selectionToRestore = skillsSelection;
+            } else if (currentActiveEditor === editorGoals && goalsSelection) {
+              selectionToRestore = goalsSelection;
+            } else if (
+              currentActiveEditor === editorItemName &&
+              itemNameSelection
+            ) {
+              selectionToRestore = itemNameSelection;
+            } else if (
+              currentActiveEditor === editorOneLineIntro &&
+              oneLineIntroSelection
+            ) {
+              selectionToRestore = oneLineIntroSelection;
+            }
+            if (selectionToRestore) {
+              try {
+                currentActiveEditor
+                  .chain()
+                  .focus()
+                  .setTextSelection({
+                    from: selectionToRestore.from,
+                    to: selectionToRestore.to,
+                  })
+                  .run();
+              } catch (e) {
+                // 커서 위치 복원 실패 시 무시
+              }
             }
           }
-        }
-      });
+        });
 
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        debouncedSave();
-      }, 300);
-    };
-  }, [isOverview, number, editorItemName, editorOneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave, activeEditor]);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+          debouncedSave();
+        }, 300);
+      };
+    },
+    [
+      isOverview,
+      number,
+      editorItemName,
+      editorOneLineIntro,
+      editorFeatures,
+      editorSkills,
+      editorGoals,
+      updateItemContent,
+      debouncedSave,
+      activeEditor,
+    ]
+  );
 
   // 에디터에 onChange 이벤트 리스너 추가 (store는 즉시 저장, API만 디바운스)
   const mainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -325,10 +416,12 @@ const WriteForm = ({
     const handleMainUpdate = createUpdateHandler(mainTimeoutRef);
     editorFeatures.on('update', handleMainUpdate);
 
-    const cleanup: (() => void)[] = [() => {
-      if (mainTimeoutRef.current) clearTimeout(mainTimeoutRef.current);
-      editorFeatures.off('update', handleMainUpdate);
-    }];
+    const cleanup: (() => void)[] = [
+      () => {
+        if (mainTimeoutRef.current) clearTimeout(mainTimeoutRef.current);
+        editorFeatures.off('update', handleMainUpdate);
+      },
+    ];
 
     if (isOverview) {
       // 아이템명 에디터
@@ -336,17 +429,21 @@ const WriteForm = ({
         const handleItemNameUpdate = createUpdateHandler(itemNameTimeoutRef);
         editorItemName.on('update', handleItemNameUpdate);
         cleanup.push(() => {
-          if (itemNameTimeoutRef.current) clearTimeout(itemNameTimeoutRef.current);
+          if (itemNameTimeoutRef.current)
+            clearTimeout(itemNameTimeoutRef.current);
           editorItemName.off('update', handleItemNameUpdate);
         });
       }
 
       // 한줄소개 에디터
       if (editorOneLineIntro) {
-        const handleOneLineIntroUpdate = createUpdateHandler(oneLineIntroTimeoutRef);
+        const handleOneLineIntroUpdate = createUpdateHandler(
+          oneLineIntroTimeoutRef
+        );
         editorOneLineIntro.on('update', handleOneLineIntroUpdate);
         cleanup.push(() => {
-          if (oneLineIntroTimeoutRef.current) clearTimeout(oneLineIntroTimeoutRef.current);
+          if (oneLineIntroTimeoutRef.current)
+            clearTimeout(oneLineIntroTimeoutRef.current);
           editorOneLineIntro.off('update', handleOneLineIntroUpdate);
         });
       }
@@ -371,7 +468,7 @@ const WriteForm = ({
     }
 
     return () => {
-      cleanup.forEach(fn => fn());
+      cleanup.forEach((fn) => fn());
     };
   }, [
     editorFeatures,
@@ -383,7 +480,6 @@ const WriteForm = ({
     isOverview,
     createUpdateHandler,
   ]);
-
 
   // 이미지 파일 선택 핸들러
   const handleImageUpload = async (
@@ -413,20 +509,19 @@ const WriteForm = ({
         const { width, height } = await getImageDimensions(imageUrl);
         const selectionWidth = getSelectionAvailableWidth(activeEditor);
         const editorDom = activeEditor.view.dom as HTMLElement | null;
-        const fallbackWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
+        const fallbackWidth = editorDom
+          ? editorDom.clientWidth - 48
+          : undefined;
         const maxWidth = selectionWidth ?? fallbackWidth;
-        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth ?? undefined);
+        const { width: clampedWidth, height: clampedHeight } =
+          clampImageDimensions(width, height, maxWidth ?? undefined);
         const imageAttributes: ImageCommandAttributes = {
           src: imageUrl,
           width: clampedWidth ?? undefined,
           height: clampedHeight ?? undefined,
         };
 
-        activeEditor
-          .chain()
-          .focus()
-          .setImage(imageAttributes)
-          .run();
+        activeEditor.chain().focus().setImage(imageAttributes).run();
       }
     } catch (error) {
       console.error('이미지 업로드 실패:', error);

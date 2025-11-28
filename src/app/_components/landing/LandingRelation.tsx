@@ -70,7 +70,7 @@ const LandingRelation = () => {
                     alt={logo.alt}
                     width={260}
                     height={60}
-                    className="h-[60px] w-auto object-contain"
+                    className="h-auto max-h-[60px] w-auto object-contain"
                     priority
                   />
                 </div>

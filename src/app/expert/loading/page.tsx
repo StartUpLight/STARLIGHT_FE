@@ -12,7 +12,7 @@ const Page = () => {
         '전문가 멘토링 신청이 완료되었어요!',
         '멘토링 결과는 마이페이지에서 확인할 수 있어요.',
       ]}
-      buttonTextLeft="또 다른 멘토 신청하기"
+      buttonTextLeft="또 다른 전문가 신청하기"
       onClickLeft={() => router.push('/expert')}
       buttonTextRight="신청 내역 확인하기"
       onClickRight={() => router.push('/mypage')}

@@ -146,7 +146,7 @@ function PayCompleteInner() {
 
         {sending && (
           <p className="ds-caption mb-3 text-gray-700">
-            멘토에게 사업계획서를 전달하는 중입니다.
+            전문가에게 사업계획서를 전달하는 중입니다.
           </p>
         )}
 

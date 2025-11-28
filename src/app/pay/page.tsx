@@ -31,7 +31,7 @@ const Page = () => {
 
   const handlePayClick = async () => {
     if (!selectedMentor) {
-      alert('선택된 멘토 정보가 없습니다. 멘토를 먼저 선택해 주세요.');
+      alert('선택된 전문가 정보가 없습니다. 전문가를 먼저 선택해 주세요.');
       return;
     }
 
