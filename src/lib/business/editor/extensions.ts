@@ -340,6 +340,44 @@ export const ResizableImage = Image.extend({
             img.addEventListener('click', handleImageClick);
             editor.on('focus', handlePointerDown);
 
+            // 이미지 외곽(여백) 클릭 시 선택 해제
+            const handleWrapperClick = (e: MouseEvent) => {
+                const target = e.target as HTMLElement;
+                if (!target) return;
+
+                // 이미지나 관련 UI 요소를 클릭한 경우는 무시
+                const captionInputEl = dom.querySelector('textarea.image-caption-textarea');
+
+                if (
+                    target === img ||
+                    img.contains(target) ||
+                    resizeHandle.contains(target as Node) ||
+                    target.closest('.image-caption-btn') ||
+                    (captionInputEl && captionInputEl.contains(target))
+                ) {
+                    return;
+                }
+
+                const pos = typeof getPos === 'function' ? getPos() : null;
+                if (pos === null || pos === undefined) return;
+
+                const selection = editor.state.selection;
+                if (!(selection instanceof NodeSelection) || selection.from !== pos) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                // 이미지 노드 이후로 커서를 이동해 선택 해제
+                const exitPos = pos + currentNode.nodeSize;
+                editor.commands.setTextSelection(exitPos);
+                img.classList.remove('selected');
+                resizeHandle.style.display = 'none';
+            };
+            imgContainer.addEventListener('click', handleWrapperClick);
+            dom.addEventListener('click', handleWrapperClick);
+
             // 캡션 편집 상태 (상위 스코프에 선언)
             let isEditingCaption = false;
 
@@ -536,6 +574,9 @@ export const ResizableImage = Image.extend({
                     e.preventDefault();
                     isEditing = true;
                     isEditingCaption = true;
+                    // 버튼 배경색 원복
+                    iconDiv.innerHTML = CaptionIconSvg;
+                    btn.style.backgroundColor = '#fff';
 
                     // 이미지 선택 해제
                     const pos = typeof getPos === 'function' ? getPos() : null;
@@ -726,6 +767,8 @@ export const ResizableImage = Image.extend({
                     img.removeEventListener('pointerdown', handlePointerDown);
                     document.removeEventListener('mousemove', handleMouseMove);
                     document.removeEventListener('mouseup', handleMouseUp);
+                    imgContainer.removeEventListener('click', handleWrapperClick);
+                    dom.removeEventListener('click', handleWrapperClick);
                     if (resizeObserver) {
                         resizeObserver.disconnect();
                     }
