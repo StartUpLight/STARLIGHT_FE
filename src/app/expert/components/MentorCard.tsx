@@ -85,7 +85,7 @@ const MentorCard = ({
             </div>
             <div className="h-3 w-px bg-gray-300" />
             <div className="ds-subtext font-medium text-gray-700">
-              {workingperiod}년 경력 개발자
+              {workingperiod}년 경력
             </div>
           </div>
           <div className="ds-subtext my-3 font-medium text-gray-600">
