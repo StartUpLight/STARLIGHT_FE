@@ -78,6 +78,13 @@ const Header = () => {
     }
   };
 
+  const handlePriceClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isAuthenticated) {
+      event.preventDefault();
+      setOpenLogin(true);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     clearUser();
@@ -161,6 +168,7 @@ const Header = () => {
             </Link>
             <Link
               href="/price"
+              onClick={handlePriceClick}
               className={`${navLink} ${isActive('/price')
                 ? 'text-primary-500 font-semibold'
                 : isHomePage
