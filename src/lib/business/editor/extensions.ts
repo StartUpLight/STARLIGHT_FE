@@ -645,7 +645,15 @@ export const ResizableImage = Image.extend({
                     const newCaption = input.value.trim();
                     const pos = typeof getPos === 'function' ? getPos() : null;
                     if (pos !== null) {
-                        editor.chain().setNodeSelection(pos).updateAttributes('image', { caption: newCaption || null }).run();
+                        const nodeAtPos = editor.state.doc.nodeAt(pos);
+                        if (nodeAtPos) {
+                            const attrs = {
+                                ...nodeAtPos.attrs,
+                                caption: newCaption.length ? newCaption : null,
+                            };
+                            const tr = editor.state.tr.setNodeMarkup(pos, undefined, attrs);
+                            editor.view.dispatch(tr);
+                        }
                     }
 
                     // 캡션이 없으면 숨기기
