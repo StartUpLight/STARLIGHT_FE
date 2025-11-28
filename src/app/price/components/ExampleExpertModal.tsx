@@ -23,7 +23,7 @@ const ExampleExpertModal = ({ onClose }: ExampleExpertModalProps) => {
           </button>
         </div>
 
-        <div className="bg-gray-80 h-[464px] w-full rounded-b-xl p-6">
+        <div className="bg-gray-80 w-full rounded-b-xl p-6">
           <p className="ds-subtext text-primary-500 font-semibold">
             전문가 리포트
           </p>
