@@ -713,24 +713,54 @@ export const generatePdfFromSubsections = async (
                                                 }
                                             });
 
-                                            // 하이라이트 배경색 위치 조정 (텍스트는 그대로, 배경만 조정)
-                                            const highlightWrappers = clonedDoc.querySelectorAll(
-                                                'span[style*="position: relative"][style*="display: inline-block"]'
-                                            );
-                                            highlightWrappers.forEach((wrapper) => {
-                                                const wrapperEl = wrapper as HTMLElement;
-                                                // 첫 번째 자식이 배경색 span
-                                                const bgSpan = wrapperEl.firstElementChild as HTMLElement;
-                                                if (bgSpan && bgSpan.style.backgroundColor) {
-                                                    // 배경색 span의 top 값 조정 가능
-                                                    bgSpan.style.setProperty('top', '0.5em', 'important');
-                                                    bgSpan.style.setProperty('left', '0', 'important');
-                                                    bgSpan.style.setProperty('right', '0', 'important');
-                                                    bgSpan.style.setProperty('height', '1.3em', 'important');
-                                                    bgSpan.style.setProperty('z-index', '0', 'important');
-                                                    bgSpan.style.setProperty('pointer-events', 'none', 'important');
-                                                    bgSpan.style.setProperty('background-color', bgSpan.style.backgroundColor || '', 'important');
-                                                }
+                                            // 하이라이트가 여러 줄일 때 각 줄마다 배경이 보이도록 처리
+                                            const highlightSpans = clonedDoc.querySelectorAll('span[style*="background-color"]');
+                                            highlightSpans.forEach((span) => {
+                                                const spanEl = span as HTMLElement;
+                                                const style = spanEl.getAttribute('style') || '';
+                                                const colorMatch = style.match(/background-color:\s*([^;]+)/i);
+                                                if (!colorMatch) return;
+                                                const bgColor = colorMatch[1].trim();
+                                                if (!bgColor || bgColor === 'transparent') return;
+
+                                                if (spanEl.dataset.pdfHighlightProcessed === 'true') return;
+                                                spanEl.dataset.pdfHighlightProcessed = 'true';
+
+                                                const originalHTML = spanEl.innerHTML;
+                                                const range = clonedDoc.createRange();
+                                                range.selectNodeContents(spanEl);
+                                                const rects = Array.from(range.getClientRects());
+                                                const spanRect = spanEl.getBoundingClientRect();
+
+                                                spanEl.style.backgroundColor = 'transparent';
+                                                spanEl.style.position = spanEl.style.position || 'relative';
+                                                spanEl.style.display = 'inline-block';
+                                                spanEl.style.zIndex = '0';
+
+                                                const textLayer = clonedDoc.createElement('span');
+                                                textLayer.innerHTML = originalHTML;
+                                                textLayer.style.position = 'relative';
+                                                textLayer.style.zIndex = '1';
+                                                textLayer.style.display = 'inline';
+                                                spanEl.innerHTML = '';
+                                                spanEl.appendChild(textLayer);
+
+                                                rects.forEach((rect) => {
+                                                    if (!rect.width || !rect.height) return;
+                                                    const overlay = clonedDoc.createElement('span');
+                                                    overlay.style.position = 'absolute';
+                                                    overlay.style.left = `${rect.left - spanRect.left}px`;
+                                                    const offsetTop = rect.top - spanRect.top + rect.height * 0.5;
+                                                    overlay.style.top = `${offsetTop}px`;
+                                                    const overlayHeight = rect.height;
+                                                    overlay.style.width = `${rect.width}px`;
+                                                    overlay.style.height = `${overlayHeight}px`;
+                                                    overlay.style.backgroundColor = bgColor;
+                                                    overlay.style.borderRadius = '2px';
+                                                    overlay.style.pointerEvents = 'none';
+                                                    overlay.style.zIndex = '-1';
+                                                    spanEl.insertBefore(overlay, spanEl.firstChild);
+                                                });
                                             });
 
                                             const listItems = clonedDoc.querySelectorAll('li');
