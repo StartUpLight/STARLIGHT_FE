@@ -23,12 +23,16 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
                     // 텍스트는 그대로 두고 배경색만 absolute로 위치 조정 가능하도록 구조 변경
                     text = `<span style="position: relative; display: inline-block;"><span style="position: absolute; top: 0.1em; left: 0; right: 0; bottom: 0; background-color: ${color}; z-index: 0; pointer-events: none;"></span><span style="position: relative; z-index: 1;">${text}</span></span>`;
                     break;
-                case 'textStyle':
+                case 'textStyle': {
                     const textColor = mark.attrs?.color;
-                    if (textColor) {
+                    if (
+                        typeof textColor === 'string' &&
+                        textColor.toLowerCase() !== '#6f55ff'
+                    ) {
                         text = `<span style="color: ${textColor}">${text}</span>`;
                     }
                     break;
+                }
                 case 'code':
                     text = `<code>${text}</code>`;
                     break;
@@ -192,6 +196,7 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
     if (node.type === 'image') {
         const src = node.attrs?.src || '';
         const alt = node.attrs?.alt || node.attrs?.title || '';
+        const caption = node.attrs?.caption as string | undefined;
         if (!src) return '';
 
         // 에디터에서 설정한 이미지 크기 가져오기
@@ -210,8 +215,13 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
             style = 'max-width: 400px; height: auto;';
         }
 
+        // 캡션이 있으면 포함
+        const captionHtml = caption
+            ? `<div style="margin-top: 8px; padding: 8px 12px; font-size: 14px; color: #585f69; line-height: 1.5; text-align: center;">${caption}</div>`
+            : '';
+
         // 중앙 정렬을 위한 wrapper div 추가
-        return `<div style="text-align: center; margin: 1rem 0;"><img src="${src}" alt="${alt}" style="${style}" /></div>`;
+        return `<div style="text-align: center; margin: 1rem 0;"><img src="${src}" alt="${alt}" style="${style}" />${captionHtml}</div>`;
     }
 
     if (node.content && Array.isArray(node.content)) {

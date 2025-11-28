@@ -25,12 +25,7 @@ import { applySpellHighlights, clearSpellErrors } from '@/util/spellMark';
 import SpellError from '@/util/spellError';
 import { mapSpellResponse } from '@/types/business/business.type';
 import { useEditorStore } from '@/store/editor.store';
-import {
-  DeleteTableOnDelete,
-  ImageCutPaste,
-  ResizableImage,
-  SelectTableOnBorderClick,
-} from '../../../lib/business/editor/extensions';
+import { DeleteTableOnDelete, ResizableImage, SelectTableOnBorderClick, EnsureTrailingParagraph } from '../../../lib/business/editor/extensions';
 import { createPasteHandler } from '../../../lib/business/editor/useEditorConfig';
 import { ImageCommandAttributes } from '@/lib/business/editor/types';
 import WriteFormHeader from './editor/WriteFormHeader';
@@ -53,7 +48,6 @@ const WriteForm = ({
       StarterKit,
       SpellError,
       DeleteTableOnDelete,
-      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -63,6 +57,7 @@ const WriteForm = ({
       TableHeader,
       TableCell,
       SelectTableOnBorderClick,
+      EnsureTrailingParagraph,
       Placeholder.configure({
         placeholder:
           '아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요.',
@@ -82,7 +77,6 @@ const WriteForm = ({
       StarterKit,
       SpellError,
       DeleteTableOnDelete,
-      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -92,6 +86,7 @@ const WriteForm = ({
       TableHeader,
       TableCell,
       SelectTableOnBorderClick,
+      EnsureTrailingParagraph,
       Placeholder.configure({
         placeholder:
           '보유한 기술 및 지식재산권이 별도로 없을 경우, 아이템에 필요한 핵심기술을 어떻게 개발해 나갈것인지 계획에 대해 작성해주세요. \n ※ 지식재산권: 특허, 상표권, 디자인, 실용신안권 등.',
@@ -111,7 +106,6 @@ const WriteForm = ({
       StarterKit,
       SpellError,
       DeleteTableOnDelete,
-      ImageCutPaste,
       Highlight.configure({ multicolor: true }),
       TextStyle,
       Color,
@@ -121,6 +115,7 @@ const WriteForm = ({
       TableHeader,
       TableCell,
       SelectTableOnBorderClick,
+      EnsureTrailingParagraph,
       Placeholder.configure({
         placeholder: '본 사업을 통해 달성하고 싶은 궁극적인 목표에 대해 설명',
         includeChildren: false,
@@ -198,10 +193,6 @@ const WriteForm = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isOverview = number === '0';
-
-  // store에서 저장된 내용 불러오기
-  const savedContent = getItemContent(number);
-
   // 에디터 내용 복원 헬퍼 함수
   const restoreEditorContent = useCallback(
     (editor: Editor | null, content: JSONContent | null | undefined) => {
@@ -249,14 +240,14 @@ const WriteForm = ({
         content.itemName
           ? typeof content.itemName === 'string'
             ? {
-                type: 'doc',
-                content: [
-                  {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: content.itemName }],
-                  },
-                ],
-              }
+              type: 'doc',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: content.itemName }],
+                },
+              ],
+            }
             : content.itemName
           : null
       );
@@ -265,14 +256,14 @@ const WriteForm = ({
         content.oneLineIntro
           ? typeof content.oneLineIntro === 'string'
             ? {
-                type: 'doc',
-                content: [
-                  {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: content.oneLineIntro }],
-                  },
-                ],
-              }
+              type: 'doc',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: content.oneLineIntro }],
+                },
+              ],
+            }
             : content.oneLineIntro
           : null
       );
@@ -493,13 +484,6 @@ const WriteForm = ({
       alert('이미지 파일만 업로드 가능합니다.');
       return;
     }
-
-    // 파일 크기 제한 (예: 5MB)
-    // const maxSize = 5 * 1024 * 1024; // 5MB
-    // if (file.size > maxSize) {
-    //   alert('이미지 크기는 5MB 이하여야 합니다.');
-    //   return;
-    // }
 
     try {
       // 서버에 이미지 업로드 및 공개 URL 받기

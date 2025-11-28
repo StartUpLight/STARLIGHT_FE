@@ -585,6 +585,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
                         attrs: {
                             src: contentItem.src || '',
                             alt: contentItem.caption || '',
+                            caption: contentItem.caption || '',
                             width: contentItem.width ?? null,
                             height: contentItem.height ?? null,
                         },
@@ -679,6 +680,7 @@ const convertContentItemToEditorJson = (item: BlockContentItem): JSONNode[] => {
             attrs: {
                 src: imageItem.src || '',
                 alt: imageItem.caption || '',
+                caption: imageItem.caption || '',
                 width: normalizedWidth,
                 height: normalizedHeight,
             },

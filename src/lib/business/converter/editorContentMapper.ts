@@ -173,7 +173,7 @@ const collectInlineImages = (node: JSONNode | undefined, target: ImageContentIte
         target.push({
             type: 'image',
             src,
-            caption: (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
+            caption: (node.attrs?.caption as string) || (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
             width: parseDimension(node.attrs?.width),
             height: parseDimension(node.attrs?.height),
         });
@@ -419,7 +419,7 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
             contents.push({
                 type: 'image',
                 src: (node.attrs?.src as string) || '',
-                caption: (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
+                caption: (node.attrs?.caption as string) || (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
                 width: widthAttr ?? null,
                 height: heightAttr ?? null,
             });
