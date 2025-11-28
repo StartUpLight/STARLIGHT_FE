@@ -106,7 +106,6 @@
 - #### CI/CD
   ![Github Actions](https://img.shields.io/badge/Github_Actions-2088FF.svg?style=flat-square&logo=GithubActions&logoColor=white)
   - **GitHub Actions** : PR마다 공통 컴포넌트 변경사항을 시각화 배포하여 협업 간 피드백 사이클 단축
-  -
 - #### 협업 툴
   ![Discord](https://img.shields.io/badge/Discord-5865F2.svg?style=flat-square&logo=discord&logoColor=white)
   ![Notion](https://img.shields.io/badge/Notion-000000.svg?style=flat-square&logo=notion&logoColor=white)
