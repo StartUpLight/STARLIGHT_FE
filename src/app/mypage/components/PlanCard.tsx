@@ -8,6 +8,7 @@ import { formatDate } from '@/util/formatDate';
 import { PlanCardProps, Stage } from '@/types/mypage/my.props';
 import { useBusinessStore } from '@/store/business.store';
 import { useState } from 'react';
+import PdfIcon from '@/assets/icons/my_pdf.svg';
 import UserExpertModal from './UserExpertModal';
 
 const defaultStages: Stage[] = [
@@ -24,6 +25,7 @@ export default function PlanCard({
   currentStageIndex,
   lastSavedAt,
   businessPlanId,
+  pdfUrl,
 }: PlanCardProps) {
   const [isModal, setIsModal] = useState(false);
   const router = useRouter();
@@ -36,6 +38,10 @@ export default function PlanCard({
   const setPlanId = useBusinessStore((s) => s.setPlanId);
 
   const handleTitleClick = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank');
+      return;
+    }
     router.push(`/business?planId=${businessPlanId}`);
   };
   const handleAiReportClick = () => {
@@ -59,6 +65,7 @@ export default function PlanCard({
           onClick={handleTitleClick}
           className="ds-text hover:text-primary-500 flex cursor-pointer items-center gap-1 font-medium text-gray-900"
         >
+          {pdfUrl && <PdfIcon />}
           {title || '이름 없는 사업계획서'}
           <ArrowRightIcon />
         </button>
@@ -108,11 +115,10 @@ export default function PlanCard({
         <button
           onClick={handleAiReportClick}
           disabled={!isAiReportEnabled}
-          className={`ds-subtext mr-auto flex items-center gap-4 px-3 py-2 font-semibold ${
-            isAiReportEnabled
-              ? 'cursor-pointer text-gray-900'
-              : 'cursor-not-allowed text-gray-400'
-          }`}
+          className={`ds-subtext mr-auto flex items-center gap-4 px-3 py-2 font-semibold ${isAiReportEnabled
+            ? 'cursor-pointer text-gray-900'
+            : 'cursor-not-allowed text-gray-400'
+            }`}
         >
           AI 리포트 보러가기
           <ArrowRightIcon />
@@ -121,11 +127,10 @@ export default function PlanCard({
         <div className="flex items-center gap-[167px]">
           <button
             disabled={!isExpertReportEnabled}
-            className={`ds-subtext flex items-center gap-4 px-3 py-2 font-semibold ${
-              isExpertReportEnabled
-                ? 'cursor-pointer rounded-sm text-gray-900 hover:bg-gray-100'
-                : 'cursor-not-allowed text-gray-400'
-            }`}
+            className={`ds-subtext flex items-center gap-4 px-3 py-2 font-semibold ${isExpertReportEnabled
+              ? 'cursor-pointer rounded-sm text-gray-900 hover:bg-gray-100'
+              : 'cursor-not-allowed text-gray-400'
+              }`}
             onClick={handleExpertReportModalOpen}
           >
             전문가 리포트 보러가기
@@ -135,11 +140,10 @@ export default function PlanCard({
             disabled={!isExpertReportEnabled}
             onClick={handleNewExpertClick}
             type="button"
-            className={`ds-caption flex items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition ${
-              isExpertReportEnabled
-                ? 'cursor-pointer border border-gray-300 bg-white text-gray-900 hover:bg-gray-100 active:bg-gray-200'
-                : 'cursor-not-allowed border border-gray-200 bg-gray-200 text-gray-500 opacity-50'
-            }`}
+            className={`ds-caption flex items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition ${isExpertReportEnabled
+              ? 'cursor-pointer border border-gray-300 bg-white text-gray-900 hover:bg-gray-100 active:bg-gray-200'
+              : 'cursor-not-allowed border border-gray-200 bg-gray-200 text-gray-500 opacity-50'
+              }`}
           >
             새로운 전문가 연결
           </button>
