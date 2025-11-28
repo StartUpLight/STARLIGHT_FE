@@ -23,7 +23,7 @@ const page = () => {
             </p>
 
             <p className="ds-subtext mt-3 font-medium text-white">
-              스타라이트가 직접 검증한 전문 멘토를 연결해드립니다
+              스타라이트가 직접 검증한 전문가를 연결해드립니다
             </p>
           </div>
         </div>
