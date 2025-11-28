@@ -23,12 +23,16 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
                     // 텍스트는 그대로 두고 배경색만 absolute로 위치 조정 가능하도록 구조 변경
                     text = `<span style="position: relative; display: inline-block;"><span style="position: absolute; top: 0.1em; left: 0; right: 0; bottom: 0; background-color: ${color}; z-index: 0; pointer-events: none;"></span><span style="position: relative; z-index: 1;">${text}</span></span>`;
                     break;
-                case 'textStyle':
+                case 'textStyle': {
                     const textColor = mark.attrs?.color;
-                    if (textColor) {
+                    if (
+                        typeof textColor === 'string' &&
+                        textColor.toLowerCase() !== '#6f55ff'
+                    ) {
                         text = `<span style="color: ${textColor}">${text}</span>`;
                     }
                     break;
+                }
                 case 'code':
                     text = `<code>${text}</code>`;
                     break;
