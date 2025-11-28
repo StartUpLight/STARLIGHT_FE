@@ -1,6 +1,5 @@
 import { Extension } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
-import type { EditorState, Selection } from '@tiptap/pm/state';
 import { NodeSelection, Plugin, TextSelection } from '@tiptap/pm/state';
 import { EditorView } from '@tiptap/pm/view';
 import Image from '@tiptap/extension-image';
