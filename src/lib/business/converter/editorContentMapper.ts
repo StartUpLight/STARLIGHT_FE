@@ -37,7 +37,34 @@ export const convertToMarkdown = (
     if (node.type === 'text') {
         let text = node.text || '';
         const marks = node.marks || [];
+
+        // spellError와 textStyle를 먼저 확인
+        const spellErrorMark = marks.find((mark) => mark.type === 'spellError');
+        const textStyleMark = marks.find((mark) => mark.type === 'textStyle');
+        const hasSpellError = !!spellErrorMark;
+        const color = textStyleMark?.attrs?.color as string | undefined;
+        // #6f55ff는 맞춤법 검사 결과로 적용된 색상이므로 저장하지 않음
+        const isSpellCheckColor = color && color.toLowerCase() === '#6f55ff';
+
+        // spellError와 textStyle를 함께 처리
+        if (hasSpellError && color && !isSpellCheckColor) {
+            // spellError가 있고 원래 색상이 있으면 (맞춤법 검사 결과 색상이 아닌 경우) 함께 저장
+            text = `<span class="spell-error" style="color:${color}">${text}</span>`;
+        } else if (hasSpellError) {
+            // spellError만 있으면 (맞춤법 검사 결과 색상이거나 색상이 없는 경우)
+            text = `<span class="spell-error">${text}</span>`;
+        } else if (color) {
+            // textStyle만 있으면
+            text = `<span style="color:${color}">${text}</span>`;
+        }
+
+        // 나머지 마크 처리
         marks.forEach((mark) => {
+            if (mark.type === 'spellError' || mark.type === 'textStyle') {
+                // 이미 위에서 처리했으므로 스킵
+                return;
+            }
+
             switch (mark.type) {
                 case 'bold':
                     text = `**${text}**`;
@@ -48,20 +75,8 @@ export const convertToMarkdown = (
                 case 'highlight':
                     text = `==${text}==`;
                     break;
-                case 'textStyle':
-                    {
-                        const color = mark.attrs?.color as string | undefined;
-                        if (color) {
-                            text = `<span style="color:${color}">${text}</span>`;
-                        }
-                    }
-                    break;
                 case 'code':
                     text = `\`${text}\``;
-                    break;
-                case 'spellError':
-                    // 맞춤법 오류 마크는 클래스 기반 span으로 래핑하여 보존
-                    text = `<span class="spell-error">${text}</span>`;
                     break;
                 default:
                     break;
