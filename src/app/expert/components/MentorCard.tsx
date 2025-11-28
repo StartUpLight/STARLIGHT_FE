@@ -80,7 +80,7 @@ const MentorCard = ({
             <div className="ds-subtitle font-semibold text-gray-900">
               {name}
               <span className="ds-subtitle ml-1 font-semibold text-gray-700">
-                멘토
+                전문가
               </span>
             </div>
             <div className="h-3 w-px bg-gray-300" />

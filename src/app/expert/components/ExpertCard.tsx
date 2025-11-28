@@ -57,7 +57,7 @@ const ExpertCard = () => {
       <div className="flex w-full flex-col gap-6 pb-6">
         {filtered.length === 0 ? (
           <div className="ds-subtext mt-10 text-center text-gray-600">
-            등록된 멘토가 없습니다.
+            등록된 전문가가 없습니다.
           </div>
         ) : (
           filtered.map((card) => <MentorCard key={card.id} {...card} />)
