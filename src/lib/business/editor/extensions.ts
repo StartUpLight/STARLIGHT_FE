@@ -470,7 +470,7 @@ export const ResizableImage = Image.extend({
                 const input = document.createElement('textarea');
                 input.className = 'image-caption-textarea';
                 input.placeholder = '캡션 작성';
-                input.style.cssText = 'margin-top:8px;font-size:12px;border:none;background:transparent;outline:none;box-sizing:border-box;text-align:center;color:#6C727E;display:none;margin-left:auto;margin-right:auto;resize:none;overflow:hidden;word-wrap:break-word;white-space:pre-wrap;line-height:1.5;min-height:20px;';
+                input.style.cssText = 'margin-top:8px;font-size:12px;border:none;background:transparent;outline:none;box-sizing:border-box;text-align:center;color:#6C727E;display:none;margin-left:auto;margin-right:auto;resize:none;overflow:hidden;word-wrap:break-word;white-space:pre-wrap;line-height:1.3;min-height:16px;';
 
                 // 초기 캡션 값 설정 및 너비 설정
                 if (currentNode.attrs.caption) {
@@ -534,8 +534,7 @@ export const ResizableImage = Image.extend({
                         relatedTarget === input ||
                         relatedTarget === btn ||
                         btn.contains(relatedTarget) ||
-                        input.contains(relatedTarget) ||
-                        tooltip.contains(relatedTarget)
+                        input.contains(relatedTarget)
                     )) {
                         return;
                     }
