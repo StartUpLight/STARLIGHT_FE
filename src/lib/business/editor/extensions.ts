@@ -543,6 +543,7 @@ export const ResizableImage = Image.extend({
                         btn.style.display = 'none';
                         tooltip.style.display = 'none';
                         iconDiv.innerHTML = CaptionIconSvg;
+                        btn.style.backgroundColor = '#fff';
                     }
                 });
                 btn.addEventListener('mouseenter', () => {
