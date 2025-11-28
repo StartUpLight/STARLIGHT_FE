@@ -82,13 +82,26 @@ const parseMarkdownText = (text: string): JSONNode[] => {
             const colorMatch = /style=["'][^"']*color\s*:\s*([^;"']+)/i.exec(
                 match.attrs
             );
-            if (hasSpell) {
+            if (hasSpell && colorMatch) {
+                // spell-error 클래스와 색상이 함께 있으면 둘 다 적용
+                const color = colorMatch[1].trim();
+                nodes.push({
+                    type: 'text',
+                    text: match.inner,
+                    marks: [
+                        { type: 'spellError' },
+                        { type: 'textStyle', attrs: { color } }
+                    ] as JSONMark[],
+                });
+            } else if (hasSpell) {
+                // spell-error 클래스만 있으면 spellError mark만 추가
                 nodes.push({
                     type: 'text',
                     text: match.inner,
                     marks: [{ type: 'spellError' }] as JSONMark[],
                 });
             } else if (colorMatch) {
+                // spell-error가 없고 색상만 있는 경우 (사용자가 직접 적용한 색상)
                 const color = colorMatch[1].trim();
                 nodes.push({
                     type: 'text',
