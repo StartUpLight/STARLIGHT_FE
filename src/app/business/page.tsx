@@ -272,7 +272,7 @@ const BusinessPageContent = () => {
         <Preview />
       ) : (
         <div className="min-h-[calc(100vh-60px)] w-full bg-gray-100">
-          <main className="mx-auto w-full px-6">
+          <main className="mx-auto min-w-[650px] px-6">
             <WriteForm
               key={selectedItem.number}
               number={selectedItem.number}

@@ -175,10 +175,6 @@ const WriteForm = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isOverview = number === '0';
-
-  // store에서 저장된 내용 불러오기
-  const savedContent = getItemContent(number);
-
   // 에디터 내용 복원 헬퍼 함수
   const restoreEditorContent = useCallback((editor: Editor | null, content: JSONContent | null | undefined) => {
     if (!editor || editor.isDestroyed) return;
@@ -394,13 +390,6 @@ const WriteForm = ({
       alert('이미지 파일만 업로드 가능합니다.');
       return;
     }
-
-    // 파일 크기 제한 (예: 5MB)
-    // const maxSize = 5 * 1024 * 1024; // 5MB
-    // if (file.size > maxSize) {
-    //   alert('이미지 크기는 5MB 이하여야 합니다.');
-    //   return;
-    // }
 
     try {
       // 서버에 이미지 업로드 및 공개 URL 받기
