@@ -7,7 +7,7 @@ import MainHeader from './_components/common/MainHeader';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '스타라이트',
+  title: 'STARLIGHT',
   description:
     'AI의 분석력과 현업 전문가의 검토를 결합해, 예비·초기 창업자가 실제 심사 기준에 맞는 사업계획서를 완성하도록 돕는 플랫폼',
   metadataBase: new URL('https://www.starlight-official.co.kr/'),
