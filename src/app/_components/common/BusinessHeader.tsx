@@ -231,6 +231,11 @@ const BusinessHeaderContent = () => {
     checkAuth();
   }, [checkAuth]);
 
+  // 페이지 진입 시 항상 작성 모드로 초기화
+  useEffect(() => {
+    setPreview(false);
+  }, [setPreview]);
+
   useEffect(() => {
     return () => {
       clearToast();
