@@ -1,6 +1,6 @@
 import { CheckListResponse } from '@/types/business/checklist.type';
 import api from './api';
-import type { AxiosError } from 'axios';
+// import type { AxiosError } from 'axios';
 import {
   BusinessPlanCreateResponse,
   BusinessPlanSubsectionRequest,
