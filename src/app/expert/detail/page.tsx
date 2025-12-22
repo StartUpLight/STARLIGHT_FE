@@ -1,12 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useGetExpert } from '@/hooks/queries/useExpert';
 import ExpertDetailHeader from './components/ExpertDetailHeader';
 import ExpertDetailContent from './components/ExpertDetailContent';
 import ExpertDetailSidebar from './components/ExpertDetailSidebar';
 
-export default function Page() {
+function ExpertDetailContentWrapper() {
   const searchParams = useSearchParams();
   const expertId = searchParams.get('id');
   const { data: experts = [], isLoading } = useGetExpert();
@@ -46,3 +47,19 @@ export default function Page() {
     </div>
   );
 }
+
+const Page = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          <div className="ds-subtext text-gray-600">로딩 중</div>
+        </div>
+      }
+    >
+      <ExpertDetailContentWrapper />
+    </Suspense>
+  );
+};
+
+export default Page;
