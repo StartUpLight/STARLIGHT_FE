@@ -51,6 +51,8 @@ export interface BusinessStore {
 
   // 모든 항목 저장 (전역 저장 함수)
   saveAllItems: (planId?: number) => Promise<void>;
+  // 단일 항목만 저장 (자동 저장용)
+  saveSingleItem: (planId: number, number: string) => Promise<void>;
 
   // API에서 contents 불러오기
   loadContentsFromAPI: (planId: number) => Promise<Record<string, ItemContent>>;

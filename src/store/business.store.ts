@@ -294,6 +294,56 @@ export const useBusinessStore = create<BusinessStore>((set, get) => ({
     set({ lastSavedTime: new Date() });
   },
 
+  // 단일 항목만 저장 (자동 저장용)
+  saveSingleItem: async (planId: number, number: string) => {
+    const { contents } = get();
+
+    type SidebarChecklist = {
+      title: string;
+      content: string;
+      checked?: boolean;
+    };
+    type SidebarItem = {
+      name: string;
+      number: string;
+      title: string;
+      subtitle: string;
+      checklist?: SidebarChecklist[];
+    };
+    type SidebarSection = { title: string; items: SidebarItem[] };
+    const allItems = (sections as SidebarSection[]).flatMap(
+      (section) => section.items
+    );
+
+    // 해당 number에 맞는 항목 찾기
+    const item = allItems.find((item: SidebarItem) => item.number === number);
+    if (!item) {
+      console.warn(`[${number}] 항목을 찾을 수 없습니다.`);
+      return;
+    }
+
+    const content = contents[number] || {};
+    const requestBody = buildSubsectionRequest(number, item.title, content);
+
+    // contents에 해당 항목이 존재하면(한 번이라도 작성한 적이 있으면) 빈 값이어도 저장 요청 전송
+    const hasContentHistory = number in contents;
+
+    if (!requestBody.blocks || requestBody.blocks.length === 0) {
+      if (!hasContentHistory) {
+        return;
+      }
+    }
+
+    try {
+      await postBusinessPlanSubsections(planId, requestBody);
+      console.log(`[${number}] 자동 저장 성공, planId: ${planId}`);
+      // 저장 성공 시 시간 업데이트
+      set({ lastSavedTime: new Date() });
+    } catch (err) {
+      console.error(`[${number}] 자동 저장 실패`, err);
+    }
+  },
+
   // 미리보기 모드
   isPreview: false,
   setPreview: (isPreview: boolean) => set({ isPreview }),

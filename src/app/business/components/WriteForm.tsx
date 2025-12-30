@@ -211,7 +211,7 @@ const WriteForm = ({
     getItemContent,
     lastSavedTime,
     isSaving,
-    saveAllItems,
+    saveSingleItem,
     planId,
   } = useBusinessStore();
   // 현재 섹션의 contents만 구독하여 변경 감지
@@ -314,15 +314,15 @@ const WriteForm = ({
     restoreEditorContent,
   ]);
 
-  // 공통 저장 함수 (디바운스 적용)
+  // 자동 저장 함수 (디바운스 적용) - 현재 작성 중인 항목만 저장
   const debouncedSave = useCallback(async () => {
     if (!planId) return;
     try {
-      await saveAllItems(planId);
+      await saveSingleItem(planId, number);
     } catch (error) {
       console.error('자동 저장 실패:', error);
     }
-  }, [planId, saveAllItems]);
+  }, [planId, number, saveSingleItem]);
 
   // 에디터 업데이트 핸들러 생성
   const createUpdateHandler = useCallback(
