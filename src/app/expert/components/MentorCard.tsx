@@ -48,7 +48,7 @@ const MentorCard = ({
             </div>
           </div>
           <div className="ds-subtext my-3 font-medium text-gray-600">
-            {careers.join(' / ')}
+            {careers.map((career) => career.careerTitle).join(' / ')}
           </div>
           <div className="flex w-full flex-wrap gap-1.5">
             {tags.map((tag, i) => (

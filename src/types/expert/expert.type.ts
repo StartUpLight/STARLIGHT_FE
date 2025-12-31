@@ -2,10 +2,13 @@ export interface getExpertResponse {
   result: string;
   id: number;
   name: string;
+  oneLineIntroduction: string;
   profileImageUrl: string;
   email: string;
-  mentoringPriceWon: number;
-  careers: string[];
+  careers: {
+    orderIndex: number;
+    careerTitle: string;
+  }[];
   categories: string[];
   tags: string[];
   workedPeriod: number;
