@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useGetExpert } from '@/hooks/queries/useExpert';
+import { useExpertDetail } from '@/hooks/queries/useExpert';
 import ExpertDetailHeader from './components/ExpertDetailHeader';
 import ExpertDetailContent from './components/ExpertDetailContent';
 import ExpertDetailSidebar from './components/ExpertDetailSidebar';
@@ -10,11 +10,9 @@ import ExpertDetailSidebar from './components/ExpertDetailSidebar';
 function ExpertDetailContentWrapper() {
   const searchParams = useSearchParams();
   const expertId = searchParams.get('id');
-  const { data: experts = [], isLoading } = useGetExpert();
-
-  const expert = expertId
-    ? experts.find((e) => e.id === Number(expertId))
-    : null;
+  const { data: expert, isLoading } = useExpertDetail(
+    expertId ? Number(expertId) : 0
+  );
 
   if (isLoading) {
     return (

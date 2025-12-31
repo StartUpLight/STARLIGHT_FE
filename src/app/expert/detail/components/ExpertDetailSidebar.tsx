@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { getExpertResponse } from '@/types/expert/expert.type';
 import { useExpertStore } from '@/store/expert.store';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
@@ -9,9 +8,10 @@ import { useUserStore } from '@/store/user.store';
 import GrayPlus from '@/assets/icons/gray_plus.svg';
 import WhitePlus from '@/assets/icons/white_plus.svg';
 import BusinessPlanDropdown from './BusinessPlanDropdown';
+import { ExpertDetailResponse } from '@/types/expert/expert.detail';
 
 interface ExpertDetailSidebarProps {
-  expert: getExpertResponse;
+  expert: ExpertDetailResponse;
 }
 
 const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
@@ -31,7 +31,10 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
     setSelectedMentor({
       id: expert.id,
       name: expert.name,
-      careers: expert.careers,
+      careers: expert.careers.map((career) => ({
+        orderIndex: career.orderIndex,
+        careerTitle: career.careerTitle,
+      })),
       tags: expert.tags,
       image: expert.profileImageUrl,
       workingperiod: expert.workedPeriod,
