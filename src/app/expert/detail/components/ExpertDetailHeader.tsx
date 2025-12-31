@@ -1,8 +1,8 @@
 import Image from 'next/image';
-import { getExpertResponse } from '@/types/expert/expert.type';
+import { ExpertDetailResponse } from '@/types/expert/expert.detail';
 
 interface ExpertDetailHeaderProps {
-  expert: getExpertResponse;
+  expert: ExpertDetailResponse;
 }
 
 const ExpertDetailHeader = ({ expert }: ExpertDetailHeaderProps) => {
@@ -25,7 +25,7 @@ const ExpertDetailHeader = ({ expert }: ExpertDetailHeaderProps) => {
             <div className="relative h-[100px] w-[100px] overflow-hidden rounded-full bg-gray-200">
               <Image
                 src={expert.profileImageUrl || '/images/sampleImage.png'}
-                alt={expert.name}
+                alt="전문가들 사진"
                 fill
                 sizes="100px"
                 className="object-cover"

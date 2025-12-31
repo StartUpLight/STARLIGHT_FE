@@ -8,6 +8,7 @@ import {
   getUserExpertReportResponse,
 } from '@/types/expert/expert.type';
 import api from './api';
+import { ExpertDetailResponse } from '@/types/expert/expert.detail';
 
 export async function GetExpert(): Promise<getExpertResponse[]> {
   const res = await api.get<{ data: getExpertResponse[] }>('/v1/experts');
@@ -77,4 +78,17 @@ export async function GetUserExpertReport(
   });
 
   return res.data;
+}
+
+export async function GetExpertDetail(
+  expertId: number
+): Promise<ExpertDetailResponse> {
+  const res = await api.get<{ data: ExpertDetailResponse }>(
+    `/v1/experts/${expertId}`,
+    {
+      params: { expertId },
+    }
+  );
+
+  return res.data.data;
 }
