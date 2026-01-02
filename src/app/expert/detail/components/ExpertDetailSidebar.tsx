@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useExpertStore } from '@/store/expert.store';
 import { useBusinessStore } from '@/store/business.store';
@@ -8,6 +7,7 @@ import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
 import { useExpertReportDetail } from '@/hooks/queries/useExpert';
 import GrayPlus from '@/assets/icons/gray_plus.svg';
+import GrayCheck from '@/assets/icons/gray_check.svg';
 import WhitePlus from '@/assets/icons/white_plus.svg';
 import BusinessPlanDropdown from './BusinessPlanDropdown';
 import { ExpertDetailResponse } from '@/types/expert/expert.detail';
@@ -28,18 +28,35 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
     enabled: isMember,
   });
 
-  const selectedPlan = useMemo(() => {
-    return reportDetails.find((plan) => plan.businessPlanId === planId);
-  }, [reportDetails, planId]);
+  const selectedPlan = reportDetails.find(
+    (plan) => plan.businessPlanId === planId
+  );
 
   const canUseExpert = isMember && hasExpertUnlocked;
   const isSelectedPlanOver70 = selectedPlan?.isOver70 ?? false;
+  const hasRequested = (selectedPlan?.requestCount ?? 0) > 0;
   const shouldShowCreateButton =
     !isMember || (isMember && reportDetails.length === 0);
 
   const disabled = shouldShowCreateButton
     ? false
-    : !canUseExpert || !planId || !isSelectedPlanOver70;
+    : hasRequested || !canUseExpert || !planId || !isSelectedPlanOver70;
+
+  const ButtonIcon = shouldShowCreateButton
+    ? WhitePlus
+    : hasRequested
+      ? GrayPlus
+      : disabled && !isSelectedPlanOver70
+        ? GrayCheck
+        : disabled
+          ? GrayPlus
+          : WhitePlus;
+
+  const buttonText = shouldShowCreateButton
+    ? '사업계획서 생성'
+    : hasRequested
+      ? '신청완료'
+      : '전문가 연결';
 
   const handleConnect = () => {
     if (!expert) return;
@@ -91,23 +108,13 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
         onClick={handleConnect}
         disabled={shouldShowCreateButton ? false : disabled}
         className={`ds-text mt-8 flex w-full items-center justify-center gap-1 rounded-lg px-8 py-[10px] font-medium ${
-          shouldShowCreateButton
+          shouldShowCreateButton || (!disabled && !hasRequested)
             ? 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
-            : disabled
-              ? 'cursor-not-allowed bg-gray-200 text-gray-500'
-              : 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
+            : 'cursor-not-allowed bg-gray-200 text-gray-500'
         }`}
       >
-        {shouldShowCreateButton ? (
-          <WhitePlus className="h-5 w-5 shrink-0" />
-        ) : disabled ? (
-          <GrayPlus className="h-5 w-5 shrink-0" />
-        ) : (
-          <WhitePlus className="h-5 w-5 shrink-0" />
-        )}
-        <span>
-          {shouldShowCreateButton ? '사업계획서 생성' : '전문가 연결'}
-        </span>
+        <ButtonIcon className="h-5 w-5 shrink-0" />
+        <span>{buttonText}</span>
       </button>
     </aside>
   );
