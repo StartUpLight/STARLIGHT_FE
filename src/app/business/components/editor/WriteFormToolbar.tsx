@@ -17,7 +17,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { uploadImage } from '@/lib/imageUpload';
 import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
 import { getSelectionAvailableWidth } from '@/lib/business/editor/getSelectionAvailableWidth';
-import { ImageCommandAttributes } from '@/lib/business/editor/types';
+import { ImageCommandAttributes } from '@/types/business/business.type';
 
 interface WriteFormToolbarProps {
     activeEditor: Editor | null;

@@ -7,6 +7,8 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
+import type { Editor } from '@tiptap/core';
+import type { EditorView } from '@tiptap/pm/view';
 import SpellError from '@/util/spellError';
 import {
     DeleteTableOnDelete,
@@ -14,7 +16,10 @@ import {
     SelectTableOnBorderClick,
     EnsureTrailingParagraph,
 } from './extensions';
-import { createPasteHandler } from './useEditorConfig';
+import { uploadImage } from '@/lib/imageUpload';
+import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
+import { ImageCommandAttributes } from '@/types/business/business.type';
+import { getSelectionAvailableWidth } from './getSelectionAvailableWidth';
 
 // 공통 에디터 확장 (표, 이미지, 하이라이트 등 모든 기능 포함)
 export const COMMON_EXTENSIONS = [
@@ -48,16 +53,60 @@ export const SIMPLE_EXTENSIONS = [
     Color,
 ];
 
-// 에디터 설정 타입
-export type EditorConfig = {
-    extensions: any[];
-    content: string;
-    editorProps?: { handlePaste?: (view: any, event: ClipboardEvent) => boolean };
-    immediatelyRender: boolean;
+// 이미지 붙여넣기 핸들러 생성
+const createPasteHandler = () => {
+    return (view: EditorView, event: ClipboardEvent) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find(
+            (item) => item.type.indexOf('image') !== -1
+        );
+
+        if (imageItem) {
+            event.preventDefault();
+            const file = imageItem.getAsFile();
+            if (file) {
+                // 파일 크기 제한 (5MB)
+                // const maxSize = 5 * 1024 * 1024;
+                // if (file.size > maxSize) {
+                //     alert('이미지 크기는 5MB 이하여야 합니다.');
+                //     return true;
+                // }
+
+                // 비동기로 업로드 처리
+                uploadImage(file)
+                    .then(async (imageUrl) => {
+                        if (imageUrl) {
+                            const editor = (view as EditorView & { editor?: Editor }).editor;
+                            const { width, height } = await getImageDimensions(imageUrl);
+                            const selectionWidth = getSelectionAvailableWidth(editor ?? null);
+                            const fallbackWidth = view.dom?.clientWidth ? view.dom.clientWidth - 48 : undefined;
+                            const maxWidth = selectionWidth ?? fallbackWidth;
+                            const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth ?? undefined);
+                            const imageAttributes: ImageCommandAttributes = {
+                                src: imageUrl,
+                                width: clampedWidth ?? undefined,
+                                height: clampedHeight ?? undefined,
+                            };
+                            editor
+                                ?.chain()
+                                .focus()
+                                .setImage(imageAttributes)
+                                .run();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('이미지 업로드 실패:', error);
+                        alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+                    });
+                return true;
+            }
+        }
+        return false;
+    };
 };
 
 // 에디터 설정 생성 함수들
-export const createEditorFeaturesConfig = (): EditorConfig => ({
+export const createEditorFeaturesConfig = () => ({
     extensions: [
         ...COMMON_EXTENSIONS,
         Placeholder.configure({
@@ -71,7 +120,7 @@ export const createEditorFeaturesConfig = (): EditorConfig => ({
     immediatelyRender: false,
 });
 
-export const createEditorSkillsConfig = (): EditorConfig => ({
+export const createEditorSkillsConfig = () => ({
     extensions: [
         ...COMMON_EXTENSIONS,
         Placeholder.configure({
@@ -85,7 +134,7 @@ export const createEditorSkillsConfig = (): EditorConfig => ({
     immediatelyRender: false,
 });
 
-export const createEditorGoalsConfig = (): EditorConfig => ({
+export const createEditorGoalsConfig = () => ({
     extensions: [
         ...COMMON_EXTENSIONS,
         Placeholder.configure({
@@ -99,7 +148,7 @@ export const createEditorGoalsConfig = (): EditorConfig => ({
     immediatelyRender: false,
 });
 
-export const createEditorItemNameConfig = (): EditorConfig => ({
+export const createEditorItemNameConfig = () => ({
     extensions: [
         ...SIMPLE_EXTENSIONS,
         Placeholder.configure({
@@ -112,7 +161,7 @@ export const createEditorItemNameConfig = (): EditorConfig => ({
     immediatelyRender: false,
 });
 
-export const createEditorOneLineIntroConfig = (): EditorConfig => ({
+export const createEditorOneLineIntroConfig = () => ({
     extensions: [
         ...SIMPLE_EXTENSIONS,
         Placeholder.configure({
@@ -125,7 +174,7 @@ export const createEditorOneLineIntroConfig = (): EditorConfig => ({
     immediatelyRender: false,
 });
 
-export const createEditorGeneralConfig = (): EditorConfig => ({
+export const createEditorGeneralConfig = () => ({
     extensions: [
         ...COMMON_EXTENSIONS,
         Placeholder.configure({
