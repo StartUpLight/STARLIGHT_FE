@@ -1,10 +1,12 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useExpertStore } from '@/store/expert.store';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
+import { useExpertReportDetail } from '@/hooks/queries/useExpert';
 import GrayPlus from '@/assets/icons/gray_plus.svg';
 import WhitePlus from '@/assets/icons/white_plus.svg';
 import BusinessPlanDropdown from './BusinessPlanDropdown';
@@ -22,11 +24,32 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   const user = useUserStore((s) => s.user);
   const isMember = !!user;
 
+  const { data: reportDetails = [] } = useExpertReportDetail(expert.id, {
+    enabled: isMember,
+  });
+
+  const selectedPlan = useMemo(() => {
+    return reportDetails.find((plan) => plan.businessPlanId === planId);
+  }, [reportDetails, planId]);
+
   const canUseExpert = isMember && hasExpertUnlocked;
-  const disabled = !canUseExpert || !planId;
+  const isSelectedPlanOver70 = selectedPlan?.isOver70 ?? false;
+  const shouldShowCreateButton =
+    !isMember || (isMember && reportDetails.length === 0);
+
+  const disabled = shouldShowCreateButton
+    ? false
+    : !canUseExpert || !planId || !isSelectedPlanOver70;
 
   const handleConnect = () => {
-    if (!expert || disabled) return;
+    if (!expert) return;
+
+    if (shouldShowCreateButton) {
+      router.push('/business');
+      return;
+    }
+
+    if (disabled) return;
 
     setSelectedMentor({
       id: expert.id,
@@ -55,7 +78,10 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
       </div>
 
       <div className="mt-8 w-full">
-        <BusinessPlanDropdown expertId={expert.id} />
+        <BusinessPlanDropdown
+          expertId={expert.id}
+          hasNoPlans={shouldShowCreateButton}
+        />
         <p className="ds-caption text-primary-500 mt-2 font-medium">
           * 70점 이상의 사업계획서만 전문가 연결이 가능해요.
         </p>
@@ -63,19 +89,25 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
 
       <button
         onClick={handleConnect}
-        disabled={disabled}
+        disabled={shouldShowCreateButton ? false : disabled}
         className={`ds-text mt-8 flex w-full items-center justify-center gap-1 rounded-lg px-8 py-[10px] font-medium ${
-          disabled
-            ? 'cursor-not-allowed bg-gray-200 text-gray-500'
-            : 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
+          shouldShowCreateButton
+            ? 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
+            : disabled
+              ? 'cursor-not-allowed bg-gray-200 text-gray-500'
+              : 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
         }`}
       >
-        {disabled ? (
+        {shouldShowCreateButton ? (
+          <WhitePlus className="h-5 w-5 shrink-0" />
+        ) : disabled ? (
           <GrayPlus className="h-5 w-5 shrink-0" />
         ) : (
           <WhitePlus className="h-5 w-5 shrink-0" />
         )}
-        <span>전문가 연결</span>
+        <span>
+          {shouldShowCreateButton ? '사업계획서 생성' : '전문가 연결'}
+        </span>
       </button>
     </aside>
   );

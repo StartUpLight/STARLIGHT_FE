@@ -20,10 +20,13 @@ export function useExpertDetail(expertId: number) {
   });
 }
 
-export function useExpertReportDetail(expertId: number) {
+export function useExpertReportDetail(
+  expertId: number,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: ['GetExpertReportDetail', expertId],
     queryFn: () => GetExpertReportDetail(expertId),
-    enabled: expertId > 0,
+    enabled: expertId > 0 && (options?.enabled ?? true),
   });
 }

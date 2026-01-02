@@ -1,32 +1,35 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useExpertReportDetail } from '@/hooks/queries/useExpert';
 import { useBusinessStore } from '@/store/business.store';
+import { useUserStore } from '@/store/user.store';
 import DropDownIcon from '@/assets/icons/drop_down.svg';
 import PurpleDropDownIcon from '@/assets/icons/puple_drop_down.svg';
 import { ExpertReportDetailResponse } from '@/types/expert/expert.detail';
 
 interface BusinessPlanDropdownProps {
   expertId: number;
+  hasNoPlans?: boolean;
 }
 
-const BusinessPlanDropdown = ({ expertId }: BusinessPlanDropdownProps) => {
+const BusinessPlanDropdown = ({
+  expertId,
+  hasNoPlans = false,
+}: BusinessPlanDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const planId = useBusinessStore((s) => s.planId);
   const setPlanId = useBusinessStore((s) => s.setPlanId);
+  const user = useUserStore((s) => s.user);
+  const isMember = !!user;
 
-  const { data: reportDetails = [], isLoading } =
-    useExpertReportDetail(expertId);
+  const { data: reportDetails = [], isLoading } = useExpertReportDetail(
+    expertId,
+    { enabled: isMember }
+  );
 
-  const availablePlans = useMemo(() => {
-    return reportDetails.filter((report) => {
-      return report.isOver70 && report.requestCount === 0;
-    });
-  }, [reportDetails]);
-
-  const selectedPlan = availablePlans.find(
+  const selectedPlan = reportDetails.find(
     (plan) => plan.businessPlanId === planId
   );
 
@@ -73,8 +76,8 @@ const BusinessPlanDropdown = ({ expertId }: BusinessPlanDropdownProps) => {
         <span>
           {selectedPlan
             ? `${selectedPlan.businessPlanTitle}`
-            : availablePlans.length > 0
-              ? `${availablePlans[0].businessPlanTitle}`
+            : hasNoPlans
+              ? '사업계획서를 먼저 작성해주세요.'
               : '사업계획서를 선택하세요'}
         </span>
         {selectedPlan ? (
@@ -86,12 +89,12 @@ const BusinessPlanDropdown = ({ expertId }: BusinessPlanDropdownProps) => {
 
       {isOpen && (
         <div className="absolute z-50 mt-2 max-h-[300px] w-[276px] overflow-y-auto rounded-lg bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
-          {availablePlans.length === 0 ? (
+          {reportDetails.length === 0 ? (
             <div className="ds-subtext px-3 py-2 font-medium text-gray-800">
               등록된 사업계획서가 없습니다.
             </div>
           ) : (
-            availablePlans.map((plan) => {
+            reportDetails.map((plan) => {
               const isSelected = plan.businessPlanId === planId;
               return (
                 <button
