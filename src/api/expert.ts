@@ -4,28 +4,17 @@ import {
   expertReportsResponse,
   getExpertReportsResponse,
   getExpertResponse,
-  getFeedBackExpertResponse,
   getUserExpertReportResponse,
 } from '@/types/expert/expert.type';
 import api from './api';
-import { ExpertDetailResponse } from '@/types/expert/expert.detail';
+import {
+  ExpertDetailResponse,
+  ExpertReportDetailResponse,
+} from '@/types/expert/expert.detail';
 
 export async function GetExpert(): Promise<getExpertResponse[]> {
   const res = await api.get<{ data: getExpertResponse[] }>('/v1/experts');
   return res.data.data;
-}
-
-export async function GetFeedBackExpert(
-  businessPlanId: number
-): Promise<getFeedBackExpertResponse> {
-  if (!Number.isFinite(businessPlanId) || businessPlanId <= 0) {
-    throw new Error('유효하지 않는 아이디입니다.');
-  }
-  const { data } = await api.get<getFeedBackExpertResponse>(
-    '/v1/expert-applications',
-    { params: { businessPlanId } }
-  );
-  return data;
 }
 
 export async function ApplyFeedback({
@@ -85,6 +74,19 @@ export async function GetExpertDetail(
 ): Promise<ExpertDetailResponse> {
   const res = await api.get<{ data: ExpertDetailResponse }>(
     `/v1/experts/${expertId}`,
+    {
+      params: { expertId },
+    }
+  );
+
+  return res.data.data;
+}
+
+export async function GetExpertReportDetail(
+  expertId: number
+): Promise<ExpertReportDetailResponse[]> {
+  const res = await api.get<{ data: ExpertReportDetailResponse[] }>(
+    `/v1/experts/${expertId}/business-plans/ai-reports`,
     {
       params: { expertId },
     }

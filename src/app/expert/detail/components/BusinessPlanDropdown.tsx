@@ -1,36 +1,34 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useGetMyBusinessPlans } from '@/hooks/queries/useMy';
-import { BusinessPlanItem } from '@/types/mypage/mypage.type';
+import { useExpertReportDetail } from '@/hooks/queries/useExpert';
 import { useBusinessStore } from '@/store/business.store';
 import DropDownIcon from '@/assets/icons/drop_down.svg';
 import PurpleDropDownIcon from '@/assets/icons/puple_drop_down.svg';
-import { useGradeQueries } from '@/hooks/queries/useGradeQueries';
+import { ExpertReportDetailResponse } from '@/types/expert/expert.detail';
 
-const BusinessPlanDropdown = () => {
+interface BusinessPlanDropdownProps {
+  expertId: number;
+}
+
+const BusinessPlanDropdown = ({ expertId }: BusinessPlanDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const planId = useBusinessStore((s) => s.planId);
   const setPlanId = useBusinessStore((s) => s.setPlanId);
 
-  const { data: businessPlansData, isLoading } = useGetMyBusinessPlans({
-    page: 1,
-    size: 100,
-  });
+  const { data: reportDetails = [], isLoading } =
+    useExpertReportDetail(expertId);
 
-  const allPlans: BusinessPlanItem[] = businessPlansData?.data?.content ?? [];
-  const gradeQueries = useGradeQueries(allPlans);
-
-  const plans = useMemo(() => {
-    return allPlans.filter((plan, index) => {
-      const gradeData = gradeQueries[index]?.data;
-      const totalScore = gradeData?.data?.totalScore ?? 0;
-      return totalScore >= 70;
+  const availablePlans = useMemo(() => {
+    return reportDetails.filter((report) => {
+      return report.isOver70 && report.requestCount === 0;
     });
-  }, [allPlans, gradeQueries]);
+  }, [reportDetails]);
 
-  const selectedPlan = plans.find((plan) => plan.businessPlanId === planId);
+  const selectedPlan = availablePlans.find(
+    (plan) => plan.businessPlanId === planId
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -48,14 +46,12 @@ const BusinessPlanDropdown = () => {
     };
   }, []);
 
-  const handleSelect = (plan: BusinessPlanItem) => {
+  const handleSelect = (plan: ExpertReportDetailResponse) => {
     setPlanId(plan.businessPlanId);
     setIsOpen(false);
   };
 
-  const isGradesLoading = gradeQueries.some((query) => query.isLoading);
-
-  if (isLoading || isGradesLoading) {
+  if (isLoading) {
     return (
       <div className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] text-gray-800">
         로딩 중
@@ -76,9 +72,9 @@ const BusinessPlanDropdown = () => {
       >
         <span>
           {selectedPlan
-            ? `${selectedPlan.title}`
-            : plans.length > 0
-              ? `${plans[0].title}`
+            ? `${selectedPlan.businessPlanTitle}`
+            : availablePlans.length > 0
+              ? `${availablePlans[0].businessPlanTitle}`
               : '사업계획서를 선택하세요'}
         </span>
         {selectedPlan ? (
@@ -89,13 +85,13 @@ const BusinessPlanDropdown = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 h-[222px] w-[276px] overflow-y-auto rounded-lg bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
-          {plans.length === 0 ? (
+        <div className="absolute z-50 mt-2 max-h-[300px] w-[276px] overflow-y-auto rounded-lg bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
+          {availablePlans.length === 0 ? (
             <div className="ds-subtext px-3 py-2 font-medium text-gray-800">
               등록된 사업계획서가 없습니다.
             </div>
           ) : (
-            plans.map((plan) => {
+            availablePlans.map((plan) => {
               const isSelected = plan.businessPlanId === planId;
               return (
                 <button
@@ -108,7 +104,7 @@ const BusinessPlanDropdown = () => {
                       : 'hover:bg-primary-50 bg-white text-gray-800'
                   }`}
                 >
-                  {plan.title}
+                  {plan.businessPlanTitle}
                 </button>
               );
             })

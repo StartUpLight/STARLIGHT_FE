@@ -18,3 +18,10 @@ export interface ExpertDetailResponse {
   }[];
   tags: string[];
 }
+
+export interface ExpertReportDetailResponse {
+  businessPlanId: number;
+  businessPlanTitle: string;
+  requestCount: number;
+  isOver70: boolean;
+}

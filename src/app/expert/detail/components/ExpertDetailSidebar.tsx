@@ -55,8 +55,8 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
       </div>
 
       <div className="mt-8 w-full">
-        <BusinessPlanDropdown />
-        <p className="ds-caption mt-2 font-medium text-gray-600">
+        <BusinessPlanDropdown expertId={expert.id} />
+        <p className="ds-caption text-primary-500 mt-2 font-medium">
           * 70점 이상의 사업계획서만 전문가 연결이 가능해요.
         </p>
       </div>
