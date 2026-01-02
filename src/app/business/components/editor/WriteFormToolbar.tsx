@@ -14,12 +14,17 @@ import GrammerIcon from '@/assets/icons/write-icons/grammer.svg';
 import GrammerActiveIcon from '@/assets/icons/write-icons/grammer-active.svg';
 import TableGridSelector from './TableGridSelector';
 import { useAuthStore } from '@/store/auth.store';
+import { uploadImage } from '@/lib/imageUpload';
+import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
+import { getSelectionAvailableWidth } from '@/lib/business/editor/getSelectionAvailableWidth';
+import { ImageCommandAttributes } from '@/types/business/business.type';
 
 interface WriteFormToolbarProps {
     activeEditor: Editor | null;
     editorItemName?: Editor | null;
     editorOneLineIntro?: Editor | null;
-    onImageClick: () => void;
+    defaultEditor: Editor | null;
+    onActiveEditorChange: (editor: Editor | null) => void;
     onSpellCheckClick: () => void;
     grammarActive: boolean;
     spellChecking: boolean;
@@ -31,7 +36,8 @@ const WriteFormToolbar = ({
     activeEditor,
     editorItemName,
     editorOneLineIntro,
-    onImageClick,
+    defaultEditor,
+    onActiveEditorChange,
     onSpellCheckClick,
     grammarActive,
     spellChecking,
@@ -44,6 +50,54 @@ const WriteFormToolbar = ({
     const [showTableGrid, setShowTableGrid] = useState(false);
     const spellButtonDisabled = spellChecking || !isAuthenticated;
     const tableButtonRef = useRef<HTMLButtonElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // 이미지 업로드
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !activeEditor) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 업로드 가능합니다.');
+            return;
+        }
+
+        try {
+            const imageUrl = await uploadImage(file);
+            if (!imageUrl || !activeEditor) return;
+
+            const { width, height } = await getImageDimensions(imageUrl);
+            const selectionWidth = getSelectionAvailableWidth(activeEditor);
+            const editorDom = activeEditor.view.dom as HTMLElement | null;
+            const maxWidth = selectionWidth ?? (editorDom ? editorDom.clientWidth - 48 : undefined);
+            const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(
+                width,
+                height,
+                maxWidth
+            );
+
+            activeEditor.chain().focus().setImage({
+                src: imageUrl,
+                width: clampedWidth ?? undefined,
+                height: clampedHeight ?? undefined,
+            } as ImageCommandAttributes).run();
+        } catch (error) {
+            console.error('이미지 업로드 실패:', error);
+            alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+        } finally {
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleImageButtonClick = () => {
+        if (!activeEditor) {
+            if (defaultEditor && !defaultEditor.isDestroyed) {
+                defaultEditor.commands.focus();
+                onActiveEditorChange(defaultEditor);
+            }
+        }
+        fileInputRef.current?.click();
+    };
 
     const handleTableClick = () => {
         setShowTableGrid(!showTableGrid);
@@ -284,8 +338,15 @@ const WriteFormToolbar = ({
             </div>
             <ToolButton
                 label={<ImageIcon />}
-                onClick={onImageClick}
+                onClick={handleImageButtonClick}
                 disabled={isSimpleEditor || !isAuthenticated}
+            />
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
             />
             <button
                 type="button"

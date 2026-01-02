@@ -1,4 +1,5 @@
 import { SpellCheckItem } from '../../store/spellcheck.store';
+import type { Editor } from '@tiptap/core';
 
 //사업계획서 subsection 요청 시 필요한 type들
 export interface TextContentItem {
@@ -222,3 +223,8 @@ export interface PdfGradingRequestWithFile {
   title: string;
   file: File;
 }
+
+export type ImageCommandAttributes = Parameters<Editor['commands']['setImage']>[0] & {
+  width?: number;
+  height?: number;
+};
