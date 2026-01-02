@@ -5,7 +5,9 @@ import { useExpertStore } from '@/store/expert.store';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
+import { useExpertReportDetail } from '@/hooks/queries/useExpert';
 import GrayPlus from '@/assets/icons/gray_plus.svg';
+import GrayCheck from '@/assets/icons/gray_check.svg';
 import WhitePlus from '@/assets/icons/white_plus.svg';
 import BusinessPlanDropdown from './BusinessPlanDropdown';
 import { ExpertDetailResponse } from '@/types/expert/expert.detail';
@@ -20,13 +22,56 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   const planId = useBusinessStore((s) => s.planId);
   const hasExpertUnlocked = useEvaluationStore((s) => s.hasExpertUnlocked);
   const user = useUserStore((s) => s.user);
-  const isMember = !!user;
+  const hasAccessToken =
+    typeof window !== 'undefined' && !!localStorage.getItem('accessToken');
+  const isMember = hasAccessToken && !!user;
+
+  const { data: reportDetails = [], isLoading: isLoadingReports } =
+    useExpertReportDetail(expert.id, {
+      enabled: !!user,
+    });
+
+  const selectedPlan = reportDetails.find(
+    (plan) => plan.businessPlanId === planId
+  );
 
   const canUseExpert = isMember && hasExpertUnlocked;
-  const disabled = !canUseExpert || !planId;
+  const isSelectedPlanOver70 = selectedPlan?.isOver70 ?? false;
+  const hasRequested = (selectedPlan?.requestCount ?? 0) > 0;
+
+  const shouldShowCreateButton = !isMember
+    ? true
+    : !isLoadingReports && reportDetails.length === 0;
+
+  const disabled = shouldShowCreateButton
+    ? false
+    : hasRequested || !canUseExpert || !planId || !isSelectedPlanOver70;
+
+  const ButtonIcon = shouldShowCreateButton
+    ? WhitePlus
+    : hasRequested
+      ? GrayPlus
+      : disabled && !isSelectedPlanOver70
+        ? GrayCheck
+        : disabled
+          ? GrayPlus
+          : WhitePlus;
+
+  const buttonText = shouldShowCreateButton
+    ? '사업계획서 생성'
+    : hasRequested
+      ? '신청완료'
+      : '전문가 연결';
 
   const handleConnect = () => {
-    if (!expert || disabled) return;
+    if (!expert) return;
+
+    if (shouldShowCreateButton) {
+      router.push('/business');
+      return;
+    }
+
+    if (disabled) return;
 
     setSelectedMentor({
       id: expert.id,
@@ -55,27 +100,26 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
       </div>
 
       <div className="mt-8 w-full">
-        <BusinessPlanDropdown />
-        <p className="ds-caption mt-2 font-medium text-gray-600">
+        <BusinessPlanDropdown
+          expertId={expert.id}
+          hasNoPlans={shouldShowCreateButton}
+        />
+        <p className="ds-caption text-primary-500 mt-2 font-medium">
           * 70점 이상의 사업계획서만 전문가 연결이 가능해요.
         </p>
       </div>
 
       <button
         onClick={handleConnect}
-        disabled={disabled}
+        disabled={shouldShowCreateButton ? false : disabled}
         className={`ds-text mt-8 flex w-full items-center justify-center gap-1 rounded-lg px-8 py-[10px] font-medium ${
-          disabled
-            ? 'cursor-not-allowed bg-gray-200 text-gray-500'
-            : 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
+          shouldShowCreateButton || (!disabled && !hasRequested)
+            ? 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
+            : 'cursor-not-allowed bg-gray-200 text-gray-500'
         }`}
       >
-        {disabled ? (
-          <GrayPlus className="h-5 w-5 shrink-0" />
-        ) : (
-          <WhitePlus className="h-5 w-5 shrink-0" />
-        )}
-        <span>전문가 연결</span>
+        <ButtonIcon className="h-5 w-5 shrink-0" />
+        <span>{buttonText}</span>
       </button>
     </aside>
   );
