@@ -107,7 +107,7 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({
       await result;
 
       resetState();
-      router.push('/mypage');
+      router.push('/report');
     } catch (e) {
       console.error(e);
       setValidationError(

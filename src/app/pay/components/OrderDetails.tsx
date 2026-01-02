@@ -57,7 +57,11 @@ const OrderDetails = ({ mentor }: OrderDetailsProps) => {
                 key={`${name}-career-${idx}`}
                 className="ds-subtext font-medium text-gray-600"
               >
-                {career}
+                {typeof career === 'string'
+                  ? career
+                  : 'careerTitle' in career
+                    ? career.careerTitle
+                    : String(career)}
               </p>
             ))}
           </div>

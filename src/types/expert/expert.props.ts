@@ -17,7 +17,10 @@ export interface MentorCardProps {
   id: number;
   image: string;
   name: string;
-  careers: string[];
+  careers: {
+    orderIndex: number;
+    careerTitle: string;
+  }[];
   tags: string[];
   workingperiod: number;
   status: 'active' | 'done';

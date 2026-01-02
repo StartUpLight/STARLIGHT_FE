@@ -1,4 +1,4 @@
-import { GetExpert, GetFeedBackExpert } from '@/api/expert';
+import { GetExpert, GetExpertDetail, GetFeedBackExpert } from '@/api/expert';
 import { getFeedBackExpertResponse } from '@/types/expert/expert.type';
 import { useQuery } from '@tanstack/react-query';
 
@@ -27,5 +27,13 @@ export function useGetFeedBackExpert(
     queryKey: ['GetFeedBackExpert', enabled ? businessPlanId : 'disabled'],
     queryFn: () => GetFeedBackExpert(businessPlanId as number),
     enabled,
+  });
+}
+
+export function useExpertDetail(expertId: number) {
+  return useQuery({
+    queryKey: ['GetExpertDetail', expertId],
+    queryFn: () => GetExpertDetail(expertId),
+    enabled: expertId > 0,
   });
 }
