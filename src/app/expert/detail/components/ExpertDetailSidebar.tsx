@@ -22,11 +22,14 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   const planId = useBusinessStore((s) => s.planId);
   const hasExpertUnlocked = useEvaluationStore((s) => s.hasExpertUnlocked);
   const user = useUserStore((s) => s.user);
-  const isMember = !!user;
+  const hasAccessToken =
+    typeof window !== 'undefined' && !!localStorage.getItem('accessToken');
+  const isMember = hasAccessToken && !!user;
 
-  const { data: reportDetails = [] } = useExpertReportDetail(expert.id, {
-    enabled: isMember,
-  });
+  const { data: reportDetails = [], isLoading: isLoadingReports } =
+    useExpertReportDetail(expert.id, {
+      enabled: !!user,
+    });
 
   const selectedPlan = reportDetails.find(
     (plan) => plan.businessPlanId === planId
@@ -35,8 +38,10 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   const canUseExpert = isMember && hasExpertUnlocked;
   const isSelectedPlanOver70 = selectedPlan?.isOver70 ?? false;
   const hasRequested = (selectedPlan?.requestCount ?? 0) > 0;
-  const shouldShowCreateButton =
-    !isMember || (isMember && reportDetails.length === 0);
+
+  const shouldShowCreateButton = !isMember
+    ? true
+    : !isLoadingReports && reportDetails.length === 0;
 
   const disabled = shouldShowCreateButton
     ? false

@@ -24,9 +24,10 @@ export function useExpertReportDetail(
   expertId: number,
   options?: { enabled?: boolean }
 ) {
+  const hasToken = localStorage.getItem('accessToken');
   return useQuery({
-    queryKey: ['GetExpertReportDetail', expertId],
+    queryKey: ['GetExpertReportDetail', expertId, hasToken],
     queryFn: () => GetExpertReportDetail(expertId),
-    enabled: expertId > 0 && (options?.enabled ?? true),
+    enabled: expertId > 0 && !!hasToken && (options?.enabled ?? true),
   });
 }

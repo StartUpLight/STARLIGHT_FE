@@ -22,11 +22,10 @@ const BusinessPlanDropdown = ({
   const planId = useBusinessStore((s) => s.planId);
   const setPlanId = useBusinessStore((s) => s.setPlanId);
   const user = useUserStore((s) => s.user);
-  const isMember = !!user;
 
   const { data: reportDetails = [], isLoading } = useExpertReportDetail(
     expertId,
-    { enabled: isMember }
+    { enabled: !!user }
   );
 
   const selectedPlan = reportDetails.find(
