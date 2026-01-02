@@ -36,11 +36,60 @@ const Preview = () => {
 
             return (
                 <div key={sectionIndex} className="mb-[42px]">
-                    <div className="px-3 py-1 bg-gray-100 mb-3 flex items-center gap-3">
-                        <div className="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                            {sectionNumber}
+                    <div
+                        className="px-3 py-1 bg-gray-100 mb-3"
+                        style={{
+                            position: 'relative',
+                            padding: '0.25rem 0.75rem',
+                            backgroundColor: '#f3f4f6',
+                            marginBottom: '0.75rem',
+                            height: '28px',
+                        }}
+                    >
+                        <div
+                            className="rounded-full bg-gray-900"
+                            style={{
+                                position: 'absolute',
+                                left: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                height: '20px',
+                                width: '20px',
+                                borderRadius: '9999px',
+                                backgroundColor: '#111827',
+                            }}
+                        >
+                            <span
+                                className="ds-caption font-semibold text-white"
+                                style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    top: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    fontSize: '12px',
+                                    lineHeight: '16px',
+                                    fontWeight: '600',
+                                    color: '#ffffff',
+                                }}
+                            >
+                                {sectionNumber}
+                            </span>
                         </div>
-                        <h2 className="ds-subtitle font-semibold text-gray-900">
+                        <h2
+                            className="ds-subtitle font-semibold text-gray-900"
+                            style={{
+                                position: 'absolute',
+                                left: '40px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                fontSize: '18px',
+                                lineHeight: '150%',
+                                fontWeight: '600',
+                                color: '#111827',
+                                letterSpacing: '-0.02em',
+                                margin: 0,
+                            }}
+                        >
                             {section.title.replace(/^\d+\.\s*/, '')}
                         </h2>
                     </div>
@@ -54,7 +103,14 @@ const Preview = () => {
                                     <div className="mb-4">
                                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
                                         {content.itemName ? (
-                                            <p className="ds-text text-gray-700">{content.itemName}</p>
+                                            <div
+                                                className="ds-text text-gray-700 prose max-w-none"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: typeof content.itemName === 'string'
+                                                        ? content.itemName
+                                                        : convertEditorJsonToHtml(content.itemName),
+                                                }}
+                                            />
                                         ) : (
                                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                                         )}
@@ -63,47 +119,60 @@ const Preview = () => {
                                     <div className="mb-4">
                                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
                                         {content.oneLineIntro ? (
-                                            <p className="ds-text text-gray-700">{content.oneLineIntro}</p>
+                                            <div
+                                                className="ds-text text-gray-700 prose max-w-none"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: typeof content.oneLineIntro === 'string'
+                                                        ? content.oneLineIntro
+                                                        : convertEditorJsonToHtml(content.oneLineIntro),
+                                                }}
+                                            />
                                         ) : (
                                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                                         )}
                                     </div>
 
-                                    {content.editorFeatures && (
-                                        <div className="mb-4">
-                                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                                    <div className="mb-4">
+                                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                                        {content.editorFeatures ? (
                                             <div
                                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                                 dangerouslySetInnerHTML={{
                                                     __html: convertEditorJsonToHtml(content.editorFeatures),
                                                 }}
                                             />
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                                        )}
+                                    </div>
 
-                                    {content.editorSkills && (
-                                        <div className="mb-4">
-                                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                                    <div className="mb-4">
+                                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                                        {content.editorSkills ? (
                                             <div
                                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                                 dangerouslySetInnerHTML={{
                                                     __html: convertEditorJsonToHtml(content.editorSkills),
                                                 }}
                                             />
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                                        )}
+                                    </div>
 
-                                    {content.editorGoals && (
-                                        <div className="mb-4">
-                                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                                    <div className="mb-4">
+                                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                                        {content.editorGoals ? (
                                             <div
                                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                                 dangerouslySetInnerHTML={{
                                                     __html: convertEditorJsonToHtml(content.editorGoals),
                                                 }}
                                             />
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         }
@@ -139,7 +208,14 @@ const Preview = () => {
                     <div className="mb-4">
                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
                         {content.itemName ? (
-                            <p className="ds-text text-gray-700">{content.itemName}</p>
+                            <div
+                                className="ds-text text-gray-700 prose max-w-none"
+                                dangerouslySetInnerHTML={{
+                                    __html: typeof content.itemName === 'string'
+                                        ? content.itemName
+                                        : convertEditorJsonToHtml(content.itemName),
+                                }}
+                            />
                         ) : (
                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                         )}
@@ -147,44 +223,57 @@ const Preview = () => {
                     <div className="mb-4">
                         <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
                         {content.oneLineIntro ? (
-                            <p className="ds-text text-gray-700">{content.oneLineIntro}</p>
+                            <div
+                                className="ds-text text-gray-700 prose max-w-none"
+                                dangerouslySetInnerHTML={{
+                                    __html: typeof content.oneLineIntro === 'string'
+                                        ? content.oneLineIntro
+                                        : convertEditorJsonToHtml(content.oneLineIntro),
+                                }}
+                            />
                         ) : (
                             <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
                         )}
                     </div>
-                    {content.editorFeatures && (
-                        <div className="mb-4">
-                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                    <div className="mb-4">
+                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">아이템 / 아이디어 주요 기능</h3>
+                        {content.editorFeatures ? (
                             <div
                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                 dangerouslySetInnerHTML={{
                                     __html: convertEditorJsonToHtml(content.editorFeatures),
                                 }}
                             />
-                        </div>
-                    )}
-                    {content.editorSkills && (
-                        <div className="mb-4">
-                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                        ) : (
+                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                        )}
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">관련 보유 기술</h3>
+                        {content.editorSkills ? (
                             <div
                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                 dangerouslySetInnerHTML={{
                                     __html: convertEditorJsonToHtml(content.editorSkills),
                                 }}
                             />
-                        </div>
-                    )}
-                    {content.editorGoals && (
-                        <div className="mb-4">
-                            <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                        ) : (
+                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                        )}
+                    </div>
+                    <div className="mb-4">
+                        <h3 className="ds-subtitle font-semibold mb-2 text-gray-800">창업 목표</h3>
+                        {content.editorGoals ? (
                             <div
                                 className="ds-text text-gray-700 prose max-w-none [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:border [&_table]:border-gray-300 [&_th]:border-[1px] [&_th]:border-gray-300 [&_th]:border-solid [&_th]:p-2.5 [&_th]:align-top [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border-[1px] [&_td]:border-gray-300 [&_td]:border-solid [&_td]:p-2.5 [&_td]:align-top [&_img]:mx-auto [&_img]:block"
                                 dangerouslySetInnerHTML={{
                                     __html: convertEditorJsonToHtml(content.editorGoals),
                                 }}
                             />
-                        </div>
-                    )}
+                        ) : (
+                            <p className="ds-text text-gray-400">내용을 입력해주세요.</p>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -257,7 +346,7 @@ const Preview = () => {
                         : itemHeight + ITEM_MARGIN;
 
                     // 페이지 분할: 약간의 여유를 두고 분할 (너무 엄격하지 않게)
-                    const PAGE_BUFFER = 50; // 약간의 여유 공간
+                    const PAGE_BUFFER = -10; // 약간의 여유 공간
                     if (currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER && currentPageContent.length > 0) {
                         // 현재 페이지 저장
                         newPages.push({
@@ -275,11 +364,59 @@ const Preview = () => {
                     if (needsSectionHeader) {
                         currentPageContent.push(
                             <div key={`section-${sectionIndex}`} className="mb-3">
-                                <div className="px-3 py-1 bg-gray-100 flex items-center gap-3">
-                                    <div className="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                                        {sectionNumber}
+                                <div
+                                    className="px-3 py-1 bg-gray-100"
+                                    style={{
+                                        position: 'relative',
+                                        padding: '0.25rem 0.75rem',
+                                        backgroundColor: '#f3f4f6',
+                                        height: '28px',
+                                    }}
+                                >
+                                    <div
+                                        className="rounded-full bg-gray-900"
+                                        style={{
+                                            position: 'absolute',
+                                            left: '12px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            height: '20px',
+                                            width: '20px',
+                                            borderRadius: '9999px',
+                                            backgroundColor: '#111827',
+                                        }}
+                                    >
+                                        <span
+                                            className="ds-caption font-semibold text-white"
+                                            style={{
+                                                position: 'absolute',
+                                                left: '50%',
+                                                top: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                                fontSize: '12px',
+                                                lineHeight: '16px',
+                                                fontWeight: '600',
+                                                color: '#ffffff',
+                                            }}
+                                        >
+                                            {sectionNumber}
+                                        </span>
                                     </div>
-                                    <h2 className="ds-subtitle font-semibold text-gray-900">
+                                    <h2
+                                        className="ds-subtitle font-semibold text-gray-900"
+                                        style={{
+                                            position: 'absolute',
+                                            left: '40px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            fontSize: '18px',
+                                            lineHeight: '150%',
+                                            fontWeight: '600',
+                                            color: '#111827',
+                                            letterSpacing: '-0.02em',
+                                            margin: 0,
+                                        }}
+                                    >
                                         {sectionTitle}
                                     </h2>
                                 </div>
@@ -299,6 +436,17 @@ const Preview = () => {
                 if (sectionIndex < allSections.length - 1) {
                     const ITEM_MARGIN = 16; // mb-4 = 16px
                     currentPageHeight += SECTION_BOTTOM_MARGIN - ITEM_MARGIN; // 마지막 아이템의 mb-4를 제외하고 섹션 여백 추가
+                }
+
+                // 개요 섹션(1번)은 다음 섹션과 페이지를 공유하지 않도록 강제 분리
+                if (sectionNumber === 1 && currentPageContent.length > 0) {
+                    newPages.push({
+                        content: [...currentPageContent],
+                        showHeader: isFirstPage,
+                    });
+                    currentPageContent = [];
+                    currentPageHeight = 0;
+                    isFirstPage = false;
                 }
             });
 
@@ -333,8 +481,9 @@ const Preview = () => {
                         position: 'fixed',
                         top: '-9999px',
                         left: '-9999px',
-                        width: `${A4_WIDTH - 96}px`, // padding 제외
-                        padding: '24px',
+                        width: `${A4_WIDTH}px`,
+                        padding: '24px 48px',
+                        boxSizing: 'border-box',
                         visibility: 'hidden',
                         pointerEvents: 'none',
                     }}

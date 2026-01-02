@@ -64,6 +64,7 @@ export default function PlanList() {
                     currentStageIndex={getStageIndexFromStatus(item.planStatus)}
                     lastSavedAt={item.lastSavedAt}
                     businessPlanId={item.businessPlanId}
+                    pdfUrl={item.pdfUrl}
                 />
             ))}
             <Pagination current={page} total={totalPages} onChange={setPage} />

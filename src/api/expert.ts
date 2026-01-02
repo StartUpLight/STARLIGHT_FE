@@ -5,8 +5,10 @@ import {
   getExpertReportsResponse,
   getExpertResponse,
   getFeedBackExpertResponse,
+  getUserExpertReportResponse,
 } from '@/types/expert/expert.type';
 import api from './api';
+import { ExpertDetailResponse } from '@/types/expert/expert.detail';
 
 export async function GetExpert(): Promise<getExpertResponse[]> {
   const res = await api.get<{ data: getExpertResponse[] }>('/v1/experts');
@@ -63,6 +65,29 @@ export async function GetExpertReport(
 ): Promise<getExpertReportsResponse> {
   const res = await api.get<{ data: getExpertReportsResponse }>(
     `/v1/expert-reports/${token}`
+  );
+
+  return res.data.data;
+}
+
+export async function GetUserExpertReport(
+  businessPlanId: number
+): Promise<getUserExpertReportResponse> {
+  const res = await api.get<getUserExpertReportResponse>('/v1/expert-reports', {
+    params: { businessPlanId },
+  });
+
+  return res.data;
+}
+
+export async function GetExpertDetail(
+  expertId: number
+): Promise<ExpertDetailResponse> {
+  const res = await api.get<{ data: ExpertDetailResponse }>(
+    `/v1/experts/${expertId}`,
+    {
+      params: { expertId },
+    }
   );
 
   return res.data.data;

@@ -7,7 +7,7 @@
 
 @theme inline {
   /* Colors */
-  --color-primary-50: #EAE5FF;
+  --color-primary-50: #f8f6ff;
   --color-primary-100: #d2caff;
   --color-primary-200: #bdb1ff;
   --color-primary-300: #9f8dff;
@@ -271,7 +271,7 @@
   max-width: 100%;
   height: auto;
   cursor: pointer;
-  position: relative;
+  display: inline-block;
 }
 
 .ProseMirror img.selected {
@@ -300,6 +300,11 @@
 .ProseMirror .image-container {
   position: relative;
   display: inline-block;
+}
+
+.ProseMirror .image-caption-textarea::placeholder {
+  color: #b4bbc7;
+  opacity: 1;
 }
 
 @layer utilities {

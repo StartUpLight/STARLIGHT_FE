@@ -2,6 +2,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
+import { LOGIN_REDIRECT_KEY } from '@/lib/business/authKeys';
 
 const OAuthSuccessContent = () => {
     const router = useRouter();
@@ -17,13 +18,28 @@ const OAuthSuccessContent = () => {
             router.push('/');
             return;
         }
+
+        const redirectToStoredPath = () => {
+            if (typeof window === 'undefined') {
+                router.push('/');
+                return;
+            }
+            const storedPath = sessionStorage.getItem(LOGIN_REDIRECT_KEY);
+            if (storedPath) {
+                sessionStorage.removeItem(LOGIN_REDIRECT_KEY);
+                router.push(storedPath);
+            } else {
+                router.push('/');
+            }
+        };
+
         try {
             if (typeof window !== 'undefined' && window.localStorage) {
                 localStorage.setItem('accessToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
                 login();
             }
-            router.push('/');
+            redirectToStoredPath();
         } catch (error) {
             console.error('토큰 저장 에러:', error);
             router.push('/');

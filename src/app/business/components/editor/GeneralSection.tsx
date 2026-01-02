@@ -10,7 +10,7 @@ interface GeneralSectionProps {
 const GeneralSection = ({ editor, onEditorFocus }: GeneralSectionProps) => {
   return (
     <div
-      className="min-h-[252px] cursor-text rounded-[4px] bg-white px-3 py-2 text-gray-900"
+      className="min-h-[500px] cursor-text rounded-[4px] bg-white px-3 py-2 text-gray-900"
       onClick={() => {
         if (editor && !editor.isDestroyed) {
           editor.commands.focus();

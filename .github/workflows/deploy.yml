@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
   build:
@@ -12,17 +12,30 @@ jobs:
         run: apk add ruby && gem install mustache
       - name: creates output
         run: sh ./build.sh
+      - name: Determine destination repository (non-secret only)
+        id: set-destination
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "username=Chasyuss" >> $GITHUB_OUTPUT
+            echo "repo=STARLIGHT_FE" >> $GITHUB_OUTPUT
+            echo "branch=main" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            echo "username=parknari02" >> $GITHUB_OUTPUT
+            echo "repo=STARLIGHT_FE" >> $GITHUB_OUTPUT
+            echo "branch=main" >> $GITHUB_OUTPUT
+          fi
+
       - name: Pushes to another repository
-        id: push_directory
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          API_TOKEN_GITHUB: ${{ secrets.AUTO_ACTIONS }}
+          API_TOKEN_GITHUB: ${{ github.ref == 'refs/heads/main' && secrets.AUTO_ACTIONS || secrets.DEVELOP_ACTIONS }}
         with:
           source-directory: "output"
-          destination-github-username: Chasyuss
-          destination-repository-name: STARLIGHT_FE
-          user-email: ${{ secrets.EMAIL }}
+          destination-github-username: ${{ steps.set-destination.outputs.username }}
+          destination-repository-name: ${{ steps.set-destination.outputs.repo }}
+          user-email: ${{ github.ref == 'refs/heads/main' && secrets.EMAIL || secrets.DEVELOP_EMAIL }}
           commit-message: ${{ github.event.commits[0].message }}
-          target-branch: main
+          target-branch: ${{ steps.set-destination.outputs.branch }}
+
       - name: Test get variable exported by push-to-another-repository
         run: echo $DESTINATION_CLONED_DIRECTORY

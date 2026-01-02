@@ -1,7 +1,9 @@
+import type { ImageContentItem, TableContentItem } from '@/types/business/business.type';
+
 export type SpellContent =
   | { type: 'text'; value: string }
-  | { type: 'table'; columns: string[]; rows: (string | number | null)[][] }
-  | { type: 'image'; src: string; caption?: string; width?: number | null; height?: number | null };
+  | TableContentItem
+  | ImageContentItem;
 
 export interface BusinessSpellCheckRequest {
   subSectionType: string;

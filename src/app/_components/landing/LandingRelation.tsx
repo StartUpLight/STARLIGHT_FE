@@ -48,7 +48,7 @@ const LandingRelation = () => {
         priority
       />
 
-      <div className="mt-[119px] flex w-full flex-col px-[132px] pb-[235px]">
+      <div className="mt-[119px] flex w-full flex-col bg-white px-[132px] pb-[235px]">
         <div className="text-[42px] leading-[150%] font-bold tracking-[-0.84px] text-gray-900">
           관련 기관
         </div>
@@ -64,13 +64,13 @@ const LandingRelation = () => {
                 aria-label={`${logo.alt} 공식 사이트로 이동 (새 창)`}
                 className="block"
               >
-                <div className="bg-gray-80 flex h-[208px] w-full items-center justify-center rounded-[12px] px-[56px]">
+                <div className="bg-gray-80 flex h-52 w-full items-center justify-center rounded-xl px-14">
                   <Image
                     src={logo.src}
                     alt={logo.alt}
                     width={260}
                     height={60}
-                    className="object-contain"
+                    className="h-auto max-h-[60px] w-auto object-contain"
                     priority
                   />
                 </div>

@@ -9,4 +9,5 @@ export interface PlanCardProps {
     currentStageIndex: number; // 0-based
     lastSavedAt?: string;
     businessPlanId: number;
+    pdfUrl: string;
 }

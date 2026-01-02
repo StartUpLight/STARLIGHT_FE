@@ -41,7 +41,7 @@ const EvaluateModal = ({ onClose }: EvaluateModalProps) => {
           <div className="flex flex-col gap-1">
             {' '}
             <div className="ds-subtext font-bold text-black">
-              문제정의 (30점)
+              문제정의 (20점)
             </div>
             <div className="ds-caption font-medium text-black">
               사업이 해결하려는 핵심 문제를 얼마나 정확히 파악하고 설명했는지

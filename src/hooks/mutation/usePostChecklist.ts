@@ -3,9 +3,10 @@ import { postCheckList } from '@/api/business';
 import { CheckListResponse } from '@/types/business/checklist.type';
 
 type CheckListRequest = { planId: number; body: CheckListResponse };
+type CheckListApiResponse = { data: boolean[] };
 
 export function usePostCheckList() {
-  return useMutation<CheckListResponse, unknown, CheckListRequest>({
+  return useMutation<CheckListApiResponse, unknown, CheckListRequest>({
     mutationFn: ({ planId, body }) => postCheckList(planId, body),
   });
 }

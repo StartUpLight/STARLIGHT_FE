@@ -39,17 +39,28 @@ const renderItemHtml = (
     content: ReturnType<typeof convertResponseToItemContent>
 ): string => {
     if (item.number === '0') {
+        const itemNameHtml = content.itemName
+            ? (typeof content.itemName === 'string'
+                ? content.itemName
+                : convertEditorJsonToHtml(content.itemName))
+            : '';
+        const oneLineIntroHtml = content.oneLineIntro
+            ? (typeof content.oneLineIntro === 'string'
+                ? content.oneLineIntro
+                : convertEditorJsonToHtml(content.oneLineIntro))
+            : '';
+
         let html = `
             <div class="mb-4">
                 <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템명</h3>
-                ${content.itemName
-                ? `<p class="ds-text text-gray-700">${content.itemName}</p>`
+                ${itemNameHtml
+                ? `<div class="ds-text text-gray-700 prose max-w-none">${itemNameHtml}</div>`
                 : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
             </div>
             <div class="mb-4">
                 <h3 class="ds-subtitle font-semibold mb-2 text-gray-800">아이템 한줄 소개</h3>
-                ${content.oneLineIntro
-                ? `<p class="ds-text text-gray-700">${content.oneLineIntro}</p>`
+                ${oneLineIntroHtml
+                ? `<div class="ds-text text-gray-700 prose max-w-none">${oneLineIntroHtml}</div>`
                 : '<p class="ds-text text-gray-400">내용을 입력해주세요.</p>'}
             </div>
         `;
@@ -102,6 +113,66 @@ const renderItemHtml = (
     `;
 };
 
+const renderSectionHeaderHtml = (sectionNumber: number, sectionTitle: string) => `
+    <div
+        class="px-3 py-1 bg-gray-100 mb-3"
+        style="
+            position: relative;
+            padding: 0.25rem 0.75rem;
+            background-color: #f3f4f6;
+            margin-bottom: 0.75rem;
+            height: 28px;
+        "
+    >
+        <div
+            class="rounded-full bg-gray-900"
+            style="
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                height: 20px;
+                width: 20px;
+                border-radius: 9999px;
+                background-color: #111827;
+            "
+        >
+            <span
+                class="ds-caption font-semibold text-white"
+                style="
+                    position: absolute;
+                    left: 50%;
+                    top: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 12px;
+                    line-height: 16px;
+                    font-weight: 600;
+                    color: #ffffff;
+                "
+            >
+                ${sectionNumber}
+            </span>
+        </div>
+        <h2
+            class="ds-subtitle font-semibold text-gray-900"
+            style="
+                position: absolute;
+                left: 40px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 18px;
+                line-height: 150%;
+                font-weight: 600;
+                color: #111827;
+                letter-spacing: -0.02em;
+                margin: 0;
+            "
+        >
+            ${sectionTitle}
+        </h2>
+    </div>
+`;
+
 // Preview와 동일한 HTML 생성 (측정용)
 const renderPreviewHtml = (
     response: BusinessPlanSubsectionsResponse
@@ -139,17 +210,40 @@ const renderPreviewHtml = (
                     padding: 0;
                     background: white;
                 }
-                .ds-caption { font-size: 12px; line-height: 16px; }
-                .ds-subtext { font-size: 13px; line-height: 18px; }
-                .ds-text { font-size: 14px; line-height: 20px; }
-                .ds-subtitle { font-size: 16px; line-height: 24px; }
+                .ds-caption { font-size: 12px; line-height: 150%; letter-spacing: 0; }
+                .ds-subtext { font-size: 14px; line-height: 150%; letter-spacing: 0; }
+                .ds-text { font-size: 16px; line-height: 150%; letter-spacing: -0.01em; }
+                .ds-subtitle { font-size: 18px; line-height: 150%; letter-spacing: -0.02em; }
                 .prose img { display: block; margin: 0 auto; }
-                .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
-                .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
+                .prose ul { list-style-type: disc; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose li { margin: 0.15rem 0; }
+                .prose table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                    border: 1px solid #E5E7EB;
+                }
+                .prose th,
+                .prose td {
+                    padding: 8px;
+                    border: 1px solid #E5E7EB;
+                    min-height: 25px;
+                    vertical-align: top;
+                    box-sizing: border-box;
+                }
+                .prose th > div,
+                .prose td > div {
+                    min-height: 25px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-start;
+                    height: 100%;
+                }
             </style>
         </head>
         <body>
-            <div id="measure-content" style="width: ${A4_WIDTH - 96}px; padding: 24px; visibility: hidden; position: absolute; top: -9999px;">
+            <div id="measure-content" style="width: ${A4_WIDTH}px; padding: 24px 48px; box-sizing: border-box; visibility: hidden; position: absolute; top: -9999px;">
     `;
 
     // 섹션별로 렌더링 (측정용)
@@ -159,14 +253,7 @@ const renderPreviewHtml = (
 
         html += `
             <div class="mb-[42px]">
-                <div class="px-3 py-1 bg-gray-100 mb-3 flex items-center gap-3">
-                    <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                        ${sectionNumber}
-                    </div>
-                    <h2 class="ds-subtitle font-semibold text-gray-900">
-                        ${sectionTitle}
-                    </h2>
-                </div>
+                ${renderSectionHeaderHtml(sectionNumber, sectionTitle)}
         `;
 
         section.items.forEach((item) => {
@@ -208,17 +295,40 @@ const renderPageHtml = (
                     padding: 0;
                     background: white;
                 }
-                .ds-caption { font-size: 12px; line-height: 16px; }
-                .ds-subtext { font-size: 13px; line-height: 18px; }
-                .ds-text { font-size: 14px; line-height: 20px; }
-                .ds-subtitle { font-size: 16px; line-height: 24px; }
+                .ds-caption { font-size: 12px; line-height: 150%; letter-spacing: 0; }
+                .ds-subtext { font-size: 14px; line-height: 150%; letter-spacing: 0; }
+                .ds-text { font-size: 16px; line-height: 150%; letter-spacing: -0.01em; }
+                .ds-subtitle { font-size: 18px; line-height: 150%; letter-spacing: -0.02em; }
                 .prose img { display: block; margin: 0 auto; }
-                .prose ul { list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
-                .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0; }
+                .prose ul { list-style-type: disc; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0 0 0.4rem 0; }
+                .prose li { margin: 0.15rem 0; }
+                .prose table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                    border: 1px solid #E5E7EB;
+                }
+                .prose th,
+                .prose td {
+                    padding: 8px;
+                    border: 1px solid #E5E7EB;
+                    min-height: 25px;
+                    vertical-align: top;
+                    box-sizing: border-box;
+                }
+                .prose th > div,
+                .prose td > div {
+                    min-height: 25px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-start;
+                    height: 100%;
+                }
             </style>
         </head>
         <body>
-            <div class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
+            <div id="pdf-page-root" class="bg-white shadow-lg" style="width: ${A4_WIDTH}px; height: ${A4_HEIGHT}px; overflow: hidden; display: flex; flex-direction: column;">
                 ${showHeader
             ? `<div class="px-12 pt-10 pb-6 border-b border-gray-200 flex-shrink-0">
                         <h1 class="ds-subtitle font-semibold text-gray-900 text-center">${title}</h1>
@@ -351,46 +461,30 @@ export const generatePdfFromSubsections = async (
 
                             const needsSectionHeader = !shownSections.has(sectionNumber);
 
-                            // 개요(sectionNumber 1) 또는 개요 다음 영역(sectionNumber 2, "1. 문제 인식")이 시작될 때는 무조건 새 페이지에서 시작
-                            const shouldForceNewPage = needsSectionHeader && (sectionNumber === 1 || sectionNumber === 2);
-
                             // 섹션 제목 높이 계산
                             const totalItemHeight = needsSectionHeader
                                 ? sectionHeaderHeight + SECTION_HEADER_MARGIN + itemHeight + ITEM_MARGIN
                                 : itemHeight + ITEM_MARGIN;
 
                             // 페이지 분할: 특정 섹션은 강제로 새 페이지, 나머지는 여유 공간 고려
-                            const PAGE_BUFFER = 50; // 약간의 여유 공간
-                            if (shouldForceNewPage || (currentPageContent.length > 0 && currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER)) {
+                            const PAGE_BUFFER = -10; // 오버플로 방지를 위해 여유를 덜 사용
+                            if (currentPageContent.length > 0 && currentPageHeight + totalItemHeight > MAX_CONTENT_HEIGHT + PAGE_BUFFER) {
                                 // 현재 페이지 저장
                                 if (currentPageContent.length > 0) {
                                     pages.push({
                                         content: currentPageContent.join(''),
                                         showHeader: isFirstPage,
                                     });
+                                    isFirstPage = false;
                                 }
                                 // 새 페이지 시작
                                 currentPageContent = [];
                                 currentPageHeight = 0;
-                                // 개요(sectionNumber 1)는 첫 페이지이므로 제목 표시, 그 외는 false
-                                isFirstPage = sectionNumber === 1;
-                                // 새 페이지에서도 섹션 헤더는 다시 표시하지 않음 (이미 표시된 섹션이면)
                             }
 
                             // 섹션 헤더 추가 (처음 한 번만)
                             if (needsSectionHeader) {
-                                currentPageContent.push(`
-                                    <div class="mb-3">
-                                        <div class="px-3 py-1 bg-gray-100 flex items-center gap-3">
-                                            <div class="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-gray-900 ds-caption font-semibold text-white">
-                                                ${sectionNumber}
-                                            </div>
-                                            <h2 class="ds-subtitle font-semibold text-gray-900">
-                                                ${sectionTitle}
-                                            </h2>
-                                        </div>
-                                    </div>
-                                `);
+                                currentPageContent.push(renderSectionHeaderHtml(sectionNumber, sectionTitle));
                                 currentPageHeight += sectionHeaderHeight + SECTION_HEADER_MARGIN;
                                 shownSections.add(sectionNumber);
                             }
@@ -405,6 +499,17 @@ export const generatePdfFromSubsections = async (
                             const ITEM_MARGIN = 16; // mb-4 = 16px
                             currentPageHeight += SECTION_BOTTOM_MARGIN - ITEM_MARGIN; // 마지막 아이템의 mb-4를 제외하고 섹션 여백 추가
                         }
+
+                        // 개요 섹션(1번)은 다른 섹션과 페이지를 공유하지 않도록 강제 분리
+                        if (sectionNumber === 1 && currentPageContent.length > 0) {
+                            pages.push({
+                                content: currentPageContent.join(''),
+                                showHeader: isFirstPage,
+                            });
+                            isFirstPage = false;
+                            currentPageContent = [];
+                            currentPageHeight = 0;
+                        }
                     });
 
                     if (currentPageContent.length > 0) {
@@ -412,6 +517,7 @@ export const generatePdfFromSubsections = async (
                             content: currentPageContent.join(''),
                             showHeader: isFirstPage,
                         });
+                        isFirstPage = false;
                     }
 
                     // 측정용 iframe 제거
@@ -532,10 +638,7 @@ export const generatePdfFromSubsections = async (
                                         });
                                     });
 
-                                    const pageElement = pageDoc.body.firstElementChild as HTMLElement;
-                                    if (!pageElement) {
-                                        throw new Error('Page element not found');
-                                    }
+                                    const pageElement = await waitForElement(pageDoc, 'pdf-page-root');
 
                                     const canvas = await html2canvas(pageElement, {
                                         scale: 2,
@@ -545,6 +648,248 @@ export const generatePdfFromSubsections = async (
                                         backgroundColor: '#ffffff',
                                         width: A4_WIDTH,
                                         height: A4_HEIGHT,
+                                        onclone: (clonedDoc) => {
+                                            // 전역 스타일 주입 - 위로 쏠리는 현상 방지
+                                            const styleEl = clonedDoc.createElement('style');
+                                            styleEl.innerHTML = `
+                                                /* 인라인 요소 정렬 수정 */
+                                                mark, strong, em, code, span {
+                                                    vertical-align: baseline !important;
+                                                    display: inline !important;
+                                                    line-height: inherit !important;
+                                                }
+                                                
+                                                /* 하이라이트 추가 여백 */
+                                                mark {
+                                                    padding-top: 0.1em !important;
+                                                    padding-bottom: 0.05em !important;
+                                                    margin: 0 !important;
+                                                }
+                                                
+                                                /* 리스트 스타일 강제 */
+                                                ul, ol {
+                                                    list-style-position: outside !important;
+                                                    padding-left: 1.5rem !important;
+                                                    margin: 0 0 0.75rem 0 !important;
+                                                }
+                                                
+                                                ul {
+                                                    list-style-type: disc !important;
+                                                }
+                                                
+                                                ol {
+                                                    list-style-type: decimal !important;
+                                                }
+                                                
+                                                li {
+                                                    display: list-item !important;
+                                                    line-height: 1.6 !important;
+                                                    vertical-align: baseline !important;
+                                                    padding: 0 !important;
+                                                    margin: 0 !important;
+                                                }
+                                                
+                                                /* 문단 스타일 */
+                                                p {
+                                                    line-height: 1.6 !important;
+                                                    margin: 0 0 0.75rem 0 !important;
+                                                }
+                                            `;
+                                            clonedDoc.head.appendChild(styleEl);
+
+                                            // 섹션 헤더 스타일 적용
+                                            const sectionHeaders = clonedDoc.querySelectorAll('.bg-gray-100');
+                                            sectionHeaders.forEach((header) => {
+                                                const sectionNumberContainer = header.querySelector('.bg-gray-900.rounded-full') as HTMLElement;
+                                                if (sectionNumberContainer) {
+                                                    const sectionNumberText = sectionNumberContainer.querySelector('span') as HTMLElement;
+                                                    if (sectionNumberText) {
+                                                        sectionNumberText.style.setProperty('top', '20%', 'important');
+                                                    }
+                                                }
+                                                const sectionTitle = header.querySelector('h2.ds-subtitle') as HTMLElement;
+                                                if (sectionTitle) {
+                                                    sectionTitle.style.setProperty('top', '20%', 'important');
+                                                }
+                                            });
+
+                                            // 하이라이트가 여러 줄일 때 각 줄마다 배경이 보이도록 처리
+                                            const highlightSpans = clonedDoc.querySelectorAll('span[style*="background-color"]');
+                                            highlightSpans.forEach((span) => {
+                                                const spanEl = span as HTMLElement;
+                                                const style = spanEl.getAttribute('style') || '';
+                                                const colorMatch = style.match(/background-color:\s*([^;]+)/i);
+                                                if (!colorMatch) return;
+                                                const bgColor = colorMatch[1].trim();
+                                                if (!bgColor || bgColor === 'transparent') return;
+
+                                                if (spanEl.dataset.pdfHighlightProcessed === 'true') return;
+                                                spanEl.dataset.pdfHighlightProcessed = 'true';
+
+                                                const originalHTML = spanEl.innerHTML;
+                                                const range = clonedDoc.createRange();
+                                                range.selectNodeContents(spanEl);
+                                                const rects = Array.from(range.getClientRects());
+                                                const spanRect = spanEl.getBoundingClientRect();
+
+                                                spanEl.style.backgroundColor = 'transparent';
+                                                spanEl.style.position = spanEl.style.position || 'relative';
+                                                spanEl.style.display = 'inline-block';
+                                                spanEl.style.zIndex = '0';
+
+                                                const textLayer = clonedDoc.createElement('span');
+                                                textLayer.innerHTML = originalHTML;
+                                                textLayer.style.position = 'relative';
+                                                textLayer.style.zIndex = '1';
+                                                textLayer.style.display = 'inline';
+                                                spanEl.innerHTML = '';
+                                                spanEl.appendChild(textLayer);
+
+                                                rects.forEach((rect) => {
+                                                    if (!rect.width || !rect.height) return;
+                                                    const overlay = clonedDoc.createElement('span');
+                                                    overlay.style.position = 'absolute';
+                                                    overlay.style.left = `${rect.left - spanRect.left}px`;
+                                                    const offsetTop = rect.top - spanRect.top + rect.height * 0.5;
+                                                    overlay.style.top = `${offsetTop}px`;
+                                                    const overlayHeight = rect.height;
+                                                    overlay.style.width = `${rect.width}px`;
+                                                    overlay.style.height = `${overlayHeight}px`;
+                                                    overlay.style.backgroundColor = bgColor;
+                                                    overlay.style.borderRadius = '2px';
+                                                    overlay.style.pointerEvents = 'none';
+                                                    overlay.style.zIndex = '-1';
+                                                    spanEl.insertBefore(overlay, spanEl.firstChild);
+                                                });
+                                            });
+
+                                            const listItems = clonedDoc.querySelectorAll('li');
+                                            listItems.forEach((li) => {
+                                                const liEl = li as HTMLElement;
+                                                liEl.style.setProperty('display', 'list-item', 'important');
+                                                liEl.style.setProperty('line-height', '1.6', 'important');
+                                                liEl.style.setProperty('vertical-align', 'baseline', 'important');
+                                            });
+
+                                            const bulletLists = clonedDoc.querySelectorAll('ul');
+                                            bulletLists.forEach((ul) => {
+                                                const ulEl = ul as HTMLElement;
+                                                ulEl.style.setProperty('list-style-type', 'none', 'important');
+                                                ulEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                                                // ul의 직접 자식 li만 선택 (중첩된 ol 내부의 li는 제외)
+                                                const bulletItems = Array.from(ulEl.children).filter(
+                                                    (child) => child.tagName === 'LI'
+                                                ) as HTMLElement[];
+
+                                                bulletItems.forEach((li) => {
+                                                    const liEl = li as HTMLElement;
+                                                    liEl.style.setProperty('list-style-type', 'none', 'important');
+                                                    liEl.style.setProperty('position', 'relative', 'important');
+                                                    liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                    let bulletSpan = liEl.querySelector('.pdf-bullet-marker') as HTMLElement | null;
+                                                    if (!bulletSpan) {
+                                                        bulletSpan = clonedDoc.createElement('span');
+                                                        bulletSpan.className = 'pdf-bullet-marker';
+                                                        bulletSpan.textContent = '•';
+                                                        liEl.insertBefore(bulletSpan, liEl.firstChild);
+                                                    }
+
+                                                    bulletSpan.style.setProperty('position', 'absolute', 'important');
+                                                    bulletSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                    bulletSpan.style.setProperty('top', '0.3em', 'important');
+                                                    bulletSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                    bulletSpan.style.setProperty('line-height', '1', 'important');
+                                                    bulletSpan.style.setProperty('font-size', '1.5rem', 'important');
+                                                    bulletSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                                    // ul의 li 내부에 중첩된 ol이 있는 경우 처리
+                                                    const nestedOl = liEl.querySelector('ol');
+                                                    if (nestedOl) {
+                                                        const nestedOlEl = nestedOl as HTMLElement;
+                                                        nestedOlEl.style.setProperty('list-style-type', 'none', 'important');
+                                                        nestedOlEl.style.setProperty('padding-left', '1.2rem', 'important');
+                                                        nestedOlEl.style.setProperty('margin-left', '0.2rem', 'important');
+
+                                                        // 중첩된 ol의 직접 자식 li만 선택
+                                                        const nestedOlItems = Array.from(nestedOlEl.children).filter(
+                                                            (child) => child.tagName === 'LI'
+                                                        ) as HTMLElement[];
+
+                                                        nestedOlItems.forEach((nestedLi, nestedIndex) => {
+                                                            const nestedLiEl = nestedLi as HTMLElement;
+                                                            nestedLiEl.style.setProperty('list-style-type', 'none', 'important');
+                                                            nestedLiEl.style.setProperty('position', 'relative', 'important');
+                                                            nestedLiEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                            let nestedNumberSpan = nestedLiEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                                            if (!nestedNumberSpan) {
+                                                                nestedNumberSpan = clonedDoc.createElement('span');
+                                                                nestedNumberSpan.className = 'pdf-number-marker';
+                                                                nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                                                nestedLiEl.insertBefore(nestedNumberSpan, nestedLiEl.firstChild);
+                                                            } else {
+                                                                nestedNumberSpan.textContent = `${nestedIndex + 1}.`;
+                                                            }
+
+                                                            nestedNumberSpan.style.setProperty('position', 'absolute', 'important');
+                                                            nestedNumberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                            nestedNumberSpan.style.setProperty('top', '0.72em', 'important');
+                                                            nestedNumberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                            nestedNumberSpan.style.setProperty('line-height', '1', 'important');
+                                                            nestedNumberSpan.style.setProperty('font-size', '1rem', 'important');
+                                                            nestedNumberSpan.style.setProperty('color', '#4b5563', 'important');
+                                                        });
+                                                    }
+                                                });
+                                            });
+
+                                            const orderedLists = clonedDoc.querySelectorAll('ol');
+                                            orderedLists.forEach((ol) => {
+                                                const olEl = ol as HTMLElement;
+                                                olEl.style.setProperty('list-style-type', 'none', 'important');
+                                                olEl.style.setProperty('padding-left', '1.2rem', 'important');
+
+                                                // ol의 직접 자식 li만 선택 (중첩된 ul 내부의 li는 제외)
+                                                const orderedItems = Array.from(olEl.children).filter(
+                                                    (child) => child.tagName === 'LI'
+                                                ) as HTMLElement[];
+
+                                                orderedItems.forEach((li, index) => {
+                                                    const liEl = li as HTMLElement;
+                                                    liEl.style.setProperty('list-style-type', 'none', 'important');
+                                                    liEl.style.setProperty('position', 'relative', 'important');
+                                                    liEl.style.setProperty('padding-left', '0.5rem', 'important');
+
+                                                    let numberSpan = liEl.querySelector('.pdf-number-marker') as HTMLElement | null;
+                                                    if (!numberSpan) {
+                                                        numberSpan = clonedDoc.createElement('span');
+                                                        numberSpan.className = 'pdf-number-marker';
+                                                        numberSpan.textContent = `${index + 1}.`;
+                                                        liEl.insertBefore(numberSpan, liEl.firstChild);
+                                                    } else {
+                                                        numberSpan.textContent = `${index + 1}.`;
+                                                    }
+
+                                                    numberSpan.style.setProperty('position', 'absolute', 'important');
+                                                    numberSpan.style.setProperty('left', '-0.5rem', 'important');
+                                                    numberSpan.style.setProperty('top', '0.72em', 'important');
+                                                    numberSpan.style.setProperty('transform', 'translateY(-50%)', 'important');
+                                                    numberSpan.style.setProperty('line-height', '1', 'important');
+                                                    numberSpan.style.setProperty('font-size', '1rem', 'important');
+                                                    numberSpan.style.setProperty('color', '#4b5563', 'important');
+
+                                                    // 중첩된 ul이 있으면 padding-left 조정하여 겹치지 않도록
+                                                    const nestedUl = liEl.querySelector('ul');
+                                                    if (nestedUl) {
+                                                        const nestedUlEl = nestedUl as HTMLElement;
+                                                        nestedUlEl.style.setProperty('margin-left', '0.2rem', 'important');
+                                                        nestedUlEl.style.setProperty('padding-left', '0.6rem', 'important');
+                                                    }
+                                                });
+                                            });
+                                        },
                                     });
 
                                     const imgData = canvas.toDataURL('image/jpeg', 0.9);

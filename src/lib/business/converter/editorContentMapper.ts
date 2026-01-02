@@ -1,6 +1,19 @@
-import { BlockContentItem, TextContentItem, ImageContentItem } from '@/types/business/business.type';
+import {
+    BlockContentItem,
+    TextContentItem,
+    ImageContentItem,
+    TableCellContentItem,
+    TableColumnItem,
+} from '@/types/business/business.type';
 
-export type JSONAttrs = { [key: string]: string | number | boolean | null | undefined };
+export type JSONAttrValue =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | (number | null)[];
+export type JSONAttrs = { [key: string]: JSONAttrValue };
 export type JSONMark = { type: string; attrs?: JSONAttrs };
 export type JSONNode = { type?: string; text?: string; marks?: JSONMark[]; attrs?: JSONAttrs; content?: JSONNode[] };
 
@@ -16,12 +29,42 @@ const parseDimension = (value: unknown): number | null => {
     return null;
 };
 
-export const convertToMarkdown = (node: JSONNode | null | undefined): string => {
+export const convertToMarkdown = (
+    node: JSONNode | null | undefined,
+    depth: number = 0
+): string => {
     if (!node) return '';
     if (node.type === 'text') {
         let text = node.text || '';
         const marks = node.marks || [];
+
+        // spellError와 textStyle를 먼저 확인
+        const spellErrorMark = marks.find((mark) => mark.type === 'spellError');
+        const textStyleMark = marks.find((mark) => mark.type === 'textStyle');
+        const hasSpellError = !!spellErrorMark;
+        const color = textStyleMark?.attrs?.color as string | undefined;
+        // #6f55ff는 맞춤법 검사 결과로 적용된 색상이므로 저장하지 않음
+        const isSpellCheckColor = color && color.toLowerCase() === '#6f55ff';
+
+        // spellError와 textStyle를 함께 처리
+        if (hasSpellError && color && !isSpellCheckColor) {
+            // spellError가 있고 원래 색상이 있으면 (맞춤법 검사 결과 색상이 아닌 경우) 함께 저장
+            text = `<span class="spell-error" style="color:${color}">${text}</span>`;
+        } else if (hasSpellError) {
+            // spellError만 있으면 (맞춤법 검사 결과 색상이거나 색상이 없는 경우)
+            text = `<span class="spell-error">${text}</span>`;
+        } else if (color) {
+            // textStyle만 있으면
+            text = `<span style="color:${color}">${text}</span>`;
+        }
+
+        // 나머지 마크 처리
         marks.forEach((mark) => {
+            if (mark.type === 'spellError' || mark.type === 'textStyle') {
+                // 이미 위에서 처리했으므로 스킵
+                return;
+            }
+
             switch (mark.type) {
                 case 'bold':
                     text = `**${text}**`;
@@ -32,20 +75,8 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
                 case 'highlight':
                     text = `==${text}==`;
                     break;
-                case 'textStyle':
-                    {
-                        const color = mark.attrs?.color as string | undefined;
-                        if (color) {
-                            text = `<span style="color:${color}">${text}</span>`;
-                        }
-                    }
-                    break;
                 case 'code':
                     text = `\`${text}\``;
-                    break;
-                case 'spellError':
-                    // 맞춤법 오류 마크는 클래스 기반 span으로 래핑하여 보존
-                    text = `<span class="spell-error">${text}</span>`;
                     break;
                 default:
                     break;
@@ -60,27 +91,48 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
     }
 
     if (node.type === 'paragraph') {
-        const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
+        const content = (node.content || []).map((child) => convertToMarkdown(child, depth)).join('');
         return content;
     }
 
     if (node.type === 'heading') {
         const level = (node.attrs?.level as number) || 1;
-        const content = (node.content || []).map((child) => convertToMarkdown(child)).join('');
+        const content = (node.content || []).map((child) => convertToMarkdown(child, depth)).join('');
         return content ? `${'#'.repeat(level)} ${content.trim()}` : '';
     }
 
     if (node.type === 'bulletList' || node.type === 'orderedList') {
-        const contentArray = node.content || [];
-        const items = contentArray
+        const indent = '  '.repeat(depth);
+        const isOrdered = node.type === 'orderedList';
+        const items = (node.content || [])
             .map((item, index: number) => {
-                const itemContent = (item.content || []).map((child) => convertToMarkdown(child)).join('').trim();
-                const prefix = node.type === 'orderedList' ? `${index + 1}. ` : '- ';
-                const isLast = index === contentArray.length - 1;
-                return itemContent ? `${prefix}${itemContent}${isLast ? '' : '\n'}` : '';
+                if (!item || item.type !== 'listItem') return '';
+                const prefix = isOrdered ? `${index + 1}. ` : '- ';
+
+                const textParts: string[] = [];
+                const nestedParts: string[] = [];
+
+                (item.content || []).forEach((child) => {
+                    if (!child) return;
+                    if (child.type === 'bulletList' || child.type === 'orderedList') {
+                        nestedParts.push(convertToMarkdown(child, depth + 1));
+                    } else {
+                        const value = convertToMarkdown(child, depth + 1).trim();
+                        if (value) {
+                            textParts.push(value);
+                        }
+                    }
+                });
+
+                const textContent = textParts.join(' ').trim();
+                const baseLine = `${indent}${prefix}${textContent}`.trimEnd();
+                const nestedContent = nestedParts.length > 0 ? `\n${nestedParts.join('\n')}` : '';
+
+                return baseLine + nestedContent;
             })
-            .join('');
-        return items ? `${items}` : '';
+            .filter(Boolean);
+
+        return items.length > 0 ? items.join('\n') : '';
     }
 
     if (node.type === 'table') {
@@ -90,7 +142,7 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
                 const cells: string[] = [];
                 (row.content || []).forEach((cell) => {
                     if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                        const cellContent = (cell.content || []).map((child) => convertToMarkdown(child)).join('').trim().replace(/\n/g, ' ');
+                        const cellContent = (cell.content || []).map((child) => convertToMarkdown(child, depth)).join('').trim().replace(/\n/g, ' ');
                         cells.push(cellContent);
                     }
                 });
@@ -121,28 +173,32 @@ export const convertToMarkdown = (node: JSONNode | null | undefined): string => 
     }
 
     if (node.content && Array.isArray(node.content)) {
-        return node.content.map((child) => convertToMarkdown(child)).join('');
+        return node.content.map((child) => convertToMarkdown(child, depth)).join('');
     }
     return '';
 };
 
 // TipTap 문서(JSON)를 API 전송용 BlockContentItem 배열로 변환합니다.
 const collectInlineImages = (node: JSONNode | undefined, target: ImageContentItem[]) => {
-    if (!node || !Array.isArray(node.content)) return;
+    if (!node) return;
+
+    if (node.type === 'image') {
+        const src = (node.attrs?.src as string) || '';
+        if (!src) return;
+        target.push({
+            type: 'image',
+            src,
+            caption: (node.attrs?.caption as string) || (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
+            width: parseDimension(node.attrs?.width),
+            height: parseDimension(node.attrs?.height),
+        });
+        return;
+    }
+
+    if (!Array.isArray(node.content)) return;
+
     node.content.forEach((child) => {
-        if (child.type === 'image') {
-            const src = (child.attrs?.src as string) || '';
-            if (!src) return;
-            target.push({
-                type: 'image',
-                src,
-                caption: (child.attrs?.alt as string) || (child.attrs?.title as string) || '',
-                width: parseDimension(child.attrs?.width),
-                height: parseDimension(child.attrs?.height),
-            });
-        } else {
-            collectInlineImages(child, target);
-        }
+        collectInlineImages(child, target);
     });
 };
 
@@ -191,30 +247,135 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
     if (!editorJson || !Array.isArray(editorJson.content)) return [];
     const contents: BlockContentItem[] = [];
 
-    const extractTableData = (tableNode: JSONNode) => {
-        const rows: string[][] = [];
-        let columns: string[] = [];
-        if (tableNode.content && Array.isArray(tableNode.content)) {
-            tableNode.content.forEach((row, rowIndex: number) => {
-                if (row.type === 'tableRow') {
-                    const rowData: string[] = [];
-                    if (row.content && Array.isArray(row.content)) {
-                        row.content.forEach((cell) => {
-                            if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                                const cellContent = (cell.content || []).map((child) => convertToMarkdown(child)).join('').trim();
-                                rowData.push(cellContent);
-                                if (rowIndex === 0 && cell.type === 'tableHeader') {
-                                    columns.push(cellContent);
-                                }
-                            }
-                        });
-                    }
-                    if (rowData.length > 0) rows.push(rowData);
-                }
+    const buildCellContentItems = (cellNode: JSONNode): TableCellContentItem['content'] => {
+        const items: TableCellContentItem['content'] = [];
+        const pushText = (value: string) => {
+            items.push({ type: 'text', value } as TextContentItem);
+        };
+        const pushImage = (image: ImageContentItem) => {
+            if (!image.src) return;
+            items.push({
+                type: 'image',
+                src: image.src,
+                caption: image.caption || '',
+                width: image.width ?? null,
+                height: image.height ?? null,
             });
+        };
+
+        const serializeNode = (node: JSONNode | undefined) => {
+            if (!node) return;
+            const inlineImages: ImageContentItem[] = [];
+            collectInlineImages(node, inlineImages);
+            const markdown = convertToMarkdown(node);
+            splitMarkdownByImages(
+                markdown,
+                inlineImages,
+                (text) => pushText(text),
+                (image) =>
+                    pushImage({
+                        type: 'image',
+                        src: image.src,
+                        caption: image.caption || '',
+                        width: image.width ?? null,
+                        height: image.height ?? null,
+                    })
+            );
+        };
+
+        if (!Array.isArray(cellNode.content) || cellNode.content.length === 0) {
+            pushText('');
+            return items;
         }
-        if (columns.length === 0 && rows.length > 0) columns = rows[0] || [];
-        return { columns, rows };
+
+        cellNode.content.forEach((child) => serializeNode(child));
+
+        return items.length > 0 ? items : [{ type: 'text', value: '' }];
+    };
+
+    const extractTableData = (tableNode: JSONNode) => {
+        const tableRows: TableCellContentItem[][] = [];
+        const firstRow = tableNode.content?.find((row) => row.type === 'tableRow');
+        const inferredColumnCount =
+            firstRow && Array.isArray(firstRow.content)
+                ? firstRow.content.reduce((sum, cell) => sum + (Number(cell.attrs?.colspan) || 1), 0)
+                : 0;
+        const columnCount = Math.max(1, inferredColumnCount);
+        const colwidth = Array.isArray(tableNode.attrs?.colwidth)
+            ? (tableNode.attrs?.colwidth as Array<number | null | undefined>)
+            : undefined;
+        const columns: TableColumnItem[] = Array.from({ length: columnCount }, (_, idx) => {
+            const width = colwidth && colwidth[idx] != null ? colwidth[idx] : null;
+            return width != null ? { width } : {};
+        });
+        const rowspanState = new Array(columnCount).fill(0);
+
+        const decrementRowspans = () => {
+            for (let i = 0; i < columnCount; i += 1) {
+                if (rowspanState[i] > 0) {
+                    rowspanState[i] -= 1;
+                }
+            }
+        };
+
+        (tableNode.content || []).forEach((row) => {
+            if (row.type !== 'tableRow') {
+                return;
+            }
+            const rowCells: TableCellContentItem[] = [];
+            let colIndex = 0;
+
+            const advanceToNextAvailableColumn = () => {
+                while (colIndex < columnCount && rowspanState[colIndex] > 0) {
+                    colIndex += 1;
+                }
+            };
+
+            advanceToNextAvailableColumn();
+
+            (row.content || []).forEach((cell) => {
+                if (cell.type !== 'tableCell' && cell.type !== 'tableHeader') {
+                    return;
+                }
+                advanceToNextAvailableColumn();
+                if (colIndex >= columnCount) {
+                    return;
+                }
+                const colspan = Math.max(1, Number(cell.attrs?.colspan) || 1);
+                const rowspan = Math.max(1, Number(cell.attrs?.rowspan) || 1);
+                const cellContent = buildCellContentItems(cell);
+                const tableCell: TableCellContentItem = {
+                    content: cellContent,
+                };
+                if (colspan > 1) tableCell.colspan = colspan;
+                if (rowspan > 1) tableCell.rowspan = rowspan;
+                rowCells.push(tableCell);
+                const cellColwidth = Array.isArray(cell.attrs?.colwidth)
+                    ? (cell.attrs?.colwidth as Array<number | null | undefined>)
+                    : undefined;
+                for (let i = 0; i < colspan; i += 1) {
+                    const columnIdx = colIndex + i;
+                    rowspanState[columnIdx] = rowspan > 1 ? rowspan : 0;
+                    const widthValue = cellColwidth?.[i];
+                    if (
+                        typeof widthValue === 'number' &&
+                        columns[columnIdx] &&
+                        columns[columnIdx].width == null
+                    ) {
+                        columns[columnIdx].width = widthValue;
+                    }
+                }
+                colIndex += colspan;
+            });
+
+            decrementRowspans();
+            tableRows.push(rowCells);
+        });
+
+        return {
+            columns,
+            rows: tableRows,
+        };
     };
 
     // 노드의 순서를 유지하면서 처리
@@ -273,7 +434,7 @@ export const convertEditorJsonToContent = (editorJson: { content?: JSONNode[] } 
             contents.push({
                 type: 'image',
                 src: (node.attrs?.src as string) || '',
-                caption: (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
+                caption: (node.attrs?.caption as string) || (node.attrs?.alt as string) || (node.attrs?.title as string) || '',
                 width: widthAttr ?? null,
                 height: heightAttr ?? null,
             });

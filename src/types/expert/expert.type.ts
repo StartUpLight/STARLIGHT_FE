@@ -2,10 +2,13 @@ export interface getExpertResponse {
   result: string;
   id: number;
   name: string;
+  oneLineIntroduction: string;
   profileImageUrl: string;
   email: string;
-  mentoringPriceWon: number;
-  careers: string[];
+  careers: {
+    orderIndex: number;
+    careerTitle: string;
+  }[];
   categories: string[];
   tags: string[];
   workedPeriod: number;
@@ -68,4 +71,31 @@ export interface getExpertReportsData {
     tags: string[];
     categories: string[];
   };
+}
+
+export interface getUserExpertReportResponse {
+  result: string;
+  data: getUserExpertReportResponseData[];
+  error: null;
+}
+
+export interface getUserExpertReportResponseData {
+  canEdit: boolean;
+  details: {
+    commentType: string;
+    content: string;
+  }[];
+  expertDetailResponse: {
+    id: number;
+    name: string;
+    profileImageUrl: string;
+    workedPeriod: string;
+    email: string;
+    mentoringPriceWon: number;
+    careers: string[];
+    tags: string[];
+    categories: string[];
+  };
+  status: string;
+  overallComment: string;
 }

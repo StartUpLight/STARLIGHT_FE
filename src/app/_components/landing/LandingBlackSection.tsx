@@ -13,7 +13,7 @@ const LandingBlackSection = () => {
         </div>
 
         <div className="ds-title mt-3 font-medium text-white">
-          어쩌구어쩌구어쩌구어쩌꾸어
+          정량·정성 평가 요소를 기반으로 한 실전형 진단 가이드
         </div>
 
         <Image
@@ -21,8 +21,9 @@ const LandingBlackSection = () => {
           alt="홈화면 이미지"
           width={912}
           height={593}
-          className="mt-[60px] w-[90vw] max-w-[912px]"
+          className="mt-[60px] h-auto w-full max-w-[912px]"
           priority
+          unoptimized={true}
         />
       </div>
 
@@ -36,16 +37,18 @@ const LandingBlackSection = () => {
         </div>
 
         <div className="ds-title font-medium text-white">
-          어쩌구어쩌구어쩌구어쩌꾸어
+          AI 진단 기반으로 내 사업계획서의 강·약점을 정확하게 분석
         </div>
 
         <Image
           src="/images/landing/landing_feedback.png"
           alt="피드백 이미지"
-          width={1176}
+          width={1124}
           height={651}
-          className="mt-[60px] w-[90vw] max-w-full"
+          className="mt-[60px] h-auto w-full"
           priority
+          quality={100}
+          unoptimized={true}
         />
       </div>
 
@@ -58,7 +61,7 @@ const LandingBlackSection = () => {
         </div>
 
         <div className="ds-title font-medium text-white">
-          어쩌구어쩌구어쩌구어쩌꾸어
+          검증된 전문가에게 직접 피드백을 받아 개선 방향을 명확히 제시
         </div>
 
         <div className="mt-[60px] flex flex-col items-center justify-center gap-6">
@@ -67,24 +70,30 @@ const LandingBlackSection = () => {
             alt="랜딩 전문가 이미지"
             width={1176}
             height={200}
-            className="max-w-[1176px]"
+            className="h-auto max-w-[1176px] object-contain"
+            style={{ height: 'auto' }}
             priority
+            unoptimized={true}
           />
           <Image
             src="/images/landing/landing_expert2.png"
             alt="랜딩 전문가 이미지"
             width={1176}
             height={200}
-            className="max-w-[1176px]"
+            className="h-auto max-w-[1176px]"
+            style={{ height: 'auto' }}
             priority
+            unoptimized={true}
           />
           <Image
             src="/images/landing/landing_expert3.png"
             alt="랜딩 전문가 이미지"
             width={1176}
             height={200}
-            className="max-w-[1176px]"
+            className="h-auto max-w-[1176px]"
+            style={{ height: 'auto' }}
             priority
+            unoptimized={true}
           />
         </div>
       </div>

@@ -1,34 +1,27 @@
 'use client';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
-import { useBusinessStore } from '@/store/business.store';
-import { uploadImage } from '@/lib/imageUpload';
-import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
-import StarterKit from '@tiptap/starter-kit';
-import Highlight from '@tiptap/extension-highlight';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import Placeholder from '@tiptap/extension-placeholder';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableHeader from '@tiptap/extension-table-header';
-import TableCell from '@tiptap/extension-table-cell';
 import { Editor, JSONContent } from '@tiptap/core';
+import {
+  createEditorFeaturesConfig,
+  createEditorSkillsConfig,
+  createEditorGoalsConfig,
+  createEditorItemNameConfig,
+  createEditorOneLineIntroConfig,
+  createEditorGeneralConfig,
+} from '@/lib/business/editor/editorConstants';
+import { useBusinessStore } from '@/store/business.store';
+import { useSpellCheckStore } from '@/store/spellcheck.store';
+import { useEditorStore } from '@/store/editor.store';
 import { useSpellCheck } from '@/hooks/mutation/useSpellCheck';
 import { SpellPayload } from '@/lib/business/postSpellCheck';
-import { useSpellCheckStore } from '@/store/spellcheck.store';
 import { applySpellHighlights, clearSpellErrors } from '@/util/spellMark';
-import SpellError from '@/util/spellError';
+import { clearFixedCorrections } from '@/util/spellReplace';
 import { mapSpellResponse } from '@/types/business/business.type';
-import { useEditorStore } from '@/store/editor.store';
-import { DeleteTableOnDelete, ImageCutPaste, ResizableImage, SelectTableOnBorderClick } from '../../../lib/business/editor/extensions';
-import { createPasteHandler } from '../../../lib/business/editor/useEditorConfig';
-import { ImageCommandAttributes } from '@/lib/business/editor/types';
 import WriteFormHeader from './editor/WriteFormHeader';
 import WriteFormToolbar from './editor/WriteFormToolbar';
 import OverviewSection from './editor/OverviewSection';
 import GeneralSection from './editor/GeneralSection';
-import { clearFixedCorrections } from '@/util/spellReplace';
 
 const WriteForm = ({
   number = '0',
@@ -39,385 +32,270 @@ const WriteForm = ({
   title?: string;
   subtitle?: string;
 }) => {
-  const editorFeatures = useEditor({
-    extensions: [
-      StarterKit,
-      SpellError,
-      DeleteTableOnDelete,
-      ImageCutPaste,
-      Highlight.configure({ multicolor: true }),
-      TextStyle,
-      Color,
-      ResizableImage.configure({ inline: false }),
-      Table.configure({ resizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      SelectTableOnBorderClick,
-      Placeholder.configure({
-        placeholder:
-          '아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요.',
-        includeChildren: false,
-        showOnlyWhenEditable: true,
-      }),
-    ],
-    content: '<p></p>',
-    editorProps: {
-      handlePaste: createPasteHandler(),
-    },
-  });
-
-  const editorSkills = useEditor({
-    extensions: [
-      StarterKit,
-      SpellError,
-      DeleteTableOnDelete,
-      ImageCutPaste,
-      Highlight.configure({ multicolor: true }),
-      TextStyle,
-      Color,
-      ResizableImage.configure({ inline: false }),
-      Table.configure({ resizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      SelectTableOnBorderClick,
-      Placeholder.configure({
-        placeholder:
-          '보유한 기술 및 지식재산권이 별도로 없을 경우, 아이템에 필요한 핵심기술을 어떻게 개발해 나갈것인지 계획에 대해 작성해주세요. \n ※ 지식재산권: 특허, 상표권, 디자인, 실용신안권 등.',
-        includeChildren: false,
-        showOnlyWhenEditable: true,
-      }),
-    ],
-    content: '<p></p>',
-    editorProps: {
-      handlePaste: createPasteHandler(),
-    },
-  });
-
-  const editorGoals = useEditor({
-    extensions: [
-      StarterKit,
-      SpellError,
-      DeleteTableOnDelete,
-      ImageCutPaste,
-      Highlight.configure({ multicolor: true }),
-      TextStyle,
-      Color,
-      ResizableImage.configure({ inline: false }),
-      Table.configure({ resizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      SelectTableOnBorderClick,
-      Placeholder.configure({
-        placeholder: '본 사업을 통해 달성하고 싶은 궁극적인 목표에 대해 설명',
-        includeChildren: false,
-        showOnlyWhenEditable: true,
-      }),
-    ],
-    content: '<p></p>',
-    editorProps: {
-      handlePaste: createPasteHandler(),
-    },
-  });
-  const { updateItemContent, getItemContent, lastSavedTime, isSaving, saveAllItems, planId } = useBusinessStore();
-  // 현재 섹션의 contents만 구독하여 변경 감지
-  const currentContent = useBusinessStore((state) => state.contents[number]);
-  const [activeEditor, setActiveEditor] = useState<
-    typeof editorFeatures | null
-  >(null);
-  const [grammarActive, setGrammarActive] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const isOverview = number === '0';
 
-  // store에서 저장된 내용 불러오기
-  const savedContent = getItemContent(number);
-  const [itemName, setItemName] = useState(savedContent.itemName || '');
-  const [oneLineIntro, setOneLineIntro] = useState(
-    savedContent.oneLineIntro || ''
+  // 에디터 인스턴스 생성
+  const editorFeatures = useEditor(createEditorFeaturesConfig());
+  const editorSkills = useEditor(createEditorSkillsConfig());
+  const editorGoals = useEditor(createEditorGoalsConfig());
+  const editorItemName = useEditor(createEditorItemNameConfig());
+  const editorOneLineIntro = useEditor(createEditorOneLineIntroConfig());
+  const editorGeneral = useEditor(createEditorGeneralConfig());
+
+  const overviewEditors = useMemo(
+    () => ({
+      itemName: editorItemName,
+      oneLineIntro: editorOneLineIntro,
+      features: editorFeatures,
+      skills: editorSkills,
+      goals: editorGoals,
+    }),
+    [editorItemName, editorOneLineIntro, editorFeatures, editorSkills, editorGoals]
   );
 
-  // 에디터 내용 복원 헬퍼 함수
-  const restoreEditorContent = useCallback((editor: Editor | null, content: JSONContent | null | undefined) => {
-    if (!editor || editor.isDestroyed) return;
-    try {
-      if (content) {
-        editor.commands.setContent(content);
-      } else {
-        // content가 없으면 에디터를 빈 상태로 초기화
-        editor.commands.clearContent();
+  const defaultEditor = useMemo(
+    () => (isOverview ? editorFeatures : editorGeneral),
+    [isOverview, editorFeatures, editorGeneral]
+  );
+
+  const {
+    updateItemContent,
+    getItemContent,
+    lastSavedTime,
+    isSaving,
+    saveSingleItem,
+    planId,
+  } = useBusinessStore();
+  const currentContent = useBusinessStore((state) => state.contents[number]);
+  const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
+  const [grammarActive, setGrammarActive] = useState(false);
+
+  const convertStringToJSONContent = useCallback((text: string): JSONContent => ({
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text }],
+      },
+    ],
+  }), []);
+
+  const restoreEditorContent = useCallback(
+    (editor: Editor | null, content: JSONContent | null | undefined) => {
+      if (!editor || editor.isDestroyed) return;
+      try {
+        if (content) {
+          const currentJSON = editor.getJSON();
+          const nextJSON = JSON.parse(JSON.stringify(content));
+          if (JSON.stringify(currentJSON) === JSON.stringify(nextJSON)) return;
+          editor.commands.setContent(nextJSON, false);
+        } else {
+          const currentJSON = editor.getJSON();
+          const isEmpty =
+            !currentJSON ||
+            !Array.isArray(currentJSON.content) ||
+            currentJSON.content.length === 0 ||
+            (currentJSON.content.length === 1 &&
+              currentJSON.content[0]?.type === 'paragraph' &&
+              (!currentJSON.content[0]?.content || currentJSON.content[0]?.content?.length === 0));
+          if (!isEmpty) {
+            editor.commands.clearContent(false);
+          }
+        }
+      } catch (e) {
+        console.error('에디터 내용 복원 실패:', e);
       }
+    },
+    []
+  );
 
-      // setTimeout(() => {
-      //   if (!editor || editor.isDestroyed) return;
-
-      //   const { doc } = editor.state;
-      //   if (doc.content.size === 0) return;
-
-      //   // 마지막 노드 확인
-      //   const lastNode = doc.lastChild;
-      //   if (lastNode && lastNode.type.name === 'table') {
-      //     // 표가 마지막이면 표 아래에 빈 문단 추가
-      //     const endPos = doc.content.size;
-      //     editor.commands.insertContentAt(
-      //       endPos,
-      //       { type: 'paragraph' },
-      //       { updateSelection: false }
-      //     );
-      //   }
-      // }, 0);
-    } catch (e) {
-      console.error('에디터 내용 복원 실패:', e);
-    }
-  }, []);
-
-  // number가 변경되거나 contents가 업데이트될 때 store에서 내용 불러오기
   useEffect(() => {
-    if (!editorFeatures) return;
-
     const content = getItemContent(number);
-    setItemName(content.itemName || '');
-    setOneLineIntro(content.oneLineIntro || '');
-
-    // 에디터 내용 복원
     if (isOverview) {
+      restoreEditorContent(
+        editorItemName,
+        content.itemName ? (typeof content.itemName === 'string' ? convertStringToJSONContent(content.itemName) : content.itemName) : null
+      );
+      restoreEditorContent(
+        editorOneLineIntro,
+        content.oneLineIntro ? (typeof content.oneLineIntro === 'string' ? convertStringToJSONContent(content.oneLineIntro) : content.oneLineIntro) : null
+      );
       restoreEditorContent(editorFeatures, content.editorFeatures);
       restoreEditorContent(editorSkills, content.editorSkills);
       restoreEditorContent(editorGoals, content.editorGoals);
     } else {
-      restoreEditorContent(editorFeatures, content.editorContent);
+      restoreEditorContent(editorGeneral, content.editorContent);
     }
-  }, [number, editorFeatures, editorSkills, editorGoals, currentContent, getItemContent, isOverview, restoreEditorContent]);
+  }, [
+    number,
+    isOverview,
+    editorFeatures,
+    editorGeneral,
+    editorSkills,
+    editorGoals,
+    editorItemName,
+    editorOneLineIntro,
+    currentContent,
+    getItemContent,
+    restoreEditorContent,
+    convertStringToJSONContent,
+  ]);
 
-  // 공통 저장 함수 (디바운스 적용)
   const debouncedSave = useCallback(async () => {
     if (!planId) return;
     try {
-      await saveAllItems(planId);
+      await saveSingleItem(planId, number);
     } catch (error) {
       console.error('자동 저장 실패:', error);
     }
-  }, [planId, saveAllItems]);
+  }, [planId, number, saveSingleItem]);
 
-  // 에디터 업데이트 핸들러 생성
-  const createUpdateHandler = useCallback((timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
-    return () => {
-      // 저장 전 커서 위치 저장
-      const saveSelection = (editor: Editor | null) => {
-        if (!editor || editor.isDestroyed) return null;
-        return {
-          from: editor.state.selection.from,
-          to: editor.state.selection.to,
-        };
-      };
+  const saveSelection = useCallback((editor: Editor | null) => {
+    if (!editor || editor.isDestroyed) return null;
+    return { from: editor.state.selection.from, to: editor.state.selection.to };
+  }, []);
 
-      const mainSelection = saveSelection(editorFeatures);
-      const skillsSelection = saveSelection(editorSkills);
-      const goalsSelection = saveSelection(editorGoals);
-
-      // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
-      if (isOverview) {
-        updateItemContent(number, {
-          itemName,
-          oneLineIntro,
-          editorFeatures: editorFeatures?.getJSON() || null,
-          editorSkills: editorSkills?.getJSON() || null,
-          editorGoals: editorGoals?.getJSON() || null,
-        });
-      } else {
-        updateItemContent(number, {
-          editorContent: editorFeatures?.getJSON() || null,
-        });
+  const restoreSelection = useCallback(
+    (editor: Editor, selection: { from: number; to: number }) => {
+      try {
+        editor.chain().focus().setTextSelection(selection).run();
+      } catch (e) {
+        console.error('커서 위치 복원 실패:', e);
       }
+    },
+    []
+  );
 
-      // 커서 위치 복원 로직
-      requestAnimationFrame(() => {
-        const currentActiveEditor = activeEditor || editorFeatures;
-        if (currentActiveEditor && !currentActiveEditor.isDestroyed) {
-          let selectionToRestore = null;
-          if (currentActiveEditor === editorFeatures && mainSelection) {
-            selectionToRestore = mainSelection;
-          } else if (currentActiveEditor === editorSkills && skillsSelection) {
-            selectionToRestore = skillsSelection;
-          } else if (currentActiveEditor === editorGoals && goalsSelection) {
-            selectionToRestore = goalsSelection;
-          }
-          if (selectionToRestore) {
-            try {
-              currentActiveEditor
-                .chain()
-                .focus()
-                .setTextSelection({ from: selectionToRestore.from, to: selectionToRestore.to })
-                .run();
-            } catch (e) {
-              // 커서 위치 복원 실패 시 무시
-            }
-          }
-        }
-      });
-
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        debouncedSave();
-      }, 300);
-    };
-  }, [isOverview, number, itemName, oneLineIntro, editorFeatures, editorSkills, editorGoals, updateItemContent, debouncedSave, activeEditor]);
-
-  // 에디터에 onChange 이벤트 리스너 추가 (store는 즉시 저장, API만 디바운스)
-  const mainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const skillsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const goalsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (!editorFeatures) return;
-
-    const handleMainUpdate = createUpdateHandler(mainTimeoutRef);
-    editorFeatures.on('update', handleMainUpdate);
-
-    const cleanup: (() => void)[] = [() => {
-      if (mainTimeoutRef.current) clearTimeout(mainTimeoutRef.current);
-      editorFeatures.off('update', handleMainUpdate);
-    }];
-
+  const saveEditorContentToStore = useCallback(() => {
+    const primaryEditor = isOverview ? editorFeatures : editorGeneral;
     if (isOverview) {
-      if (editorSkills) {
-        const handleSkillsUpdate = createUpdateHandler(skillsTimeoutRef);
-        editorSkills.on('update', handleSkillsUpdate);
-        cleanup.push(() => {
-          if (skillsTimeoutRef.current) clearTimeout(skillsTimeoutRef.current);
-          editorSkills.off('update', handleSkillsUpdate);
-        });
-      }
-
-      if (editorGoals) {
-        const handleGoalsUpdate = createUpdateHandler(goalsTimeoutRef);
-        editorGoals.on('update', handleGoalsUpdate);
-        cleanup.push(() => {
-          if (goalsTimeoutRef.current) clearTimeout(goalsTimeoutRef.current);
-          editorGoals.off('update', handleGoalsUpdate);
-        });
-      }
+      updateItemContent(number, {
+        itemName: editorItemName?.getJSON() || null,
+        oneLineIntro: editorOneLineIntro?.getJSON() || null,
+        editorFeatures: primaryEditor?.getJSON() || null,
+        editorSkills: editorSkills?.getJSON() || null,
+        editorGoals: editorGoals?.getJSON() || null,
+      });
+    } else {
+      updateItemContent(number, {
+        editorContent: primaryEditor?.getJSON() || null,
+      });
     }
-
-    return () => {
-      cleanup.forEach(fn => fn());
-    };
   }, [
+    isOverview,
+    number,
+    editorItemName,
+    editorOneLineIntro,
     editorFeatures,
+    editorGeneral,
     editorSkills,
     editorGoals,
-    planId,
-    isOverview,
-    createUpdateHandler,
+    updateItemContent,
   ]);
 
-  // TextInput 값 변경 시 store에 즉시 저장, API 저장만 디바운스 적용
-  const textInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleTextInputChange = useCallback((field: 'itemName' | 'oneLineIntro', value: string) => {
-    // store에 즉시 저장 (메모리 작업이므로 디바운스 불필요)
-    if (field === 'itemName') {
-      setItemName(value);
-      updateItemContent(number, { itemName: value });
-    } else {
-      setOneLineIntro(value);
-      updateItemContent(number, { oneLineIntro: value });
-    }
-
-    // API 저장만 디바운스 적용 (네트워크 요청이므로)
-    if (textInputTimeoutRef.current) {
-      clearTimeout(textInputTimeoutRef.current);
-    }
-    textInputTimeoutRef.current = setTimeout(() => {
-      debouncedSave();
-    }, 500);
-  }, [number, updateItemContent, debouncedSave]);
-
-  const handleItemNameChange = useCallback((value: string) => {
-    handleTextInputChange('itemName', value);
-  }, [handleTextInputChange]);
-
-  const handleOneLineIntroChange = useCallback((value: string) => {
-    handleTextInputChange('oneLineIntro', value);
-  }, [handleTextInputChange]);
-
-  // 이미지 파일 선택 핸들러
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file || !activeEditor) return;
-
-    // 이미지 파일만 허용
-    if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드 가능합니다.');
-      return;
-    }
-
-    // 파일 크기 제한 (예: 5MB)
-    // const maxSize = 5 * 1024 * 1024; // 5MB
-    // if (file.size > maxSize) {
-    //   alert('이미지 크기는 5MB 이하여야 합니다.');
-    //   return;
-    // }
-
-    try {
-      // 서버에 이미지 업로드 및 공개 URL 받기
-      const imageUrl = await uploadImage(file);
-
-      if (imageUrl && activeEditor) {
-        const { width, height } = await getImageDimensions(imageUrl);
-        const editorDom = activeEditor.view.dom as HTMLElement | null;
-        const maxWidth = editorDom ? editorDom.clientWidth - 48 : undefined;
-        const { width: clampedWidth, height: clampedHeight } = clampImageDimensions(width, height, maxWidth);
-        const imageAttributes: ImageCommandAttributes = {
-          src: imageUrl,
-          width: clampedWidth ?? undefined,
-          height: clampedHeight ?? undefined,
+  const createUpdateHandler = useCallback(
+    (timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>) => {
+      return () => {
+        const primaryEditor = isOverview ? editorFeatures : editorGeneral;
+        const selections = {
+          main: saveSelection(primaryEditor),
+          skills: saveSelection(editorSkills),
+          goals: saveSelection(editorGoals),
+          itemName: saveSelection(editorItemName),
+          oneLineIntro: saveSelection(editorOneLineIntro),
         };
 
-        activeEditor
-          .chain()
-          .focus()
-          .setImage(imageAttributes)
-          .run();
-      }
-    } catch (error) {
-      console.error('이미지 업로드 실패:', error);
-      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
-    }
+        saveEditorContentToStore();
 
-    // 같은 파일을 다시 선택할 수 있도록 input 값 초기화
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+        requestAnimationFrame(() => {
+          const currentEditor = activeEditor || primaryEditor;
+          if (!currentEditor || currentEditor.isDestroyed) return;
 
-  // 이미지 버튼 클릭 핸들러
-  const handleImageButtonClick = () => {
-    if (!activeEditor) {
-      // activeEditor가 없으면 기본 에디터에 포커스
-      if (editorFeatures && !editorFeatures.isDestroyed) {
-        editorFeatures.commands.focus();
-        setActiveEditor(editorFeatures);
-      }
-    }
-    fileInputRef.current?.click();
-  };
+          let selection: typeof selections.main = null;
+          if (currentEditor === primaryEditor) {
+            selection = selections.main;
+          } else if (currentEditor === editorSkills) {
+            selection = selections.skills;
+          } else if (currentEditor === editorGoals) {
+            selection = selections.goals;
+          } else if (currentEditor === editorItemName) {
+            selection = selections.itemName;
+          } else if (currentEditor === editorOneLineIntro) {
+            selection = selections.oneLineIntro;
+          }
 
-  //-----------------------------------------------------------------------------------------
-  //맞춤법검사
+          if (selection) restoreSelection(currentEditor, selection);
+        });
 
-  const {
-    openPanel,
-    setLoading,
-    setItems,
-    reset: resetSpell,
-  } = useSpellCheckStore();
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(debouncedSave, 300);
+      };
+    },
+    [
+      isOverview,
+      editorFeatures,
+      editorGeneral,
+      editorSkills,
+      editorGoals,
+      editorItemName,
+      editorOneLineIntro,
+      saveEditorContentToStore,
+      activeEditor,
+      saveSelection,
+      restoreSelection,
+      debouncedSave,
+    ]
+  );
+
+  const timeoutRefs = useRef({
+    main: null as NodeJS.Timeout | null,
+    skills: null as NodeJS.Timeout | null,
+    goals: null as NodeJS.Timeout | null,
+    itemName: null as NodeJS.Timeout | null,
+    oneLineIntro: null as NodeJS.Timeout | null,
+  });
+
+  const registerEditorListener = useCallback(
+    (
+      editor: Editor | null,
+      timeoutKey: keyof typeof timeoutRefs.current
+    ): (() => void) | null => {
+      if (!editor) return null;
+      const timeoutRef = { current: timeoutRefs.current[timeoutKey] };
+      const handler = createUpdateHandler(timeoutRef);
+      editor.on('update', handler);
+      timeoutRefs.current[timeoutKey] = timeoutRef.current;
+      return () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        editor.off('update', handler);
+      };
+    },
+    [createUpdateHandler]
+  );
+
+  useEffect(() => {
+    const mainEditor = isOverview ? editorFeatures : editorGeneral;
+    if (!mainEditor) return;
+
+    const cleanups: (() => void)[] = [
+      registerEditorListener(mainEditor, 'main'),
+      isOverview ? registerEditorListener(overviewEditors.itemName, 'itemName') : null,
+      isOverview ? registerEditorListener(overviewEditors.oneLineIntro, 'oneLineIntro') : null,
+      isOverview ? registerEditorListener(overviewEditors.skills, 'skills') : null,
+      isOverview ? registerEditorListener(overviewEditors.goals, 'goals') : null,
+    ].filter((cleanup): cleanup is () => void => cleanup !== null);
+
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, [
+    isOverview,
+    editorFeatures,
+    editorGeneral,
+    overviewEditors,
+    registerEditorListener,
+  ]);
+
+  // 맞춤법 검사
+  const { openPanel, setLoading, setItems, reset: resetSpell } = useSpellCheckStore();
   const { mutate: spellcheck } = useSpellCheck();
   const spellChecking = useSpellCheckStore((s) => s.loading);
   const items = useSpellCheckStore((s) => s.items);
@@ -425,17 +303,15 @@ const WriteForm = ({
 
   const editors = useMemo(
     () =>
-      (isOverview
-        ? [editorFeatures, editorSkills, editorGoals]
-        : [editorFeatures]
-      ).filter((e): e is Editor => !!e && !e.isDestroyed),
-    [isOverview, editorFeatures, editorSkills, editorGoals]
+      (isOverview ? [editorFeatures, editorSkills, editorGoals] : [editorGeneral]).filter(
+        (e): e is Editor => !!e && !e.isDestroyed
+      ),
+    [isOverview, editorFeatures, editorSkills, editorGoals, editorGeneral]
   );
 
   const resetSpellVisuals = useCallback((edit: Editor[]) => {
     const id = requestAnimationFrame(() => {
       clearFixedCorrections(edit);
-
       edit.forEach((ed) => clearSpellErrors(ed));
     });
     return () => cancelAnimationFrame(id);
@@ -452,11 +328,11 @@ const WriteForm = ({
   useEffect(() => {
     register({
       sectionNumber: number,
-      features: editorFeatures ?? null,
+      features: (isOverview ? editorFeatures : editorGeneral) ?? null,
       skills: isOverview ? (editorSkills ?? null) : null,
       goals: isOverview ? (editorGoals ?? null) : null,
     });
-  }, [number, isOverview, editorFeatures, editorSkills, editorGoals, register]);
+  }, [number, isOverview, editorFeatures, editorGeneral, editorSkills, editorGoals, register]);
 
   useEffect(() => {
     resetSpell();
@@ -467,21 +343,17 @@ const WriteForm = ({
   const handleSpellCheckClick = () => {
     setGrammarActive((v) => !v);
     openPanel();
-
-    if (editors.length) {
-      resetSpellVisuals(editors);
-    }
+    if (editors.length) resetSpellVisuals(editors);
 
     setLoading(true);
-
     const payload = SpellPayload({
       number,
       title,
-      itemName,
-      oneLineIntro,
-      editorFeatures,
-      editorSkills,
-      editorGoals,
+      itemName: editorItemName?.getText() || '',
+      oneLineIntro: editorOneLineIntro?.getText() || '',
+      editorFeatures: (isOverview ? editorFeatures : editorGeneral) ?? null,
+      editorSkills: isOverview ? editorSkills : null,
+      editorGoals: isOverview ? editorGoals : null,
     });
 
     spellcheck(payload, {
@@ -499,41 +371,38 @@ const WriteForm = ({
   };
 
   return (
-    <div className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white">
+    <div
+      data-toast-anchor
+      className="flex h-[756px] w-full flex-col rounded-[12px] border border-gray-100 bg-white"
+    >
       <WriteFormHeader number={number} title={title} subtitle={subtitle} />
       <WriteFormToolbar
         activeEditor={activeEditor}
-        onImageClick={handleImageButtonClick}
+        editorItemName={isOverview ? editorItemName : undefined}
+        editorOneLineIntro={isOverview ? editorOneLineIntro : undefined}
+        defaultEditor={defaultEditor}
+        onActiveEditorChange={setActiveEditor}
         onSpellCheckClick={handleSpellCheckClick}
         grammarActive={grammarActive}
         spellChecking={spellChecking}
         isSaving={isSaving}
         lastSavedTime={lastSavedTime}
       />
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/*"
-        onChange={handleImageUpload}
-        className="hidden"
-      />
       {/* 스크롤 가능한 콘텐츠 영역 */}
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-[24px] px-5 pt-4 pb-[80px]">
           {isOverview ? (
             <OverviewSection
-              itemName={itemName}
-              oneLineIntro={oneLineIntro}
+              editorItemName={editorItemName}
+              editorOneLineIntro={editorOneLineIntro}
               editorFeatures={editorFeatures}
               editorSkills={editorSkills}
               editorGoals={editorGoals}
-              onItemNameChange={handleItemNameChange}
-              onOneLineIntroChange={handleOneLineIntroChange}
               onEditorFocus={setActiveEditor}
             />
           ) : (
             <GeneralSection
-              editor={editorFeatures}
+              editor={editorGeneral}
               onEditorFocus={setActiveEditor}
             />
           )}

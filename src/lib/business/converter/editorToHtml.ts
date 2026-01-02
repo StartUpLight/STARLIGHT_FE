@@ -20,14 +20,18 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
                     break;
                 case 'highlight':
                     const color = mark.attrs?.color || '#FFF59D';
-                    text = `<mark style="background-color: ${color}">${text}</mark>`;
+                    text = `<span style="background-color: ${color}; padding: 0.1em 0;">${text}</span>`;
                     break;
-                case 'textStyle':
+                case 'textStyle': {
                     const textColor = mark.attrs?.color;
-                    if (textColor) {
+                    if (
+                        typeof textColor === 'string' &&
+                        textColor.toLowerCase() !== '#6f55ff'
+                    ) {
                         text = `<span style="color: ${textColor}">${text}</span>`;
                     }
                     break;
+                }
                 case 'code':
                     text = `<code>${text}</code>`;
                     break;
@@ -46,7 +50,31 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
     if (node.type === 'heading') {
         const level = (node.attrs?.level as number) || 1;
         const content = (node.content || []).map((child) => convertToHtml(child)).join('');
-        return content ? `<h${level}>${content}</h${level}>` : '';
+        if (!content) return '';
+
+        // heading level에 따른 스타일 설정
+        let fontSize: string;
+        const fontWeight = '600'; // font-semibold
+        const lineHeight = '150%';
+        const letterSpacing = '-0.02em';
+
+        switch (level) {
+            case 1:
+                fontSize = '28px'; // ds-heading (--text-3xl)
+                break;
+            case 2:
+                fontSize = '20px'; // ds-title (--text-2xl)
+                break;
+            case 3:
+                fontSize = '18px'; // ds-subtitle (--text-xl)
+                break;
+            default:
+                fontSize = '18px';
+                break;
+        }
+
+        const style = `font-size: ${fontSize} !important; line-height: ${lineHeight} !important; font-weight: ${fontWeight} !important; letter-spacing: ${letterSpacing} !important; margin: 0.75rem 0 0.5rem 0 !important;`;
+        return `<h${level} style="${style}">${content}</h${level}>`;
     }
 
     if (node.type === 'bulletList') {
@@ -78,27 +106,96 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
 
     if (node.type === 'table') {
         const rows: string[] = [];
+        const columnWidths: Array<number | null> = [];
+
+        const ensureColumnLength = (count: number) => {
+            while (columnWidths.length < count) {
+                columnWidths.push(null);
+            }
+        };
+
         (node.content || []).forEach((row) => {
-            if (row.type === 'tableRow') {
-                const cells: string[] = [];
-                (row.content || []).forEach((cell) => {
-                    if (cell.type === 'tableCell' || cell.type === 'tableHeader') {
-                        const cellContent = (cell.content || []).map((child) => convertToHtml(child)).join('');
-                        const tag = cell.type === 'tableHeader' ? 'th' : 'td';
-                        cells.push(`<${tag}>${cellContent || '&nbsp;'}</${tag}>`);
+            if (row.type !== 'tableRow') return;
+            const cells: string[] = [];
+            let columnIndex = 0;
+
+            (row.content || []).forEach((cell) => {
+                if (cell.type !== 'tableCell' && cell.type !== 'tableHeader') return;
+
+                const colspan = Math.max(1, Number(cell.attrs?.colspan) || 1);
+                const rowspan = Math.max(1, Number(cell.attrs?.rowspan) || 1);
+                ensureColumnLength(columnIndex + colspan);
+
+                const colwidthArray = Array.isArray(cell.attrs?.colwidth)
+                    ? (cell.attrs?.colwidth as Array<number | null | undefined>)
+                    : undefined;
+                colwidthArray?.forEach((widthValue, idx) => {
+                    const targetIndex = columnIndex + idx;
+                    if (
+                        typeof widthValue === 'number' &&
+                        (columnWidths[targetIndex] === null ||
+                            columnWidths[targetIndex] === undefined)
+                    ) {
+                        columnWidths[targetIndex] = widthValue;
                     }
                 });
-                if (cells.length > 0) {
-                    rows.push(`<tr>${cells.join('')}</tr>`);
-                }
+
+                const cellContent = (cell.content || []).map((child) => convertToHtml(child)).join('');
+                const tag = cell.type === 'tableHeader' ? 'th' : 'td';
+                const attrs: string[] = [];
+                if (colspan > 1) attrs.push(`colspan="${colspan}"`);
+                if (rowspan > 1) attrs.push(`rowspan="${rowspan}"`);
+
+                const cellStyle = [
+                    'border: 1px solid #E5E7EB',
+                    'vertical-align: top',
+                    'box-sizing: border-box',
+                ].join('; ');
+                const contentHtml = [
+                    '<div style="min-height: 25px; display: flex; flex-direction: column; justify-content: flex-start; height: 100%;">',
+                    cellContent,
+                    '</div>',
+                ].join('');
+
+                const attrString = attrs.filter(Boolean).join(' ').trim();
+
+                cells.push(
+                    `<${tag} ${attrString} style="${cellStyle}">${contentHtml}</${tag}>`
+                );
+                columnIndex += colspan;
+            });
+
+            if (cells.length > 0) {
+                rows.push(`<tr>${cells.join('')}</tr>`);
             }
         });
-        return rows.length > 0 ? `<table><tbody>${rows.join('')}</tbody></table>` : '';
+
+        if (rows.length === 0) return '';
+
+        const colgroup =
+            columnWidths.length > 0
+                ? `<colgroup>${columnWidths
+                    .map((width) =>
+                        typeof width === 'number' && width > 0
+                            ? `<col style="width: ${width}px">`
+                            : '<col>'
+                    )
+                    .join('')}</colgroup>`
+                : '';
+
+        const tableStyle = [
+            'border-collapse: collapse',
+            'width: 100%',
+            'table-layout: fixed',
+        ].join('; ');
+
+        return `<table style="${tableStyle}">${colgroup}<tbody>${rows.join('')}</tbody></table>`;
     }
 
     if (node.type === 'image') {
         const src = node.attrs?.src || '';
         const alt = node.attrs?.alt || node.attrs?.title || '';
+        const caption = node.attrs?.caption as string | undefined;
         if (!src) return '';
 
         // 에디터에서 설정한 이미지 크기 가져오기
@@ -117,8 +214,13 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
             style = 'max-width: 400px; height: auto;';
         }
 
+        // 캡션이 있으면 포함
+        const captionHtml = caption
+            ? `<div style="margin-top: 8px; padding: 8px 12px; font-size: 14px; color: #585f69; line-height: 1.5; text-align: center;">${caption}</div>`
+            : '';
+
         // 중앙 정렬을 위한 wrapper div 추가
-        return `<div style="text-align: center; margin: 1rem 0;"><img src="${src}" alt="${alt}" style="${style}" /></div>`;
+        return `<div style="text-align: center; margin: 1rem 0;"><img src="${src}" alt="${alt}" style="${style}" />${captionHtml}</div>`;
     }
 
     if (node.content && Array.isArray(node.content)) {

@@ -60,7 +60,7 @@ const UserExpertHeader = ({ experts, value, onChange }: ExpertSelectProps) => {
       </button>
 
       {open && (
-        <div className="absolute left-0 z-10 mt-2 min-w-[137px] overflow-hidden rounded-[8px] bg-white shadow-xl">
+        <div className="absolute left-0 z-10 mt-2 min-w-[137px] overflow-hidden rounded-lg bg-white shadow-xl">
           <div className="ds-subtext bg-primary-50 text-primary-500 cursor-pointer px-3 py-2 font-medium">
             {value}
           </div>

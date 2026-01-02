@@ -16,14 +16,14 @@ const page = () => {
         <div className="relative z-10 flex h-full items-center">
           <div className="w-full pl-32">
             <p className="text-[36px] font-bold text-white">
-              믿을 수 있는 실력있는 전문가와 함께
+              신뢰할 수 있는 전문가의 리뷰로
             </p>
             <p className="text-[36px] font-bold text-white">
-              당신의 리포트 후랄랄리옹 해보세요
+              리포트의 완성도를 한 단계 높이세요
             </p>
 
             <p className="ds-subtext mt-3 font-medium text-white">
-              어쩌구저쩌구에서 검증했습니다
+              스타라이트가 직접 검증한 전문가를 연결해드립니다
             </p>
           </div>
         </div>

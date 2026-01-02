@@ -17,11 +17,25 @@ export const buildSubsectionRequest = (
 
     if (number === '0') {
         blocks = [];
-        if ((content.itemName || '').trim()) {
-            blocks.push({ meta: { title: '아이템명' }, content: [{ type: 'text', value: content.itemName as string }] as TextContentItem[] } as Block);
+        if (content.itemName) {
+            // JSONContent인 경우 convertEditorJsonToContent 사용, 문자열인 경우 텍스트로 변환
+            const itemNameContent = typeof content.itemName === 'string'
+                ? [{ type: 'text', value: content.itemName } as TextContentItem]
+                : convertEditorJsonToContent(content.itemName as { content?: JSONNode[] } | null);
+            const hasItemNameText = itemNameContent.some((ci) => ci.type !== 'text' || (ci as TextContentItem).value.trim() !== '');
+            if (hasItemNameText) {
+                blocks.push({ meta: { title: '아이템명' }, content: itemNameContent } as Block);
+            }
         }
-        if ((content.oneLineIntro || '').trim()) {
-            blocks.push({ meta: { title: '아이템 한줄 소개' }, content: [{ type: 'text', value: content.oneLineIntro as string }] as TextContentItem[] } as Block);
+        if (content.oneLineIntro) {
+            // JSONContent인 경우 convertEditorJsonToContent 사용, 문자열인 경우 텍스트로 변환
+            const oneLineIntroContent = typeof content.oneLineIntro === 'string'
+                ? [{ type: 'text', value: content.oneLineIntro } as TextContentItem]
+                : convertEditorJsonToContent(content.oneLineIntro as { content?: JSONNode[] } | null);
+            const hasOneLineIntroText = oneLineIntroContent.some((ci) => ci.type !== 'text' || (ci as TextContentItem).value.trim() !== '');
+            if (hasOneLineIntroText) {
+                blocks.push({ meta: { title: '아이템 한줄 소개' }, content: oneLineIntroContent } as Block);
+            }
         }
         if (content.editorFeatures) {
             const featuresContent = convertEditorJsonToContent(content.editorFeatures as { content?: JSONNode[] } | null);
