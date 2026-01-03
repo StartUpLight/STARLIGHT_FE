@@ -1,6 +1,7 @@
 import Landing from './_components/landing/Landing';
 import LandingBlackSection from './_components/landing/LandingBlackSection';
 import LandingChecklist from './_components/landing/LandingChecklist';
+import LandingPaySection from './_components/landing/LandingPaySection';
 import LandingRelation from './_components/landing/LandingRelation';
 
 const page = () => {
@@ -27,6 +28,7 @@ const page = () => {
 
       <LandingChecklist />
       <LandingBlackSection />
+      <LandingPaySection />
       <LandingRelation />
     </div>
   );
