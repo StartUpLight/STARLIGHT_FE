@@ -1,7 +1,10 @@
+'use client';
 import Check from '@/assets/icons/big_check.svg';
 import RightIcon from '@/assets/icons/white_right.svg';
+import { useRouter } from 'next/navigation';
 
 const LandingPaySection = () => {
+  const router = useRouter();
   return (
     <div className="flex h-[978px] w-full flex-col items-center justify-center gap-[67px] px-[375px] py-[120px]">
       <div className="text-[52px] leading-[150%] font-semibold text-gray-900">
@@ -44,7 +47,10 @@ const LandingPaySection = () => {
           </div>
         </div>
 
-        <button className="bg-primary-500 hover:bg-primary-700 mt-12 flex h-[64px] w-[516px] cursor-pointer items-center justify-center rounded-lg px-8">
+        <button
+          className="bg-primary-500 hover:bg-primary-700 mt-12 flex h-[64px] w-[516px] cursor-pointer items-center justify-center rounded-lg px-8"
+          onClick={() => router.push('/pay')}
+        >
           <p className="ds-title font-semibold text-white">구매하기</p>
           <RightIcon />
         </button>

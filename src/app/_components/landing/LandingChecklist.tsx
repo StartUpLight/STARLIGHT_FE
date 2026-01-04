@@ -1,7 +1,10 @@
+'use client';
 import Image from 'next/image';
 import ArrowIcon from '@/assets/icons/chevron_right.svg';
+import { useRouter } from 'next/navigation';
 
 const LandingChecklist = () => {
+  const router = useRouter();
   return (
     <div className="w-full bg-black px-[132px] py-40">
       <div className="flex w-full flex-row gap-[61px]">
@@ -26,7 +29,10 @@ const LandingChecklist = () => {
                 </div>
               ))}
             </div>
-            <button className="ds-title flex h-[64px] w-[516px] cursor-pointer items-center justify-center rounded-lg bg-white px-8 font-semibold text-gray-900">
+            <button
+              className="ds-title flex h-[64px] w-[516px] cursor-pointer items-center justify-center rounded-lg bg-white px-8 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200"
+              onClick={() => router.push('/business')}
+            >
               2026 지원사업 준비 시작하기
               <ArrowIcon />
             </button>
