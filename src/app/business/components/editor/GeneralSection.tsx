@@ -24,7 +24,7 @@ const GeneralSection = ({ editor, onEditorFocus }: GeneralSectionProps) => {
           <EditorContent
             editor={editor}
             onFocus={() => onEditorFocus(editor)}
-            className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:max-w-full [&_img]:object-contain"
+            className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-w-full [&_img]:object-contain"
           />
         </>
       )}
