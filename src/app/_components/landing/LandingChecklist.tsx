@@ -19,7 +19,7 @@ const LandingChecklist = () => {
 
           <div className="flex flex-col gap-6">
             <p className="ds-title font-semibold text-gray-300">
-              2026 지원사업 대비 모든 기능 무료 프로모션 (~1/10)
+              2026 지원사업 대비 모든 기능 무료 프로모션 (~2/28)
             </p>
 
             <div className="flex flex-row items-start gap-3">
