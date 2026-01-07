@@ -14,11 +14,6 @@ export interface getExpertResponse {
   workedPeriod: number;
 }
 
-export interface getFeedBackExpertResponse {
-  result: string;
-  data: number[];
-}
-
 export interface applyFeedBackProps {
   expertId: number;
   businessPlanId: number;

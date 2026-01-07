@@ -18,13 +18,21 @@ const PaymentAmount = () => {
         </div>
 
         <div className="h-px bg-gray-100"></div>
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between">
           <span className="ds-text font-semibold text-gray-900">
             총 결제 금액
           </span>
-          <span className="ds-text font-semibold text-gray-900">
-            {totalAmount.toLocaleString()}원
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="relative inline-block">
+              <span className="absolute inset-0 flex items-center">
+                <span className="bg-primary-500 h-[3px] w-full"></span>
+              </span>
+              <span className="ds-text relative font-semibold text-gray-900">
+                {totalAmount.toLocaleString()}원
+              </span>
+            </span>
+            <span className="ds-text font-semibold text-gray-900">0원</span>
+          </div>
         </div>
         <div className="h-px bg-gray-100"></div>
       </div>
