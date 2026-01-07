@@ -2,9 +2,12 @@
 import Image from 'next/image';
 import ArrowIcon from '@/assets/icons/chevron_right.svg';
 import { useRouter } from 'next/navigation';
+import { useCountdown } from '@/hooks/useCountdown';
 
 const LandingChecklist = () => {
   const router = useRouter();
+  const timeLeft = useCountdown('2026-02-28T23:59:59');
+
   return (
     <div className="w-full bg-black py-40">
       <div className="mx-auto flex w-full flex-row items-center justify-center gap-[61px]">
@@ -20,12 +23,18 @@ const LandingChecklist = () => {
             </p>
 
             <div className="flex flex-row items-start gap-3">
-              {['10일', '4시간', '19분', '20초'].map((time) => (
+              {[
+                { value: timeLeft.days, label: '일' },
+                { value: timeLeft.hours, label: '시간' },
+                { value: timeLeft.minutes, label: '분' },
+                { value: timeLeft.seconds, label: '초' },
+              ].map((item, index) => (
                 <div
-                  key={time}
+                  key={index}
                   className="ds-heading flex h-[86px] w-[120px] items-center justify-center rounded-lg bg-gray-900 py-10 font-semibold text-white"
                 >
-                  {time}
+                  {item.value}
+                  {item.label}
                 </div>
               ))}
             </div>
