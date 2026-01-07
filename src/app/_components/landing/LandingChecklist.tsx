@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 const LandingChecklist = () => {
   const router = useRouter();
   return (
-    <div className="w-full bg-black px-[132px] py-40">
-      <div className="flex w-full flex-row gap-[61px]">
+    <div className="w-full bg-black py-40">
+      <div className="mx-auto flex w-full flex-row items-center justify-center gap-[61px]">
         <div className="flex flex-col gap-[100px]">
           <h2 className="text-[42px] leading-[150%] font-bold text-white">
             2026년 지원사업, <br />
