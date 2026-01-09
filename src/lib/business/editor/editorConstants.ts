@@ -15,6 +15,7 @@ import {
     ResizableImage,
     SelectTableOnBorderClick,
     EnsureTrailingParagraph,
+    CleanEmptyParagraphsInListItems,
 } from './extensions';
 import { uploadImage } from '@/lib/imageUpload';
 import { getImageDimensions, clampImageDimensions } from '@/lib/getImageDimensions';
@@ -36,6 +37,7 @@ export const COMMON_EXTENSIONS = [
     TableCell,
     SelectTableOnBorderClick,
     EnsureTrailingParagraph,
+    CleanEmptyParagraphsInListItems,
 ];
 
 // 간단한 에디터 확장 (하이라이트, 볼드, 색상만 가능, 헤딩/표/이미지 비활성화)
