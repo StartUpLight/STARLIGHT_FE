@@ -1,6 +1,7 @@
 'use client';
 
 import Script from 'next/script';
+import { useRouter } from 'next/navigation';
 import Button from '../_components/common/Button';
 import OrderDetails from './components/OrderDetails';
 import PaymentAmount from './components/PaymentAmount';
@@ -17,6 +18,7 @@ const EXPERT_PRODUCT_CODE: UsageProductCode = 'AI_REPORT_1';
 
 const Page = () => {
   const { selectedMentor } = useExpertStore();
+  const router = useRouter();
 
   const planId = useBusinessStore((s) => s.planId);
   const expertId = selectedMentor?.id ?? null;
@@ -35,14 +37,21 @@ const Page = () => {
       return;
     }
 
-    try {
-      await startPayment({
-        productCode: EXPERT_PRODUCT_CODE,
-        method: DEFAULT_METHOD,
-      });
-    } catch (e) {
-      console.error('결제 시작 에러:', e);
-      alert('결제를 시작하는 데 실패했습니다. 다시 시도해 주세요.');
+    // 프로모션 기간동안
+    // try {
+    //   await startPayment({
+    //     productCode: EXPERT_PRODUCT_CODE,
+    //     method: DEFAULT_METHOD,
+    //   });
+    // } catch (e) {
+    //   console.error('결제 시작 에러:', e);
+    //   alert('결제를 시작하는 데 실패했습니다. 다시 시도해 주세요.');
+    // }
+
+    if (planId != null && expertId != null) {
+      router.push(`/pay/complete?planId=${planId}&expertId=${expertId}`);
+    } else {
+      router.push('/pay/complete');
     }
   };
 
