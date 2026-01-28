@@ -7,6 +7,10 @@ const nextConfig = {
         pathname: '/**',
       },
       {
+        hostname: 'starlight-s3.kr.object.ncloudstorage.com',
+        pathname: '/**',
+      },
+      {
         hostname: 'k.kakaocdn.net',
         pathname: '/**',
       },

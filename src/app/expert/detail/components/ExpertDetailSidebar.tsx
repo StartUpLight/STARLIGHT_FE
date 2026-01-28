@@ -50,7 +50,7 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   const ButtonIcon = shouldShowCreateButton
     ? WhitePlus
     : hasRequested
-      ? GrayPlus
+      ? GrayCheck
       : disabled && !isSelectedPlanOver70
         ? GrayCheck
         : disabled

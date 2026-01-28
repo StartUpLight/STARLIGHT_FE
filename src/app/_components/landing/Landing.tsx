@@ -3,13 +3,21 @@ import Image from 'next/image';
 import useStickyCta from '@/hooks/useStickyCta';
 import StickyBar from './StickyBar';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UploadReportModal from '../common/UploadReportModal';
+import LoginModal from '../common/LoginModal';
+import { useAuthStore } from '@/store/auth.store';
 
 const Landing = () => {
   const { ctaRef, showSticky } = useStickyCta();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { isAuthenticated, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   return (
     <>
@@ -23,13 +31,25 @@ const Landing = () => {
         <div ref={ctaRef} className="mt-8 flex gap-3">
           <button
             className="bg-primary-500 ds-text hover:bg-primary-600 active:bg-primary-700 h-[50px] w-[220px] cursor-pointer rounded-full px-8 font-medium text-white"
-            onClick={() => router.push('/business')}
+            onClick={() => {
+              if (isAuthenticated) {
+                router.push('/business');
+              } else {
+                setIsLoginModalOpen(true);
+              }
+            }}
           >
             사업계획서 작성하기
           </button>
           <button
             className="ds-text h-[50px] cursor-pointer rounded-full bg-white px-8 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              if (isAuthenticated) {
+                setIsModalOpen(true);
+              } else {
+                setIsLoginModalOpen(true);
+              }
+            }}
           >
             PDF 업로드하고 채점받기
           </button>
@@ -51,6 +71,11 @@ const Landing = () => {
       {isModalOpen && (
         <UploadReportModal open={true} onClose={() => setIsModalOpen(false)} />
       )}
+
+      <LoginModal
+        open={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
 
       <StickyBar show={showSticky} />
     </>
