@@ -12,7 +12,7 @@ const MentorCard = ({
   careers,
   tags,
   image,
-  workingperiod,
+  oneLineIntroduction,
   id,
 }: MentorCardProps & ExtraProps) => {
   const router = useRouter();
@@ -44,7 +44,7 @@ const MentorCard = ({
             </div>
             <div className="h-3 w-px bg-gray-300" />
             <div className="ds-subtext font-medium text-gray-700">
-              {workingperiod}년 경력
+              {oneLineIntroduction}
             </div>
           </div>
           <div className="ds-subtext my-3 font-medium text-gray-600">
