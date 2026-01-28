@@ -3,6 +3,7 @@ import LandingBlackSection from './_components/landing/LandingBlackSection';
 import LandingChecklist from './_components/landing/LandingChecklist';
 import LandingPaySection from './_components/landing/LandingPaySection';
 import LandingRelation from './_components/landing/LandingRelation';
+//워크플로우 테스트
 
 const page = () => {
   return (

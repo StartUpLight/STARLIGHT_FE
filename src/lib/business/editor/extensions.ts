@@ -998,7 +998,7 @@ export const SelectTableOnBorderClick = Extension.create({
     },
 });
 
-// 문서 끝에 항상 빈 paragraph 유지
+// 표와 이미지 다음에만 빈 paragraph 유지
 export const EnsureTrailingParagraph = Extension.create({
     name: 'ensure-trailing-paragraph',
     addProseMirrorPlugins() {
@@ -1022,8 +1022,54 @@ export const EnsureTrailingParagraph = Extension.create({
                         return null;
                     }
 
-                    const tr = newState.tr.insert(doc.content.size, paragraphType.create());
-                    return tr;
+                    // 표나 이미지 다음에만 paragraph 추가
+                    if (lastChild.type.name === 'table' || lastChild.type.name === 'image') {
+                        const tr = newState.tr.insert(doc.content.size, paragraphType.create());
+                        return tr;
+                    }
+
+                    return null;
+                },
+            }),
+        ];
+    },
+});
+
+// 리스트 아이템 내부의 빈 paragraph 제거
+export const CleanEmptyParagraphsInListItems = Extension.create({
+    name: 'clean-empty-paragraphs-in-list-items',
+    addProseMirrorPlugins() {
+        return [
+            new Plugin({
+                appendTransaction: (transactions, oldState, newState) => {
+                    if (!transactions.some((tr) => tr.docChanged)) {
+                        return null;
+                    }
+
+                    const tr = newState.tr;
+                    let modified = false;
+
+                    newState.doc.descendants((node, pos) => {
+                        if (node.type.name === 'listItem') {
+                            const emptyParagraphs: number[] = [];
+
+                            node.forEach((child, offset) => {
+                                if (child.type.name === 'paragraph' && child.content.size === 0) {
+                                    emptyParagraphs.push(pos + offset + 1);
+                                }
+                            });
+
+                            // 빈 paragraph가 여러 개 있으면 하나만 남기고 나머지 제거
+                            if (emptyParagraphs.length > 1) {
+                                for (let i = emptyParagraphs.length - 1; i > 0; i--) {
+                                    tr.delete(emptyParagraphs[i], emptyParagraphs[i] + 1);
+                                    modified = true;
+                                }
+                            }
+                        }
+                    });
+
+                    return modified ? tr : null;
                 },
             }),
         ];
