@@ -35,7 +35,7 @@ const LandingPaySection = () => {
       </div>
 
       <div className="mt-[56px] flex flex-row items-center justify-center gap-6">
-        <div className="flex w-[456px] flex-col items-center">
+        <div className="flex w-[468px] flex-col items-center">
           <div className="inline-flex w-full items-center justify-center rounded-t-2xl bg-gray-300 py-3">
             <p className="text-[20px] font-medium text-gray-700">
               시간당 대면 멘토링
@@ -57,10 +57,10 @@ const LandingPaySection = () => {
               </p>
             </div>
 
-            <div className="ds-subtitle mt-3 flex w-full flex-col gap-[6px] px-6 font-medium text-gray-900">
-              <li>사업계획서 PDF/텍스트 기반 심층 검토</li>
-              <li>강·약점 구체 코멘트</li>
-              <li>AI 리포트 무제한 포함</li>
+            <div className="ds-subtitle mt-3 flex w-full flex-col gap-[6px] pl-6 font-medium text-gray-700">
+              <li>멘토의 사전 문서 검토 부족으로 인한 시간 소요</li>
+              <li>멘토링 시간 대비 핵심 피드백 시간 부족</li>
+              <li>높은 비용 대비 얻는 피드백의 효율이 낮음</li>
             </div>
           </div>
         </div>
