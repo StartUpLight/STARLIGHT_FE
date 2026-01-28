@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>이메일 전달용</title>
+
+    <style>
+      body,
+      table,
+      td,
+      p,
+      ul,
+      li {
+        margin: 0;
+        padding: 0;
+        font-family: 'Pretendard';
+      }
+
+      @font-face {
+        font-family: 'Pretendard';
+        font-style: normal;
+        font-weight: 400;
+        src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2')
+          format('woff2');
+      }
+      @font-face {
+        font-family: 'Pretendard';
+        font-style: normal;
+        font-weight: 500;
+        src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2')
+          format('woff2');
+      }
+
+      @font-face {
+        font-family: 'Pretendard';
+        font-style: normal;
+        font-weight: 700;
+        src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2')
+          format('woff2');
+      }
+      @font-face {
+        font-family: 'Pretendard';
+        font-style: normal;
+        font-weight: 800;
+        src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-ExtraBold.woff2')
+          format('woff2');
+      }
+
+      @media screen and (max-width: 640px) {
+        .container {
+          width: 100% !important;
+        }
+        .px {
+          padding-left: 16px !important;
+          padding-right: 16px !important;
+        }
+        .hero-h {
+          height: 240px !important;
+        }
+        .hero-title {
+          font-size: 22px !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body style="margin: 0; padding: 0">
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background: #ffffff"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            class="container"
+            style="width: 600px; max-width: 600px; background: #ffffff"
+          >
+            <tr>
+              <td style="padding: 0; margin: 0">
+                <table
+                  role="presentation"
+                  width="600"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="width: 600px; max-width: 600px"
+                >
+                  <tr>
+                    <td
+                      background="https://kr.object.ncloudstorage.com/starlight-s3/email/order_1.png"
+                      width="600"
+                      height="350"
+                      style="
+                        width: 600px;
+                        height: 350px;
+                        background-image: url('https://kr.object.ncloudstorage.com/starlight-s3/email/order_1.png');
+                        background-size: cover;
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        padding: 0;
+                        height: 350px;
+                      "
+                    >
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                        height="100%"
+                      >
+                        <tr>
+                          <td
+                            class="px"
+                            style="
+                              vertical-align: bottom;
+                              padding-bottom: 60px;
+                              padding-left: 36px;
+                            "
+                          >
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                            >
+                              <tr>
+                                <td
+                                  bgcolor="#ffffff"
+                                  style="border-radius: 8px"
+                                >
+                                  <a
+                                    href="https://www.starlight-official.co.kr/"
+                                    target="_blank"
+                                    style="
+                                      display: inline-block;
+                                      padding: 10px 32px;
+                                      font-size: 16px;
+                                      font-weight: 600;
+                                      color: #3a404a;
+                                      text-decoration: none;
+                                    "
+                                  >
+                                    <table
+                                      role="presentation"
+                                      cellpadding="0"
+                                      cellspacing="0"
+                                      style="border-collapse: collapse"
+                                    >
+                                      <tr>
+                                        <td
+                                          style="
+                                            vertical-align: middle;
+                                            padding: 0;
+                                          "
+                                        >
+                                          실제 VC/AC 피드백 받기
+                                        </td>
+                                        <td
+                                          style="
+                                            vertical-align: middle;
+                                            padding: 0;
+                                            padding-left: 4px;
+                                          "
+                                        >
+                                          <img
+                                            src="https://kr.object.ncloudstorage.com/starlight-s3/email/arrow.png"
+                                            alt="arrow"
+                                            width="20"
+                                            height="20"
+                                            style="display: block; border: 0"
+                                          />
+                                        </td>
+                                      </tr>
+                                    </table>
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- 본문 -->
+            <tr>
+              <td
+                class="px"
+                style="
+                  padding: 48px 28px;
+                  font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "
+              >
+                <p style="margin: 0; font-size: 16px; font-weight: 700">
+                  안녕하세요. 스타라이트입니다.
+                </p>
+
+                <p
+                  style="margin: 32px 0 0 0; font-size: 16px; font-weight: 500"
+                >
+                  2월에 다가오는 예창패·초기패 준비하시면서 “이 상태로 제출해도
+                  괜찮은지” <br />한 번쯤 고민해보신 적 있으실 것 같아 이렇게
+                  메일 드립니다.
+                </p>
+
+                <p
+                  style="margin: 32px 0 0 0; font-size: 16px; font-weight: 500"
+                >
+                  스타라이트는
+                </p>
+
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #6f55ff;
+                  "
+                >
+                  작성하신 사업계획서를 ‘심사 기준 관점에서’ 점검하고 완성도를
+                  높이는 플랫폼
+                  <span style="color: #000000; font-weight: 500">입니다.</span>
+                </p>
+
+                <ul
+                  style="
+                    margin: 32px 0 0 0;
+                    padding-left: 28px;
+                    font-size: 16px;
+                    font-weight: 500;
+                  "
+                >
+                  <li>
+                    사업계획서의 정량화된 점수를 확인할 수 있는
+                    <span style="color: #6f55ff; font-weight: 700"
+                      >AI 리포트</span
+                    >
+                  </li>
+                  <li style="margin: 4px 0 0 0">
+                    필요 시, 실제 창업·심사 경험이 있는
+                    <span style="color: #6f55ff; font-weight: 700"
+                      >전문가의 피드백</span
+                    >까지
+                    <br />
+                    한 흐름으로 이어지는 구조로 설계했습니다.
+                  </li>
+                </ul>
+
+                <p
+                  style="margin: 32px 0 0 0; font-size: 16px; font-weight: 500"
+                >
+                  예창패·초기패 제출 전에 사업계획서 완성도를 한 번 점검해보는
+                  <br />
+                  용도로 가볍게 사용해보셔도 괜찮을 것 같아 안내드립니다.
+                </p>
+
+                <p
+                  style="margin: 32px 0 0 0; font-size: 16px; font-weight: 700"
+                >
+                  📢 오직 지금만!
+                  <span style="color: #6f55ff">2월 한정 무료 프로모션 </span
+                  >(~2/28) 🔥
+                </p>
+                <p style="margin: 0; font-size: 16px; font-weight: 600">
+                  기간: ~ 2026년 2월 28일 오후 11시 59분까지 <br />
+                  혜택: AI 리포트 + 전문가 피드백 전체 무료 제공 <br />
+                  참여: 아래 링크 접속 후 바로 이용 가능
+                </p>
+
+                <p style="margin: 32px 0 0 0">
+                  👉
+                  <a
+                    href="https://www.starlight-official.co.kr/"
+                    target="_blank"
+                    style="
+                      color: #6f55ff;
+                      text-decoration: underline;
+                      font-weight: 600;
+                      font-size: 16px;
+                      text-decoration-style: solid;
+                    "
+                  >
+                    [스타라이트 바로가기 링크]
+                  </a>
+                </p>
+                <p style="margin: 0; font-size: 16px; font-weight: 500">
+                  부담 없이 체험해 보시고, 합격에 한 걸음 더 다가가세요. <br />
+                  스타라이트는 모든 창업팀의 성장을 응원합니다!
+                </p>
+              </td>
+            </tr>
+
+            <!-- 슬로건 섹션 -->
+            <tr>
+              <td
+                class="px"
+                style="
+                  padding: 48px 28px 0 28px;
+                  font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "
+              >
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 20px;
+                    font-weight: 700;
+                    letter-spacing: -0.4px;
+                  "
+                >
+                  🎯 사업계획서의 기준을 만드는
+                  <span style="color: #6f55ff">스타라이트</span>
+                </p>
+              </td>
+            </tr>
+
+            <!-- 이미지 섹션 -->
+            <tr>
+              <td
+                style="
+                  padding: 24px 28px 48px 28px;
+                  font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "
+              >
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <img
+                        src="https://kr.object.ncloudstorage.com/starlight-s3/email/order_2.png"
+                        alt=""
+                        width="544"
+                        height="320"
+                        style="
+                          display: block;
+                          width: 100%;
+                          max-width: 544px;
+                          height: auto;
+                          border: 0;
+                        "
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 24px 0 0 0;
+                    font-size: 16px;
+                    font-weight: 500;
+                    font-family: Pretendard;
+                    color: #000000;
+                  "
+                >
+                  스타라이트는 이미 작성한 사업계획서를 심사 기준 관점에서
+                  점검하고,
+                </p>
+                <p
+                  style="
+                    margin: 4px 0 0 0;
+                    font-size: 16px;
+                    font-weight: 500;
+                    font-family: Pretendard;
+                    color: #000000;
+                  "
+                >
+                  AI 분석과 전문가 피드백으로 완성도를 보완하는 플랫폼입니다.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                class="px"
+                style="
+                  padding: 48px 28px 0 28px;
+                  font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "
+              >
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 20px;
+                    font-weight: 700;
+                    letter-spacing: -0.4px;
+                  "
+                >
+                  🖊️ <span style="color: #6f55ff">심사 기준</span>에 맞춰
+                  작성하는 사업계획서
+                </p>
+              </td>
+            </tr>
+
+            <!-- 이미지 섹션 -->
+            <tr>
+              <td style="padding: 24px 28px 48px 28px;    font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "">
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <img
+                        src="https://kr.object.ncloudstorage.com/starlight-s3/email/order_3.png"
+                        alt=""
+                        width="544"
+                        height="320"
+                        style="
+                          display: block;
+                          width: 100%;
+                          max-width: 544px;
+                          height: auto;
+                          border: 0;
+                        "
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 24px 0 0 0;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #000000;
+                  "
+                >
+                  ❓ 사업계획서는
+                  <span style="color: #6f55ff">어떤 내용을 어느 깊이까지</span>
+                  써야 할까요?
+                </p>
+
+                <p
+                  style="font-size: 16px; font-weight: 500; margin: 32px 0 0 0"
+                >
+                  심사 기준이 명확하지 않다 보니 방향을 잡기 어렵고,
+                </p>
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  항목마다 어디까지 써야 하는지 몰라 말투 하나까지 계속 수정하게
+                  됩니다.
+                </p>
+
+                <p
+                  style="font-size: 16px; font-weight: 500; margin: 32px 0 0 0"
+                >
+                  스타라이트의 사업계획서 작성 페이지에서는
+                </p>
+
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  <span style="font-weight: 700">심사 기준을 바탕</span>으로
+                  <span style="font-weight: 700"
+                    >항목별로 꼭 필요한 핵심 내용과 작성 수준을 정리</span
+                  >해
+                </p>
+
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  무엇을 어느 정도까지 작성해야 하는지 명확하게 안내합니다.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                class="px"
+                style="
+                  padding: 48px 28px 0 28px;
+                  font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "
+              >
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 20px;
+                    font-weight: 700;
+                    letter-spacing: -0.4px;
+                  "
+                >
+                  📊 내 사업계획서는 지금 몇 점일까요?
+                  <span style="color: #6f55ff">AI 리포트</span>로 분석합니다.
+                </p>
+              </td>
+            </tr>
+
+            <!-- 이미지 섹션 -->
+            <tr>
+              <td style="padding: 24px 28px 48px 28px;    font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "">
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <img
+                        src="https://kr.object.ncloudstorage.com/starlight-s3/email/order_4.png"
+                        alt=""
+                        width="544"
+                        height="320"
+                        style="
+                          display: block;
+                          width: 100%;
+                          max-width: 544px;
+                          height: auto;
+                          border: 0;
+                        "
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 24px 0 0 0;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #000000;
+                  "
+                >
+                  ❓
+                  <span style="color: #6f55ff">왜 떨어졌는지</span>
+                  알 수 없으신가요?
+                </p>
+
+                <p
+                  style="font-size: 16px; font-weight: 500; margin: 32px 0 0 0"
+                >
+                  실제 멘토링이나 심사 과정에서는 구체적인 피드백 없이
+                </p>
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  합·불 결과만 전달되는 경우가 많습니다. 어떤 기준에서
+                  부족했는지
+                </p>
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  어떻게 보완해야 하는지 알 수 없어 같은 실수를 반복하게 되죠.
+                </p>
+
+                <p
+                  style="font-size: 16px; font-weight: 500; margin: 32px 0 0 0"
+                >
+                  스타라이트의 AI 리포트는 작성된 사업계획서를 심사 항목
+                  기준으로 분석해
+                </p>
+
+                <p style="font-size: 16px; font-weight: 700; margin: 4px 0 0 0">
+                  항목별 점수와 함께 강점과 보완 포인트를 리포트로 제공<span
+                    style="font-weight: 500"
+                    >합니다.</span
+                  >
+                </p>
+
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  현재
+                  <span style="font-weight: 700"
+                    >사업계획서가 심사 기준에 얼마나 근접했는지 객관적으로
+                    확인</span
+                  >할 수 있습니다.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                class="px"
+                style="
+                  padding: 48px 28px 0 28px;
+                  font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "
+              >
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 20px;
+                    font-weight: 700;
+                    letter-spacing: -0.4px;
+                  "
+                >
+                  🧑🏻‍💻 실질적 개선 포인트를 짚는
+                  <span style="color: #6f55ff">전문가 심층 피드백</span>
+                </p>
+              </td>
+            </tr>
+
+            <!-- 이미지 섹션 -->
+            <tr>
+              <td style="padding: 24px 28px 48px 28px;    font-family: Pretendard;
+                  color: #000000;
+                  font-style: normal;
+                  line-height: 1.5;
+                  letter-spacing: -0.16px;
+                "">
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <img
+                        src="https://kr.object.ncloudstorage.com/starlight-s3/email/order_5.png"
+                        alt=""
+                        width="544"
+                        height="320"
+                        style="
+                          display: block;
+                          width: 100%;
+                          max-width: 544px;
+                          height: auto;
+                          border: 0;
+                        "
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 24px 0 0 0;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #000000;
+                  "
+                >
+                  ❓ AI 리포트만으로 충분할까요?
+                </p>
+
+                <p
+                  style="font-size: 16px; font-weight: 500; margin: 32px 0 0 0"
+                >
+                  실제 심사 과정에서는 구체적으로 다듬어줄 멘토를 찾기 어렵고,
+                </p>
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  설령 피드백을 받아도 형식적인 코멘트에 그치는 경우가 많습니다.
+                </p>
+
+                <p
+                  style="font-size: 16px; font-weight: 500; margin: 32px 0 0 0"
+                >
+                  왜 떨어졌는지, 무엇을 어떻게 고쳐야 하는지 알 수 없어 같은
+                  실수를 반복하게 됩니다.
+                </p>
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  그래서 스타라이트는 전문가 멘토 연결을 만들었습니다.
+                </p>
+
+                <p
+                  style="font-size: 16px; font-weight: 500; margin: 32px 0 0 0"
+                >
+                  스타라이트는
+                  <span style="font-weight: 700; color: #6f55ff"
+                    >창업 및 실제 심사 경험을 보유한 전문가로만 구성된 멘토
+                    풀</span
+                  >을 통해,
+                </p>
+                <p style="font-size: 16px; font-weight: 500; margin: 4px 0 0 0">
+                  <span style="font-weight: 700; color: #6f55ff"
+                    >AI 리포트를 기반으로 사업계획서의 구조·논리·보완 방향을
+                    점검</span
+                  >합니다.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 0; margin: 0">
+                <table
+                  role="presentation"
+                  width="600"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="width: 600px; max-width: 600px"
+                >
+                  <tr>
+                    <td
+                      background="https://kr.object.ncloudstorage.com/starlight-s3/email/order_6.png"
+                      width="600"
+                      height="360"
+                      style="
+                        width: 600px;
+                        height: 360px;
+                        background-image: url('https://kr.object.ncloudstorage.com/starlight-s3/email/order_6.png');
+                        background-size: cover;
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        padding: 0;
+                        height: 360px;
+                      "
+                    >
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                        height="100%"
+                      >
+                        <tr>
+                          <td
+                            class="px"
+                            style="vertical-align: middle; text-align: center"
+                          >
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                              style="padding-top: 180px; padding-left: 218px"
+                            >
+                              <tr>
+                                <td
+                                  bgcolor="#6F55FF"
+                                  style="border-radius: 8px"
+                                >
+                                  <a
+                                    href="https://www.starlight-official.co.kr/"
+                                    target="_blank"
+                                    style="
+                                      display: inline-block;
+                                      padding: 10px 32px;
+                                      font-size: 16px;
+                                      font-weight: 600;
+                                      letter-spacing: -0.16px;
+                                      line-height: 150%;
+                                      color: #ffffff;
+                                      text-decoration: none;
+                                    "
+                                  >
+                                    서비스 바로가기
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                      <!--[if mso]>
+                      </v:textbox>
+                      </v:rect>
+                      <![endif]-->
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td class="px" style="padding: 48px 28px; text-align: center">
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="margin: 0 auto"
+                >
+                  <tr>
+                    <!-- 링크 아이콘 -->
+                    <td style="padding: 0 24px 0 0">
+                      <a
+                        href="https://www.starlight-official.co.kr/"
+                        target="_blank"
+                        style="display: block; text-decoration: none"
+                      >
+                        <table
+                          role="presentation"
+                          cellpadding="0"
+                          cellspacing="0"
+                          width="32"
+                          height="32"
+                          style="
+                            width: 32px;
+                            height: 32px;
+                            background-color: #191f28;
+                            border-radius: 50%;
+                          "
+                        >
+                          <tr>
+                            <td
+                              style="
+                                width: 32px;
+                                height: 32px;
+                                text-align: center;
+                                vertical-align: middle;
+                                padding: 0;
+                              "
+                            >
+                              <img
+                                src="https://kr.object.ncloudstorage.com/starlight-s3/email/link.png"
+                                alt="link"
+                                width="20"
+                                height="20"
+                                style="
+                                  display: block;
+                                  margin: 0 auto;
+                                  border: 0;
+                                "
+                              />
+                            </td>
+                          </tr>
+                        </table>
+                      </a>
+                    </td>
+                    <!-- Instagram 아이콘 -->
+                    <td style="padding: 0">
+                      <a
+                        href="https://www.instagram.com/starlight.co.kr/"
+                        target="_blank"
+                        style="display: block; text-decoration: none"
+                      >
+                        <table
+                          role="presentation"
+                          cellpadding="0"
+                          cellspacing="0"
+                          width="32"
+                          height="32"
+                          style="
+                            width: 32px;
+                            height: 32px;
+                            background-color: #191f28;
+                            border-radius: 50%;
+                          "
+                        >
+                          <tr>
+                            <td
+                              style="
+                                width: 32px;
+                                height: 32px;
+                                text-align: center;
+                                vertical-align: middle;
+                                padding: 0;
+                              "
+                            >
+                              <img
+                                src="https://kr.object.ncloudstorage.com/starlight-s3/email/insta.png"
+                                alt="instagram"
+                                width="20"
+                                height="20"
+                                style="
+                                  display: block;
+                                  margin: 0 auto;
+                                  border: 0;
+                                "
+                              />
+                            </td>
+                          </tr>
+                        </table>
+                      </a>
+                    </td>
+                    <!-- 이메일 아이콘 -->
+                    <td style="padding: 0 0 0 24px">
+                      <a
+                        href="mailto:support@starlight-official.co.kr"
+                        style="display: block; text-decoration: none"
+                      >
+                        <table
+                          role="presentation"
+                          cellpadding="0"
+                          cellspacing="0"
+                          width="32"
+                          height="32"
+                          style="
+                            width: 32px;
+                            height: 32px;
+                            background-color: #191f28;
+                            border-radius: 50%;
+                          "
+                        >
+                          <tr>
+                            <td
+                              style="
+                                width: 32px;
+                                height: 32px;
+                                text-align: center;
+                                vertical-align: middle;
+                                padding: 0;
+                              "
+                            >
+                              <img
+                                src="https://kr.object.ncloudstorage.com/starlight-s3/email/mail.png"
+                                alt="email"
+                                width="20"
+                                height="20"
+                                style="
+                                  display: block;
+                                  margin: 0 auto;
+                                  border: 0;
+                                "
+                              />
+                            </td>
+                          </tr>
+                        </table>
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p
+                  style="
+                    margin: 36px 0 0 0;
+                    font-size: 12px;
+                    font-weight: 400;
+                    color: #6c727e;
+                  "
+                >
+                  © Copyright 2026. starlight All Rights Reserved
+                </p>
+                <!-- 로고 -->
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="margin: 12px auto 0; width: auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="https://kr.object.ncloudstorage.com/starlight-s3/email/starlight.png"
+                        alt="starlight"
+                        width="79"
+                        height="18"
+                        style="display: block; border: 0"
+                      />
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
