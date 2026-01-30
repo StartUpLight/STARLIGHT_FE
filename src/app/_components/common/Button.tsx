@@ -2,7 +2,7 @@ import React from 'react';
 
 interface ButtonProps {
   text: string;
-  icon?: React.ReactNode; // ← 아이콘 추가
+  icon?: React.ReactNode; 
   size?: 'S' | 'M' | 'L';
   color?: 'primary' | 'secondary' | string;
   rounded?: string;
@@ -10,6 +10,7 @@ interface ButtonProps {
   className?: string;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
+  iconPosition?: 'left' | 'right' | string;
 }
 
 function Button({
@@ -17,6 +18,7 @@ function Button({
   icon,
   size = 'M',
   color = 'primary',
+  iconPosition = 'right',
   rounded = '',
   onClick,
   className = '',
@@ -59,8 +61,9 @@ function Button({
       disabled={disabled}
       className={`flex items-center justify-center rounded-[8px] font-medium transition ${paddingClasses[size]} ${textClass} ${colorClasses} ${rounded} ${className} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} `}
     >
+        {icon && iconPosition === 'left' && <span className="flex items-center">{icon}</span>}
       <span>{text}</span>
-      {icon && <span className="flex items-center">{icon}</span>}
+        {icon && iconPosition === 'right' && <span className="flex items-center">{icon}</span>}
     </button>
   );
 }
