@@ -25,7 +25,6 @@ const MentorCard = ({
 
   return (
     <div
-      onClick={handleCardClick}
       className="bg-gray-80 flex w-full cursor-pointer flex-row items-start justify-between gap-6 rounded-xl px-9 py-[42px] transition-opacity hover:opacity-80 max-h-[200px]"
     >
       <div className="flex flex-row gap-6">
@@ -73,9 +72,7 @@ const MentorCard = ({
           iconPosition="left"
           size="M"
           className="rounded-lg gap-1 px-3 py-2 w-[156px] h-[39px]"
-          onClick={() => {
-            router.push(`/expert/detail/${id}`);
-          }}
+         onClick={handleCardClick}
         />
     </div>
 
