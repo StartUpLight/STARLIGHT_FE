@@ -77,11 +77,30 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
         return `<h${level} style="${style}">${content}</h${level}>`;
     }
 
+    // editorToHtml.ts 수정
+
     if (node.type === 'bulletList') {
         const items = (node.content || [])
             .map((item) => {
-                const itemContent = (item.content || []).map((child) => convertToHtml(child)).join('');
-                return itemContent ? `<li>${itemContent}</li>` : '';
+                const itemContent = (item.content || [])
+                    .map((child) => {
+                        // 빈 paragraph는 빈 문자열로 변환 (빈 줄 방지)
+                        if (child.type === 'paragraph') {
+                            const paragraphContent = (child.content || [])
+                                .map((c) => convertToHtml(c))
+                                .join('');
+                            // 빈 paragraph는 빈 문자열 반환 (불릿 점은 유지되지만 빈 줄은 생성 안 됨)
+                            if (!paragraphContent || paragraphContent.trim() === '') {
+                                return '';
+                            }
+                            return `<p>${paragraphContent}</p>`;
+                        }
+                        return convertToHtml(child);
+                    })
+                    .join('');
+
+                // 리스트 아이템은 내용이 없어도 유지 (빈 불릿 점 표시)
+                return `<li>${itemContent}</li>`;
             })
             .filter(Boolean);
         const listStyle = 'list-style-type: disc; padding-left: 1.5rem; margin: 0 0 0.75rem 0;';
@@ -91,8 +110,22 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
     if (node.type === 'orderedList') {
         const items = (node.content || [])
             .map((item) => {
-                const itemContent = (item.content || []).map((child) => convertToHtml(child)).join('');
-                return itemContent ? `<li>${itemContent}</li>` : '';
+                const itemContent = (item.content || [])
+                    .map((child) => {
+                        if (child.type === 'paragraph') {
+                            const paragraphContent = (child.content || [])
+                                .map((c) => convertToHtml(c))
+                                .join('');
+                            if (!paragraphContent || paragraphContent.trim() === '') {
+                                return '';
+                            }
+                            return `<p>${paragraphContent}</p>`;
+                        }
+                        return convertToHtml(child);
+                    })
+                    .join('');
+
+                return `<li>${itemContent}</li>`;
             })
             .filter(Boolean);
         const listStyle = 'list-style-type: decimal; padding-left: 1.5rem; margin: 0 0 0.75rem 0;';
@@ -205,13 +238,13 @@ export const convertToHtml = (node: JSONNode | null | undefined): string => {
         // width와 height가 있으면 그대로 사용, 없으면 기본 스타일 사용
         let style = '';
         if (width && height) {
-            style = `width: ${width}px; height: ${height}px;`;
+            style = `width: ${width}px; height: ${height}px; object-fit: contain;`;
         } else if (width) {
-            style = `width: ${width}px; height: auto;`;
+            style = `width: ${width}px; height: auto; object-fit: contain;`;
         } else if (height) {
-            style = `width: auto; height: ${height}px;`;
+            style = `width: auto; height: ${height}px; object-fit: contain;`;
         } else {
-            style = 'max-width: 400px; height: auto;';
+            style = 'max-width: 400px; height: auto; object-fit: contain;';
         }
 
         // 캡션이 있으면 포함

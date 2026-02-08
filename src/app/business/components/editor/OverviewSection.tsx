@@ -88,7 +88,7 @@ const OverviewSection = ({
               <EditorContent
                 editor={editorFeatures}
                 onFocus={() => onEditorFocus(editorFeatures)}
-                className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:max-w-full [&_img]:object-contain"
+                className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-w-full [&_img]:object-contain"
                 placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
               />
             </>
@@ -115,7 +115,7 @@ const OverviewSection = ({
               <EditorContent
                 editor={editorSkills}
                 onFocus={() => onEditorFocus(editorSkills)}
-                className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:max-w-full [&_img]:object-contain"
+                className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-w-full [&_img]:object-contain"
                 placeholder="아이템의 핵심기능은 무엇이며, 어떤 기능을 구현·작동 하는지 설명해주세요."
               />
             </>
@@ -141,7 +141,7 @@ const OverviewSection = ({
               <EditorContent
                 editor={editorGoals}
                 onFocus={() => onEditorFocus(editorGoals)}
-                className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-h-[400px] [&_img]:max-w-full [&_img]:object-contain"
+                className="prose max-w-none cursor-text placeholder:text-gray-400 focus:outline-none [&_img]:h-auto [&_img]:max-w-full [&_img]:object-contain"
                 placeholder="본 사업을 통해 달성하고 싶은 궁극적인 목표에 대해 설명"
               />
             </>

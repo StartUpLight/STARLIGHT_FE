@@ -11,6 +11,7 @@ export interface MentorProps {
   tags: string[];
   categories: string[];
   workingperiod: number;
+  oneLineIntroduction: string;
 }
 
 export interface MentorCardProps {
@@ -21,6 +22,7 @@ export interface MentorCardProps {
     orderIndex: number;
     careerTitle: string;
   }[];
+  oneLineIntroduction: string;
   tags: string[];
   workingperiod: number;
   status: 'active' | 'done';
@@ -36,4 +38,5 @@ export const adaptMentor = (e: getExpertResponse) => ({
     .map(mappingKorea)
     .filter(Boolean) as TabLabel[],
   workingperiod: e.workedPeriod,
+  oneLineIntroduction: e.oneLineIntroduction,
 });

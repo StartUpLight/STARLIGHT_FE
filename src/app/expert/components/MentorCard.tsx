@@ -1,7 +1,9 @@
 'use client';
+import Button from '@/app/_components/common/Button';
 import { MentorCardProps } from '@/types/expert/expert.props';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import WhitePlus from '@/assets/icons/white_plus.svg';
 
 type ExtraProps = {
   onApplied?: () => void;
@@ -12,7 +14,7 @@ const MentorCard = ({
   careers,
   tags,
   image,
-  workingperiod,
+  oneLineIntroduction,
   id,
 }: MentorCardProps & ExtraProps) => {
   const router = useRouter();
@@ -23,8 +25,7 @@ const MentorCard = ({
 
   return (
     <div
-      onClick={handleCardClick}
-      className="bg-gray-80 flex w-full cursor-pointer flex-row items-start justify-between gap-6 rounded-xl p-9 transition-opacity hover:opacity-80"
+      className="bg-gray-80 flex w-full cursor-pointer flex-row items-start justify-between gap-6 rounded-xl px-9 py-[42px] transition-opacity hover:opacity-80 max-h-[200px]"
     >
       <div className="flex flex-row gap-6">
         <Image
@@ -44,13 +45,13 @@ const MentorCard = ({
             </div>
             <div className="h-3 w-px bg-gray-300" />
             <div className="ds-subtext font-medium text-gray-700">
-              {workingperiod}년 경력
+              {oneLineIntroduction}
             </div>
           </div>
-          <div className="ds-subtext my-3 font-medium text-gray-600">
+          <div className="ds-subtext mt-3 font-medium text-gray-600 max-w-[780px] line-clamp-1 text-ellipsis">
             {careers.map((career) => career.careerTitle).join(' / ')}
           </div>
-          <div className="flex w-full flex-wrap gap-1.5">
+          <div className="flex w-full flex-wrap gap-1.5 mt-4">
             {tags.map((tag, i) => (
               <div
                 key={`${name}-tag-${tag}-${i}`}
@@ -64,7 +65,17 @@ const MentorCard = ({
           </div>
         </div>
       </div>
+
+      <Button
+          text="전문가 연결"
+          icon={<WhitePlus />}
+          iconPosition="left"
+          size="M"
+          className="rounded-lg gap-1 px-3 py-2 w-[156px] h-[39px]"
+         onClick={handleCardClick}
+        />
     </div>
+
   );
 };
 

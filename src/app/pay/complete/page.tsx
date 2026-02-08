@@ -66,7 +66,23 @@ function PayCompleteInner() {
       return;
     }
 
-    setState('FAIL');
+    // setState('FAIL');
+
+    setState('LOADING');
+    // 프로모션 기간 임시 결제완료 처리
+    const dummyData: OrderConfirmResponseDto = {
+      buyerId: 0,
+      paymentKey: 'dummy-payment-key',
+      orderId: 'dummy-order-id',
+      amount: 0,
+      status: 'PAID',
+      approvedAt: Date.now(),
+      receiptUrl: null,
+      method: 'CARD',
+      provider: null,
+    };
+    setData(dummyData);
+    setState('SUCCESS');
   }, [searchParams]);
 
   useEffect(() => {
