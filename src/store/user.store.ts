@@ -38,6 +38,7 @@ export const useUserStore = create<UserState>()(
           }
         } catch (error) {
           console.error('유저를 찾을 수 없습니다', error);
+          set({ user: null });
         }
       },
     }),

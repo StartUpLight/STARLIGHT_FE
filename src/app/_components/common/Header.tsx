@@ -80,9 +80,7 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    clearUser();
     router.push('/');
-
     setIsProfileOpen(false);
   };
 
@@ -134,12 +132,24 @@ const Header = () => {
                   href="/business"
                   className={dropdownItem}
                   role="menuitem"
+                  onClick={(e) => {
+                    if (!isAuthenticated) {
+                      e.preventDefault();
+                      setOpenLogin(true);
+                    }
+                  }}
                 >
                   작성하기
                 </Link>
                 <button
                   type="button"
-                  onClick={() => setOpenUpload(true)}
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      setOpenLogin(true);
+                    } else {
+                      setOpenUpload(true);
+                    }
+                  }}
                   className={`${dropdownItem} w-full text-left`}
                   role="menuitem"
                 >
