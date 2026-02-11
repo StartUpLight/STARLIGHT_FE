@@ -1,16 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useExpertStore } from '@/store/expert.store';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
+import { useAuthStore } from '@/store/auth.store';
 import { useExpertReportDetail } from '@/hooks/queries/useExpert';
 import GrayPlus from '@/assets/icons/gray_plus.svg';
 import GrayCheck from '@/assets/icons/gray_check.svg';
 import WhitePlus from '@/assets/icons/white_plus.svg';
 import BusinessPlanDropdown from './BusinessPlanDropdown';
 import { ExpertDetailResponse } from '@/types/expert/expert.detail';
+import LoginModal from '@/app/_components/common/LoginModal';
 
 interface ExpertDetailSidebarProps {
   expert: ExpertDetailResponse;
@@ -22,9 +25,9 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   const planId = useBusinessStore((s) => s.planId);
   const hasExpertUnlocked = useEvaluationStore((s) => s.hasExpertUnlocked);
   const user = useUserStore((s) => s.user);
-  const hasAccessToken =
-    typeof window !== 'undefined' && !!localStorage.getItem('accessToken');
-  const isMember = hasAccessToken && !!user;
+  const [openLogin, setOpenLogin] = useState(false);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isMember = isAuthenticated && !!user;
 
   const { data: reportDetails = [], isLoading: isLoadingReports } =
     useExpertReportDetail(expert.id, {
@@ -63,10 +66,17 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
       ? '신청완료'
       : '전문가 연결';
 
+  const requireAuth = () => {
+    if (isAuthenticated) return true;
+    setOpenLogin(true);
+    return false;
+  };
+
   const handleConnect = () => {
     if (!expert) return;
 
     if (shouldShowCreateButton) {
+      if (!requireAuth()) return;
       router.push('/business');
       return;
     }
@@ -112,15 +122,15 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
       <button
         onClick={handleConnect}
         disabled={shouldShowCreateButton ? false : disabled}
-        className={`ds-text mt-8 flex w-full items-center justify-center gap-1 rounded-lg px-8 py-[10px] font-medium ${
-          shouldShowCreateButton || (!disabled && !hasRequested)
+        className={`ds-text mt-8 flex w-full items-center justify-center gap-1 rounded-lg px-8 py-[10px] font-medium ${shouldShowCreateButton || (!disabled && !hasRequested)
             ? 'bg-primary-500 hover:bg-primary-700 cursor-pointer text-white'
             : 'cursor-not-allowed bg-gray-200 text-gray-500'
-        }`}
+          }`}
       >
         <ButtonIcon className="h-5 w-5 shrink-0" />
         <span>{buttonText}</span>
       </button>
+      <LoginModal open={openLogin} onClose={() => setOpenLogin(false)} />
     </aside>
   );
 };

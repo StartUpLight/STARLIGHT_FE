@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/auth.store';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -70,8 +71,7 @@ api.interceptors.response.use(
                 } catch (refreshError) {
                   // refreshToken도 만료되었거나 재발급 실패
                   console.error('토큰 재발급 실패:', refreshError);
-                  localStorage.removeItem('accessToken');
-                  localStorage.removeItem('refreshToken');
+                  useAuthStore.getState().logout();
                   throw refreshError;
                 } finally {
                   // 재발급 완료 후 Promise 초기화 (성공/실패 관계없이)
@@ -94,6 +94,7 @@ api.interceptors.response.use(
       }
 
       console.error('인증이 만료되었습니다. 다시 로그인하세요.');
+      useAuthStore.getState().logout();
     }
     return Promise.reject(error);
   }
