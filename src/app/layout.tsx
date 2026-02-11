@@ -64,7 +64,7 @@ export default function RootLayout({
         </>
       )}
 
-      <Script id="clarity" strategy="afterInteractive">
+      {/* <Script id="clarity" strategy="afterInteractive">
         {`
           (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -72,7 +72,7 @@ export default function RootLayout({
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
           })(window, document, "clarity", "script", "vfmpxmels2");
         `}
-      </Script>
+      </Script> */}
 
       <Script id="maze-inline" strategy="afterInteractive">
         {`(function (m, a, z, e) {
