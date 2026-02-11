@@ -6,6 +6,7 @@ import { useExpertStore } from '@/store/expert.store';
 import { useBusinessStore } from '@/store/business.store';
 import { useEvaluationStore } from '@/store/report.store';
 import { useUserStore } from '@/store/user.store';
+import { useAuthStore } from '@/store/auth.store';
 import { useExpertReportDetail } from '@/hooks/queries/useExpert';
 import GrayPlus from '@/assets/icons/gray_plus.svg';
 import GrayCheck from '@/assets/icons/gray_check.svg';
@@ -25,9 +26,8 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   const hasExpertUnlocked = useEvaluationStore((s) => s.hasExpertUnlocked);
   const user = useUserStore((s) => s.user);
   const [openLogin, setOpenLogin] = useState(false);
-  const hasAccessToken =
-    typeof window !== 'undefined' && !!localStorage.getItem('accessToken');
-  const isMember = hasAccessToken && !!user;
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isMember = isAuthenticated && !!user;
 
   const { data: reportDetails = [], isLoading: isLoadingReports } =
     useExpertReportDetail(expert.id, {
@@ -67,7 +67,7 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
       : '전문가 연결';
 
   const requireAuth = () => {
-    if (hasAccessToken) return true;
+    if (isAuthenticated) return true;
     setOpenLogin(true);
     return false;
   };

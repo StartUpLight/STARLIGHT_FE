@@ -80,9 +80,7 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    clearUser();
     router.push('/');
-
     setIsProfileOpen(false);
   };
 
