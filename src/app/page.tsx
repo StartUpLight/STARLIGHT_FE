@@ -8,7 +8,7 @@ import LandingRelation from './_components/landing/LandingRelation';
 const page = () => {
   return (
     <div>
-      <section className="relative h-[684px] w-full">
+      <section className="relative h-[400px] w-full md:h-[540px] lg:h-[684px]">
         <video
           className="absolute inset-0 h-full w-full object-cover"
           src="/images/landing/home.mp4"
@@ -25,8 +25,7 @@ const page = () => {
         </div>
       </section>
 
-      <section className="h-[526px] bg-gradient-to-b from-black to-[#6F55FF] pt-[240px]" />
-
+      <section className="h-[175px] bg-gradient-to-b from-black to-[#6F55FF] pt-[160px] md:h-[420px] md:pt-[200px] lg:h-[526px] lg:pt-[240px]" />
       <LandingChecklist />
       <LandingBlackSection />
       <LandingPaySection />
