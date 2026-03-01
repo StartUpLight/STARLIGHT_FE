@@ -169,10 +169,11 @@ const Header = () => {
                     className={dropdownItem}
                     role="menuitem"
                     onClick={(e) => {
-                      e.preventDefault();
                       if (window.innerWidth < 1024) {
+                        e.preventDefault();
                         setIsMobileAlertOpen(true);
                       } else if (!isAuthenticated) {
+                        e.preventDefault();
                         setOpenLogin(true);
                       }
                     }}
