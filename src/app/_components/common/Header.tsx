@@ -5,6 +5,8 @@ import Logo from '@/assets/icons/logo.svg';
 import React, { useState, useEffect } from 'react';
 import UploadReportModal from './UploadReportModal';
 import LoginModal from './LoginModal';
+import MobileLoginScreen from './MobileLoginScreen';
+import MobileNavAlertModal from './MobileNavAlertModal';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
 import Image from 'next/image';
@@ -15,6 +17,8 @@ const Header = () => {
   const [openUpload, setOpenUpload] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileLoginOpen, setIsMobileLoginOpen] = useState(false);
+  const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
   const router = useRouter();
   const { user, fetchUser, clearUser } = useUserStore();
@@ -80,8 +84,7 @@ const Header = () => {
     'ds-text px-2 font-medium transition-colors hover:text-primary-500 hover:font-semibold group-hover/nav:text-primary-500 group-hover/nav:font-semibold focus:outline-none';
   const menuList =
     'invisible opacity-0 scale-95 absolute left-1/2 z-20 mt-3 w-[100px] -translate-x-1/2 overflow-hidden ' +
-    'rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)] transition-all duration-150 ease-in-out ' +
-    'group-hover/nav:visible group-hover/nav:opacity-100 group-hover/nav:scale-100';
+    'rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)] transition-all duration-150 ease-in-out';
 
   const handleAuthClick = () => {
     if (isAuthenticated) {
@@ -97,15 +100,27 @@ const Header = () => {
     setIsProfileOpen(false);
   };
 
+  const handleMobileLoginClick = () => {
+    setIsMobileMenuOpen(false);
+    setIsMobileLoginOpen(true);
+  };
+
+  const handleNavClick = (e: React.MouseEvent) => {
+    if (window.innerWidth < 1024) {
+      e.preventDefault();
+      setIsMobileAlertOpen(true);
+    }
+  };
+
   const mobileNavLink =
-    'block w-full py-3 ds-text font-medium text-gray-900 transition-colors';
+    'flex items-center w-full h-[56px] text-[18px] font-medium text-white tracking-[-0.36px] transition-colors';
 
   return (
     <>
       <header
-        className={`h-[60px] w-full ${isHomePage ? 'fixed bg-black/30 lg:shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]' : 'bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]'} z-[80]`}
+        className={`h-[60px] w-full ${isHomePage ? 'fixed bg-black/30 md:shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]' : 'bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]'} z-[80]`}
       >
-        <div className="mx-auto flex h-[60px] items-center px-5 lg:px-8">
+        <div className="mx-auto flex h-[60px] items-center px-5 md:px-8">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-1.5">
               <Logo />
@@ -117,7 +132,7 @@ const Header = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="ml-[100px] [display:none] items-center gap-12 text-nowrap lg:[display:flex]">
+            <nav className="ml-[60px] [display:none] items-center gap-12 text-nowrap md:[display:flex] lg:ml-[100px]">
               <Link
                 href="/"
                 className={`${navLink} ${isActive('/')
@@ -141,11 +156,12 @@ const Header = () => {
                     }`}
                   aria-haspopup="menu"
                   aria-expanded="false"
+                  onClick={handleNavClick}
                 >
                   사업계획서
                 </button>
 
-                <div className={menuList} role="menu">
+                <div className={`${menuList} lg:group-hover/nav:visible lg:group-hover/nav:opacity-100 lg:group-hover/nav:scale-100`} role="menu">
                   <Link
                     href="/business"
                     className={dropdownItem}
@@ -184,6 +200,7 @@ const Header = () => {
                     ? 'text-white'
                     : 'text-gray-900'
                   }`}
+                onClick={handleNavClick}
               >
                 전문가
               </Link>
@@ -195,6 +212,7 @@ const Header = () => {
                     ? 'text-white'
                     : 'text-gray-900'
                   }`}
+                onClick={handleNavClick}
               >
                 요금제
               </Link>
@@ -204,7 +222,7 @@ const Header = () => {
           {/* Right side */}
           <div className="ml-auto flex items-center">
             {/* Desktop Auth */}
-            <div className="[display:none] lg:[display:flex] lg:items-center">
+            <div className="[display:none] md:[display:flex] md:items-center">
               {isAuthenticated ? (
                 <div className="profile-dropdown relative">
                   <div
@@ -260,7 +278,7 @@ const Header = () => {
             {/* Mobile Hamburger Button */}
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center lg:[display:none]"
+              className="flex h-10 w-10 items-center justify-center md:[display:none]"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="메뉴"
             >
@@ -283,105 +301,105 @@ const Header = () => {
         <LoginModal open={openLogin} onClose={() => setOpenLogin(false)} />
       </header>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[79] bg-black/50 lg:[display:none]" onClick={() => setIsMobileMenuOpen(false)} />
-      )}
-
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Full-Screen Overlay */}
       <div
-        className={`fixed top-[60px] right-0 left-0 z-[79] transform bg-white shadow-lg transition-all duration-300 ease-in-out lg:[display:none] ${isMobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-[81] bg-black transition-all duration-300 ease-in-out md:[display:none] ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
-        <nav className="flex flex-col px-6 py-4">
+        {/* Mobile Menu Header */}
+        <div className="flex h-[56px] items-center justify-between px-4">
           <Link
             href="/"
-            className={`${mobileNavLink} ${isActive('/') ? 'text-primary-500 font-semibold' : ''}`}
+            className="flex items-center gap-1.5"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <Logo />
+            <span className="text-[18.9px] font-semibold text-white">
+              Starlight
+            </span>
+          </Link>
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="메뉴 닫기"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M17 1L1 17M1 1l16 16" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Menu Navigation */}
+        <nav className="flex flex-col px-4 pt-[30px]">
+          <Link
+            href="/"
+            className={mobileNavLink}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             홈
           </Link>
 
-          <Link
-            href="/business"
-            className={`${mobileNavLink} ${isBusinessActive ? 'text-primary-500 font-semibold' : ''}`}
-            onClick={(e) => {
-              setIsMobileMenuOpen(false);
-              if (!isAuthenticated) {
-                e.preventDefault();
-                setOpenLogin(true);
-              }
-            }}
+          <button
+            type="button"
+            className={mobileNavLink}
+            onClick={() => setIsMobileAlertOpen(true)}
           >
-            사업계획서 작성하기
-          </Link>
+            사업계획서
+          </button>
 
           <button
             type="button"
-            className={`${mobileNavLink} text-left`}
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              if (!isAuthenticated) {
-                setOpenLogin(true);
-              } else {
-                setOpenUpload(true);
-              }
-            }}
-          >
-            사업계획서 채점하기
-          </button>
-
-          <Link
-            href="/expert"
-            className={`${mobileNavLink} ${isActive('/expert') ? 'text-primary-500 font-semibold' : ''}`}
-            onClick={() => setIsMobileMenuOpen(false)}
+            className={mobileNavLink}
+            onClick={() => setIsMobileAlertOpen(true)}
           >
             전문가
-          </Link>
+          </button>
 
-          <Link
-            href="/price"
-            className={`${mobileNavLink} ${isActive('/price') ? 'text-primary-500 font-semibold' : ''}`}
-            onClick={() => setIsMobileMenuOpen(false)}
+          <button
+            type="button"
+            className={mobileNavLink}
+            onClick={() => setIsMobileAlertOpen(true)}
           >
             요금제
-          </Link>
+          </button>
 
-          <div className="mt-2 border-t border-gray-200 pt-4">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  href="/mypage"
-                  className={`${mobileNavLink}`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  마이페이지
-                </Link>
-                <button
-                  type="button"
-                  className={`${mobileNavLink} text-left text-gray-600`}
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    handleLogout();
-                  }}
-                >
-                  로그아웃
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                className={`${mobileNavLink} text-primary-500 text-left font-semibold`}
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setOpenLogin(true);
-                }}
-              >
-                로그인
-              </button>
-            )}
-          </div>
+          {/* Divider */}
+          <div className="my-2 h-px w-full bg-gray-800" />
+
+          {isAuthenticated ? (
+            <button
+              type="button"
+              className={`${mobileNavLink} !text-gray-500`}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                handleLogout();
+              }}
+            >
+              로그아웃
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={mobileNavLink}
+              onClick={handleMobileLoginClick}
+            >
+              로그인
+            </button>
+          )}
         </nav>
       </div>
+
+      {/* Mobile Full-Screen Login */}
+      <MobileLoginScreen
+        open={isMobileLoginOpen}
+        onClose={() => setIsMobileLoginOpen(false)}
+      />
+
+      {/* Mobile Nav Alert Modal */}
+      <MobileNavAlertModal
+        open={isMobileAlertOpen}
+        onClose={() => setIsMobileAlertOpen(false)}
+      />
     </>
   );
 };

@@ -22,12 +22,12 @@ const Landing = () => {
   return (
     <>
       <div className="relative flex flex-col items-center px-5 text-center font-semibold text-white md:px-8 lg:px-0">
-        <p className="text-[28px] leading-[150%] md:text-[32px] lg:text-5xl">
+        <p className="text-[28px] leading-[150%] md:text-5xl lg:text-5xl">
           막막한 사업계획서 작성,
           <br />
           스타라이트와 함께 하세요
         </p>
-        <div className="ds-text mt-[18px] font-semibold text-white md:ds-text lg:ds-title lg:mt-[18px]">
+        <div className="ds-text mt-[18px] font-semibold text-white md:ds-title lg:ds-title lg:mt-[18px]">
           AI와 전문가가 함께하는 사업계획서 플랫폼
         </div>
 

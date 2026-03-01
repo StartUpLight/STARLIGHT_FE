@@ -52,7 +52,7 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-start justify-center pt-[100px] lg:items-center lg:pt-0">
         <div className="relative w-full max-w-[480px] rounded-[20px] bg-white p-[42px] shadow-[0_0_20px_0_rgba(0,0,0,0.15)]">
           <button
             onClick={onClose}

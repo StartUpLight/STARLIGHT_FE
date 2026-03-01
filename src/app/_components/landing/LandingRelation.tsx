@@ -48,12 +48,12 @@ const LandingRelation = () => {
         priority
       />
 
-      <div className="mt-15 flex w-full flex-col bg-white px-5 pb-15 md:mt-16 md:px-10 md:pb-32 lg:mt-[119px] lg:px-[132px] lg:pb-[235px]">
-        <div className="text-[18px] leading-[150%] font-semibold md:font-bold tracking-[-0.48px] text-gray-900 md:text-[32px] md:tracking-[-0.64px] lg:text-[42px] lg:tracking-[-0.84px]">
+      <div className="mt-15 flex w-full flex-col bg-white px-5 pb-15 md:mt-[90px] md:px-8 md:pb-32 lg:mt-[119px] lg:px-[132px] lg:pb-[235px]">
+        <div className="text-[18px] leading-[150%] font-semibold tracking-[-0.48px] text-gray-900 md:text-[42px] md:font-bold md:tracking-[-0.84px] lg:text-[42px] lg:tracking-[-0.84px]">
           관련 기관
         </div>
 
-        <ul className="mt-8 grid w-full grid-cols-2 items-center justify-center gap-3 md:mt-10 md:grid-cols-2 md:gap-4 lg:mt-[60px] lg:grid-cols-3 lg:gap-6">
+        <ul className="mt-8 grid w-full grid-cols-2 items-center justify-center gap-3 md:mt-15 md:grid-cols-2 md:gap-4 lg:mt-15 lg:grid-cols-3 lg:gap-6">
           {logos.map((logo) => (
             <li key={logo.alt} className="mx-auto w-full max-w-[376px]">
               <a
@@ -64,7 +64,7 @@ const LandingRelation = () => {
                 aria-label={`${logo.alt} 공식 사이트로 이동 (새 창)`}
                 className="block"
               >
-                <div className="bg-gray-80 flex h-28 w-full items-center justify-center rounded px-4 md:h-36 md:rounded-xl md:px-8 lg:h-52 lg:px-14">
+                <div className="bg-gray-80 flex h-28 w-full items-center justify-center rounded px-4 md:h-52 md:rounded-xl md:px-8 lg:h-52 lg:px-14">
                   <Image
                     src={logo.src}
                     alt={logo.alt}
