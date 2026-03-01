@@ -39,21 +39,36 @@ const LandingRelation = () => {
 
   return (
     <div>
+      {/* Mobile */}
+      <Image
+        src="/images/landing/landing_mobile.png"
+        alt="랜딩 관련기관"
+        width={780}
+        height={174}
+        className="w-full md:hidden"
+      />
+      {/* Tablet */}
+      <Image
+        src="/images/landing/landing_tablet.png"
+        alt="랜딩 관련기관"
+        width={1024}
+        height={420}
+        className="hidden w-full md:block lg:hidden"
+      />
+      {/* Desktop */}
       <Image
         src="/images/landing/landing_final.png"
         alt="랜딩 관련기관"
         width={1440}
         height={420}
-        className="w-full"
-        priority
+        className="hidden w-full lg:block"
       />
-
-      <div className="mt-[119px] flex w-full flex-col bg-white px-[132px] pb-[235px]">
-        <div className="text-[42px] leading-[150%] font-bold tracking-[-0.84px] text-gray-900">
+      <div className="mt-15 flex w-full flex-col bg-white px-5 pb-15 md:mt-[90px] md:px-8 md:pb-32 lg:mt-[119px] lg:px-[132px] lg:pb-[235px]">
+        <div className="text-[18px] leading-[150%] font-semibold tracking-[-0.48px] text-gray-900 md:text-[42px] md:font-bold md:tracking-[-0.84px] lg:text-[42px] lg:tracking-[-0.84px]">
           관련 기관
         </div>
 
-        <ul className="mt-[60px] grid w-full grid-cols-1 items-center justify-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 grid w-full grid-cols-2 items-center justify-center gap-3 md:mt-15 md:grid-cols-2 md:gap-4 lg:mt-15 lg:grid-cols-3 lg:gap-6">
           {logos.map((logo) => (
             <li key={logo.alt} className="mx-auto w-full max-w-[376px]">
               <a
@@ -64,14 +79,14 @@ const LandingRelation = () => {
                 aria-label={`${logo.alt} 공식 사이트로 이동 (새 창)`}
                 className="block"
               >
-                <div className="bg-gray-80 flex h-52 w-full items-center justify-center rounded-xl px-14">
+                <div className="bg-gray-80 flex h-28 w-full items-center justify-center rounded px-4 md:h-52 md:rounded-xl md:px-8 lg:h-52 lg:px-14">
                   <Image
                     src={logo.src}
                     alt={logo.alt}
                     width={260}
                     height={60}
-                    className="h-auto max-h-[60px] w-auto object-contain"
-                    priority
+                    className="h-auto max-h-[36px] w-auto object-contain md:max-h-[48px] lg:max-h-[60px]"
+                    loading="lazy"
                   />
                 </div>
               </a>

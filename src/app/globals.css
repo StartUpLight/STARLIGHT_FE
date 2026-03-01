@@ -60,6 +60,11 @@
   --text-md: 16px; /* Text */
   --text-sm: 14px; /* Sub Text */
   --text-xs: 12px; /* Caption */
+
+  /* Breakpoints */
+  --breakpoint-sm: 390px;
+  --breakpoint-md: 780px;
+  --breakpoint-lg: 1440px;
 }
 
 @media (prefers-color-scheme: dark) {

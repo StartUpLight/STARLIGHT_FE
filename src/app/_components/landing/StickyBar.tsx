@@ -22,14 +22,14 @@ const StickyBar = ({ show }: StickyBarProps) => {
   return (
     <>
       <div
-        className={`fixed inset-x-0 bottom-0 z-50 transition-all duration-300 ${show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-full opacity-0'}`}
+        className={`fixed inset-x-0 bottom-0 z-50 hidden transition-all duration-300 lg:block ${show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-full opacity-0'}`}
       >
-        <div className="mx-auto max-w-[1176px] pb-6">
-          <div className="flex items-center rounded-[12px] bg-black/80 px-8 py-5">
-            <div className="ds-title block font-medium text-white">
+        <div className="mx-auto max-w-[1176px] px-4 pb-4 md:px-6 md:pb-5 lg:px-0 lg:pb-6">
+          <div className="flex flex-col gap-3 rounded-[12px] bg-black/80 px-4 py-4 md:flex-row md:items-center md:px-6 md:py-4 lg:px-8 lg:py-5">
+            <div className="ds-subtext hidden font-medium text-white md:ds-text md:block lg:ds-title">
               사업계획서 작성하러 가기
             </div>
-            <div className="ml-auto flex gap-3">
+            <div className="flex w-full flex-col gap-2 md:ml-auto md:w-auto md:flex-row md:gap-3">
               <button
                 onClick={() => {
                   if (isAuthenticated) {
@@ -38,12 +38,12 @@ const StickyBar = ({ show }: StickyBarProps) => {
                     setIsLoginModalOpen(true);
                   }
                 }}
-                className="bg-primary-500 ds-text hover:bg-primary-600 active:bg-primary-700 h-[50px] w-[220px] cursor-pointer rounded-full px-8 font-medium text-white"
+                className="bg-primary-500 ds-subtext hover:bg-primary-600 active:bg-primary-700 h-[42px] w-full cursor-pointer rounded-full px-4 font-medium text-white md:ds-text md:h-[46px] md:w-auto md:px-6 lg:h-[50px] lg:w-[220px] lg:px-8"
               >
                 사업계획서 작성하기
               </button>
               <button
-                className="ds-text h-[50px] cursor-pointer rounded-full bg-white px-8 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200"
+                className="ds-subtext h-[42px] w-full cursor-pointer rounded-full bg-white px-4 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200 md:ds-text md:h-[46px] md:w-auto md:px-6 lg:h-[50px] lg:px-8"
                 onClick={() => {
                   if (isAuthenticated) {
                     setIsModalOpen(true);
