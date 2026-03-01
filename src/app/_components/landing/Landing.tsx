@@ -57,13 +57,13 @@ const Landing = () => {
             PDF 업로드하고 채점받기
           </button>
         </div>
-        <div className="pointer-events-none absolute top-full left-1/2 mt-12 -translate-x-1/2 md:mt-16 lg:mt-20">
+        <div className="pointer-events-none absolute top-full left-1/2 mt-12 w-[358px] -translate-x-1/2 md:mt-16 md:w-[640px] lg:mt-20 lg:w-[912px]">
           <Image
             src="/images/landing/homeimage.png"
             alt="홈화면 이미지"
             width={912}
             height={560}
-            className="w-[90vw] max-w-[912px]"
+            className="h-auto w-full"
             priority
             unoptimized={true}
           />

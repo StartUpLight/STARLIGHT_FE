@@ -18,7 +18,7 @@ const MobileNavAlertModal = ({ open, onClose }: MobileNavAlertModalProps) => {
         aria-hidden="true"
       />
       <div className="absolute inset-0 flex items-center justify-center px-8">
-        <div className="flex w-full flex-col items-center gap-6 rounded-[20px] bg-white px-6 pt-8 pb-6 md:w-[377px] md:rounded-xl md:px-6">
+        <div className="flex w-[326px] flex-col items-center gap-6 rounded-[20px] bg-white px-6 pt-8 pb-6 md:w-[377px] md:rounded-xl md:px-6">
           <ErrorIcon />
           <div className="flex w-full flex-col gap-2">
             <p className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-gray-900 md:text-[20px] md:tracking-[-0.4px]">

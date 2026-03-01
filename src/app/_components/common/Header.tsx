@@ -7,6 +7,8 @@ import UploadReportModal from './UploadReportModal';
 import LoginModal from './LoginModal';
 import MobileLoginScreen from './MobileLoginScreen';
 import MobileNavAlertModal from './MobileNavAlertModal';
+import MenuIcon from '@/assets/icons/menu.svg';
+import CloseIcon from '@/assets/icons/close_white.svg';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
 import Image from 'next/image';
@@ -120,7 +122,7 @@ const Header = () => {
       <header
         className={`h-[60px] w-full ${isHomePage ? 'fixed bg-black/30 md:shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]' : 'bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]'} z-[80]`}
       >
-        <div className="mx-auto flex h-[60px] items-center px-5 md:px-8">
+        <div className="mx-auto flex h-[60px] items-center px-4 md:px-8">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-1.5">
               <Logo />
@@ -161,14 +163,16 @@ const Header = () => {
                   사업계획서
                 </button>
 
-                <div className={`${menuList} lg:group-hover/nav:visible lg:group-hover/nav:opacity-100 lg:group-hover/nav:scale-100`} role="menu">
+                <div className={`${menuList} md:group-hover/nav:visible md:group-hover/nav:opacity-100 md:group-hover/nav:scale-100`} role="menu">
                   <Link
                     href="/business"
                     className={dropdownItem}
                     role="menuitem"
                     onClick={(e) => {
-                      if (!isAuthenticated) {
-                        e.preventDefault();
+                      e.preventDefault();
+                      if (window.innerWidth < 1024) {
+                        setIsMobileAlertOpen(true);
+                      } else if (!isAuthenticated) {
                         setOpenLogin(true);
                       }
                     }}
@@ -178,7 +182,9 @@ const Header = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      if (!isAuthenticated) {
+                      if (window.innerWidth < 1024) {
+                        setIsMobileAlertOpen(true);
+                      } else if (!isAuthenticated) {
                         setOpenLogin(true);
                       } else {
                         setOpenUpload(true);
@@ -278,20 +284,12 @@ const Header = () => {
             {/* Mobile Hamburger Button */}
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center md:[display:none]"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="flex h-6 w-6 items-center justify-center md:[display:none]"
+              onClick={() => setIsMobileMenuOpen(true)}
               aria-label="메뉴"
             >
-            {isMobileMenuOpen ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6l12 12" stroke={isHomePage ? 'white' : '#191f28'} strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M3 6h18M3 12h18M3 18h18" stroke={isHomePage ? 'white' : '#191f28'} strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            )}
-          </button>
+              <MenuIcon className={isHomePage ? 'text-white' : 'text-gray-900'} />
+            </button>
           </div>
         </div>
         <UploadReportModal
@@ -319,13 +317,11 @@ const Header = () => {
           </Link>
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center"
+            className="flex h-4 w-4 items-center justify-center"
             onClick={() => setIsMobileMenuOpen(false)}
             aria-label="메뉴 닫기"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M17 1L1 17M1 1l16 16" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            <CloseIcon className="h-4 w-4 text-white" />
           </button>
         </div>
 

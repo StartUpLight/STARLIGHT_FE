@@ -39,15 +39,33 @@ const LandingRelation = () => {
 
   return (
     <div>
+      {/* Mobile */}
+      <Image
+        src="/images/landing/landing_mobile.png"
+        alt="랜딩 관련기관"
+        width={780}
+        height={174}
+        className="w-full md:hidden"
+        priority
+      />
+      {/* Tablet */}
+      <Image
+        src="/images/landing/landing_tablet.png"
+        alt="랜딩 관련기관"
+        width={1024}
+        height={420}
+        className="hidden w-full md:block lg:hidden"
+        priority
+      />
+      {/* Desktop */}
       <Image
         src="/images/landing/landing_final.png"
         alt="랜딩 관련기관"
         width={1440}
         height={420}
-        className="w-full"
+        className="hidden w-full lg:block"
         priority
       />
-
       <div className="mt-15 flex w-full flex-col bg-white px-5 pb-15 md:mt-[90px] md:px-8 md:pb-32 lg:mt-[119px] lg:px-[132px] lg:pb-[235px]">
         <div className="text-[18px] leading-[150%] font-semibold tracking-[-0.48px] text-gray-900 md:text-[42px] md:font-bold md:tracking-[-0.84px] lg:text-[42px] lg:tracking-[-0.84px]">
           관련 기관
