@@ -21,16 +21,19 @@ const Landing = () => {
 
   return (
     <>
-      <div className="relative flex flex-col items-center text-center font-semibold text-white">
-        <p className="text-5xl">막막한 사업계획서 작성,</p>
-        <p className="mt-6 text-5xl">스타라이트와 함께 하세요</p>
-        <div className="ds-title mt-[18px] font-semibold text-white">
+      <div className="relative flex flex-col items-center px-5 text-center font-semibold text-white md:px-8 lg:px-0">
+        <p className="text-[28px] leading-[150%] md:text-5xl lg:text-5xl">
+          막막한 사업계획서 작성,
+          <br />
+          스타라이트와 함께 하세요
+        </p>
+        <div className="ds-text mt-[18px] font-semibold text-white md:ds-title lg:ds-title lg:mt-[18px]">
           AI와 전문가가 함께하는 사업계획서 플랫폼
         </div>
 
-        <div ref={ctaRef} className="mt-8 flex gap-3">
+        <div ref={ctaRef} className="mt-6 hidden w-full flex-col gap-3 md:mt-8 md:flex md:w-auto md:flex-row">
           <button
-            className="bg-primary-500 ds-text hover:bg-primary-600 active:bg-primary-700 h-[50px] w-[220px] cursor-pointer rounded-full px-8 font-medium text-white"
+            className="bg-primary-500 ds-subtext hover:bg-primary-600 active:bg-primary-700 h-[44px] w-full cursor-pointer rounded-full px-6 font-medium text-white md:ds-text md:h-[50px] md:w-[220px] md:px-8"
             onClick={() => {
               if (isAuthenticated) {
                 router.push('/business');
@@ -42,7 +45,7 @@ const Landing = () => {
             사업계획서 작성하기
           </button>
           <button
-            className="ds-text h-[50px] cursor-pointer rounded-full bg-white px-8 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200"
+            className="ds-subtext h-[44px] w-full cursor-pointer rounded-full bg-white px-6 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200 md:ds-text md:h-[50px] md:w-auto md:px-8"
             onClick={() => {
               if (isAuthenticated) {
                 setIsModalOpen(true);
@@ -54,14 +57,13 @@ const Landing = () => {
             PDF 업로드하고 채점받기
           </button>
         </div>
-
-        <div className="pointer-events-none absolute top-full left-1/2 mt-20 -translate-x-1/2">
+        <div className="pointer-events-none absolute top-full left-1/2 mt-12 w-[358px] -translate-x-1/2 md:mt-16 md:w-[640px] lg:mt-20 lg:w-[912px]">
           <Image
             src="/images/landing/homeimage.png"
             alt="홈화면 이미지"
             width={912}
             height={560}
-            className="w-[90vw] max-w-[912px]"
+            className="h-auto w-full"
             priority
             unoptimized={true}
           />

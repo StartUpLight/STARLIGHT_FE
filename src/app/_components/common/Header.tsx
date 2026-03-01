@@ -5,6 +5,10 @@ import Logo from '@/assets/icons/logo.svg';
 import React, { useState, useEffect } from 'react';
 import UploadReportModal from './UploadReportModal';
 import LoginModal from './LoginModal';
+import MobileLoginScreen from './MobileLoginScreen';
+import MobileNavAlertModal from './MobileNavAlertModal';
+import MenuIcon from '@/assets/icons/menu.svg';
+import CloseIcon from '@/assets/icons/close_white.svg';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
 import Image from 'next/image';
@@ -14,6 +18,9 @@ const Header = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [openUpload, setOpenUpload] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileLoginOpen, setIsMobileLoginOpen] = useState(false);
+  const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
   const router = useRouter();
   const { user, fetchUser, clearUser } = useUserStore();
@@ -45,6 +52,18 @@ const Header = () => {
     return () => window.removeEventListener('click', handleClickOutside);
   }, [isProfileOpen]);
 
+  // 모바일 메뉴 열릴 때 스크롤 방지
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   // /business 경로에서는 헤더 숨김
   if (pathname.startsWith('/business')) {
     return null;
@@ -67,8 +86,7 @@ const Header = () => {
     'ds-text px-2 font-medium transition-colors hover:text-primary-500 hover:font-semibold group-hover/nav:text-primary-500 group-hover/nav:font-semibold focus:outline-none';
   const menuList =
     'invisible opacity-0 scale-95 absolute left-1/2 z-20 mt-3 w-[100px] -translate-x-1/2 overflow-hidden ' +
-    'rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)] transition-all duration-150 ease-in-out ' +
-    'group-hover/nav:visible group-hover/nav:opacity-100 group-hover/nav:scale-100';
+    'rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)] transition-all duration-150 ease-in-out';
 
   const handleAuthClick = () => {
     if (isAuthenticated) {
@@ -84,164 +102,302 @@ const Header = () => {
     setIsProfileOpen(false);
   };
 
-  return (
-    <header
-      className={`h-[60px] w-full shadow-[0_4px_6px_0_rgba(0,0,0,0.05)] ${isHomePage ? 'fixed bg-black/30' : 'bg-white'} z-[80]`}
-    >
-      <div className="mx-auto flex h-[60px] items-center px-8">
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center gap-1.5">
-            <Logo />
-            <span
-              className={`text-[18.9px] font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
-            >
-              Starlight
-            </span>
-          </Link>
+  const handleMobileLoginClick = () => {
+    setIsMobileMenuOpen(false);
+    setIsMobileLoginOpen(true);
+  };
 
-          <nav className="ml-[100px] flex items-center gap-12 text-nowrap">
-            <Link
-              href="/"
-              className={`${navLink} ${isActive('/')
-                ? 'text-primary-500 font-semibold'
-                : isHomePage
-                  ? 'text-white'
-                  : 'text-gray-900'
-                }`}
-            >
-              홈
+  const handleNavClick = (e: React.MouseEvent) => {
+    if (window.innerWidth < 1024) {
+      e.preventDefault();
+      setIsMobileAlertOpen(true);
+    }
+  };
+
+  const mobileNavLink =
+    'flex items-center w-full h-[56px] text-[18px] font-medium text-white tracking-[-0.36px] transition-colors';
+
+  return (
+    <>
+      <header
+        className={`h-[60px] w-full ${isHomePage ? 'fixed bg-black/30 md:shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]' : 'bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]'} z-[80]`}
+      >
+        <div className="mx-auto flex h-[60px] items-center px-4 md:px-8">
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center gap-1.5">
+              <Logo />
+              <span
+                className={`text-[18.9px] font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
+              >
+                Starlight
+              </span>
             </Link>
 
-            <div className={menuWrapper}>
-              <button
-                type="button"
-                className={`${menuButton} ${isBusinessActive
+            {/* Desktop Navigation */}
+            <nav className="ml-[60px] [display:none] items-center gap-12 text-nowrap md:[display:flex] lg:ml-[100px]">
+              <Link
+                href="/"
+                className={`${navLink} ${isActive('/')
                   ? 'text-primary-500 font-semibold'
                   : isHomePage
                     ? 'text-white'
                     : 'text-gray-900'
                   }`}
-                aria-haspopup="menu"
-                aria-expanded="false"
               >
-                사업계획서
-              </button>
+                홈
+              </Link>
 
-              <div className={menuList} role="menu">
-                <Link
-                  href="/business"
-                  className={dropdownItem}
-                  role="menuitem"
-                  onClick={(e) => {
-                    if (!isAuthenticated) {
-                      e.preventDefault();
-                      setOpenLogin(true);
-                    }
-                  }}
-                >
-                  작성하기
-                </Link>
+              <div className={menuWrapper}>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!isAuthenticated) {
-                      setOpenLogin(true);
-                    } else {
-                      setOpenUpload(true);
-                    }
-                  }}
-                  className={`${dropdownItem} w-full text-left`}
-                  role="menuitem"
+                  className={`${menuButton} ${isBusinessActive
+                    ? 'text-primary-500 font-semibold'
+                    : isHomePage
+                      ? 'text-white'
+                      : 'text-gray-900'
+                    }`}
+                  aria-haspopup="menu"
+                  aria-expanded="false"
+                  onClick={handleNavClick}
                 >
-                  채점하기
+                  사업계획서
                 </button>
-              </div>
-            </div>
 
-            <Link
-              href="/expert"
-              className={`${navLink} ${isActive('/expert')
-                ? 'text-primary-500 font-semibold'
-                : isHomePage
-                  ? 'text-white'
-                  : 'text-gray-900'
-                }`}
-            >
-              전문가
-            </Link>
-            <Link
-              href="/price"
-              className={`${navLink} ${isActive('/price')
-                ? 'text-primary-500 font-semibold'
-                : isHomePage
-                  ? 'text-white'
-                  : 'text-gray-900'
-                }`}
-            >
-              요금제
-            </Link>
-          </nav>
-        </div>
-
-        <div className="ml-auto flex items-center">
-          {isAuthenticated ? (
-            <div className="profile-dropdown relative">
-              <div
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex cursor-pointer items-center justify-center rounded-full"
-              >
-                {user?.profileImageUrl ? (
-                  <Image
-                    src={user.profileImageUrl}
-                    alt={user.name}
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 rounded-full object-cover"
-                    priority
-                  />
-                ) : (
-                  <span className="ds-text flex h-9 w-9 items-center justify-center rounded-full bg-gray-400 font-medium">
-                    {user?.name?.charAt(0)}
-                  </span>
-                )}
-              </div>
-
-              {isProfileOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-[100px] overflow-hidden rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
+                <div className={`${menuList} md:group-hover/nav:visible md:group-hover/nav:opacity-100 md:group-hover/nav:scale-100`} role="menu">
                   <Link
-                    href="/mypage"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="ds-subtext hover:bg-primary-50 block px-[12px] py-[8px] font-medium text-gray-900 transition-colors"
+                    href="/business"
+                    className={dropdownItem}
+                    role="menuitem"
+                    onClick={(e) => {
+                      if (window.innerWidth < 1024) {
+                        e.preventDefault();
+                        setIsMobileAlertOpen(true);
+                      } else if (!isAuthenticated) {
+                        e.preventDefault();
+                        setOpenLogin(true);
+                      }
+                    }}
                   >
-                    마이페이지
+                    작성하기
                   </Link>
                   <button
                     type="button"
-                    onClick={handleLogout}
-                    className="ds-subtext hover:bg-primary-50 w-full cursor-pointer px-[12px] py-[8px] text-left font-medium text-gray-900 transition-colors"
+                    onClick={() => {
+                      if (window.innerWidth < 1024) {
+                        setIsMobileAlertOpen(true);
+                      } else if (!isAuthenticated) {
+                        setOpenLogin(true);
+                      } else {
+                        setOpenUpload(true);
+                      }
+                    }}
+                    className={`${dropdownItem} w-full text-left`}
+                    role="menuitem"
                   >
-                    로그아웃
+                    채점하기
                   </button>
                 </div>
+              </div>
+
+              <Link
+                href="/expert"
+                className={`${navLink} ${isActive('/expert')
+                  ? 'text-primary-500 font-semibold'
+                  : isHomePage
+                    ? 'text-white'
+                    : 'text-gray-900'
+                  }`}
+                onClick={handleNavClick}
+              >
+                전문가
+              </Link>
+              <Link
+                href="/price"
+                className={`${navLink} ${isActive('/price')
+                  ? 'text-primary-500 font-semibold'
+                  : isHomePage
+                    ? 'text-white'
+                    : 'text-gray-900'
+                  }`}
+                onClick={handleNavClick}
+              >
+                요금제
+              </Link>
+            </nav>
+          </div>
+
+          {/* Right side */}
+          <div className="ml-auto flex items-center">
+            {/* Desktop Auth */}
+            <div className="[display:none] md:[display:flex] md:items-center">
+              {isAuthenticated ? (
+                <div className="profile-dropdown relative">
+                  <div
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex cursor-pointer items-center justify-center rounded-full"
+                  >
+                    {user?.profileImageUrl ? (
+                      <Image
+                        src={user.profileImageUrl}
+                        alt={user.name}
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 rounded-full object-cover"
+                        priority
+                      />
+                    ) : (
+                      <span className="ds-text flex h-9 w-9 items-center justify-center rounded-full bg-gray-400 font-medium">
+                        {user?.name?.charAt(0)}
+                      </span>
+                    )}
+                  </div>
+
+                  {isProfileOpen && (
+                    <div className="absolute right-0 z-20 mt-2 w-[100px] overflow-hidden rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
+                      <Link
+                        href="/mypage"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="ds-subtext hover:bg-primary-50 block px-[12px] py-[8px] font-medium text-gray-900 transition-colors"
+                      >
+                        마이페이지
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="ds-subtext hover:bg-primary-50 w-full cursor-pointer px-[12px] py-[8px] text-left font-medium text-gray-900 transition-colors"
+                      >
+                        로그아웃
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleAuthClick}
+                  className={`ds-text hover:text-primary-500 cursor-pointer px-4 py-[6px] font-medium text-nowrap transition-colors hover:font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
+                >
+                  로그인
+                </button>
               )}
             </div>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center md:[display:none]"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="메뉴"
+            >
+              <MenuIcon className={isHomePage ? 'text-white' : 'text-gray-900'} />
+            </button>
+          </div>
+        </div>
+        <UploadReportModal
+          open={openUpload}
+          onClose={() => setOpenUpload(false)}
+        />
+        <LoginModal open={openLogin} onClose={() => setOpenLogin(false)} />
+      </header>
+
+      {/* Mobile Menu Full-Screen Overlay */}
+      <div
+        className={`fixed inset-0 z-[81] bg-black transition-all duration-300 ease-in-out md:[display:none] ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      >
+        {/* Mobile Menu Header */}
+        <div className="flex h-[56px] items-center justify-between px-4">
+          <Link
+            href="/"
+            className="flex items-center gap-1.5"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <Logo />
+            <span className="text-[18.9px] font-semibold text-white">
+              Starlight
+            </span>
+          </Link>
+          <button
+            type="button"
+            className="flex h-4 w-4 items-center justify-center"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="메뉴 닫기"
+          >
+            <CloseIcon className="h-4 w-4 text-white" />
+          </button>
+        </div>
+
+        {/* Mobile Menu Navigation */}
+        <nav className="flex flex-col px-4 pt-[30px]">
+          <Link
+            href="/"
+            className={mobileNavLink}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            홈
+          </Link>
+
+          <button
+            type="button"
+            className={mobileNavLink}
+            onClick={() => setIsMobileAlertOpen(true)}
+          >
+            사업계획서
+          </button>
+
+          <button
+            type="button"
+            className={mobileNavLink}
+            onClick={() => setIsMobileAlertOpen(true)}
+          >
+            전문가
+          </button>
+
+          <button
+            type="button"
+            className={mobileNavLink}
+            onClick={() => setIsMobileAlertOpen(true)}
+          >
+            요금제
+          </button>
+
+          {/* Divider */}
+          <div className="my-2 h-px w-full bg-gray-800" />
+
+          {isAuthenticated ? (
+            <button
+              type="button"
+              className={`${mobileNavLink} !text-gray-500`}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                handleLogout();
+              }}
+            >
+              로그아웃
+            </button>
           ) : (
             <button
               type="button"
-              onClick={handleAuthClick}
-              className={`ds-text hover:text-primary-500 cursor-pointer px-4 py-[6px] font-medium text-nowrap transition-colors hover:font-semibold ${isHomePage ? 'text-white' : 'text-gray-900'}`}
+              className={mobileNavLink}
+              onClick={handleMobileLoginClick}
             >
               로그인
             </button>
           )}
-        </div>
+        </nav>
       </div>
-      <UploadReportModal
-        open={openUpload}
-        onClose={() => setOpenUpload(false)}
+
+      {/* Mobile Full-Screen Login */}
+      <MobileLoginScreen
+        open={isMobileLoginOpen}
+        onClose={() => setIsMobileLoginOpen(false)}
       />
-      <LoginModal open={openLogin} onClose={() => setOpenLogin(false)} />
-    </header>
+
+      {/* Mobile Nav Alert Modal */}
+      <MobileNavAlertModal
+        open={isMobileAlertOpen}
+        onClose={() => setIsMobileAlertOpen(false)}
+      />
+    </>
   );
 };
 
