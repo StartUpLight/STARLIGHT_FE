@@ -136,11 +136,11 @@ const LandingPaySection = () => {
 
       <div className="mt-[30px] flex flex-col px-2 md:mt-12 lg:mt-12 lg:px-0">
         <p className="ds-caption text-center font-normal text-gray-600 md:ds-text lg:ds-text">
-          *전문가 대면 멘토링 평균 약 30만 원 수준에서 구조 개선을 통해 최대 약
+          *전문가 대면 멘토링 평균 약 30만 원 수준에서 구조 개선을 통해 <br className='md:hidden' /> 최대 약
           4.9만 원대까지 절감했습니다.
         </p>
         <p className="ds-caption text-center font-normal text-gray-600 md:ds-text lg:ds-text">
-          *전문가 대면 멘토링 평균 비용은 1시간 기준 일반적인 시장 시세를
+          *전문가 대면 멘토링 평균 비용은 1시간 기준 일반적인 시장 <br className='md:hidden' /> 시세를
           참고하였습니다.
         </p>
       </div>
