@@ -8,11 +8,13 @@ import PolygonSmall from '@/assets/icons/polygon_small.svg';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import LoginModal from '../common/LoginModal';
+import MobileNavAlertModal from '../common/MobileNavAlertModal';
 import { useAuthStore } from '@/store/auth.store';
 
 const LandingPaySection = () => {
   const router = useRouter();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { isAuthenticated, checkAuth } = useAuthStore();
 
   useEffect(() => {
@@ -113,9 +115,11 @@ const LandingPaySection = () => {
       </div>
 
       <button
-        className="bg-primary-500 hover:bg-primary-700 mt-[30px] flex h-[44.4px] w-full cursor-pointer items-center justify-center gap-[2px] rounded px-6 md:mt-12 md:gap-1 md:h-[64px] md:w-[516px] md:rounded-lg md:px-8 lg:mt-12 lg:h-[64px] lg:w-[516px] lg:px-8"
+        className="bg-primary-500 hover:bg-primary-700 mt-[30px] flex h-[44.4px] w-full max-w-[358px] cursor-pointer items-center justify-center gap-[2px] rounded px-6 md:mt-12 md:gap-1 md:h-[64px] md:w-[516px] md:max-w-none md:rounded-lg md:px-8 lg:mt-12 lg:h-[64px] lg:w-[516px] lg:px-8"
         onClick={() => {
-          if (isAuthenticated) {
+          if (window.innerWidth < 1024) {
+            setIsAlertOpen(true);
+          } else if (isAuthenticated) {
             router.push('/business');
           } else {
             setIsLoginModalOpen(true);
@@ -132,6 +136,10 @@ const LandingPaySection = () => {
       <LoginModal
         open={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+      />
+      <MobileNavAlertModal
+        open={isAlertOpen}
+        onClose={() => setIsAlertOpen(false)}
       />
 
       <div className="mt-[30px] flex flex-col px-2 md:mt-12 lg:mt-12 lg:px-0">
