@@ -230,9 +230,15 @@ const LoginModal = ({ open, onClose }: LoginModalProps) => {
                       <span className="text-gray-500">(선택)</span>
                     </p>
                   </div>
-                  <div className="h-5 w-5 flex-shrink-0">
+                  <a
+                    href="https://marked-lift-a34.notion.site/3176dc103815803bb2f5d15484dbcc8a?source=copy_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="마케팅 정보 수신 동의 보기"
+                    className="flex-shrink-0"
+                  >
                     <ChevronRight className="h-5 w-5 text-gray-400" />
-                  </div>
+                  </a>
                 </div>
               </div>
 
