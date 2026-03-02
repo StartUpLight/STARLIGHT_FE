@@ -4,10 +4,13 @@ import ArrowIcon from '@/assets/icons/chevron_right.svg';
 import ArrowSmallIcon from '@/assets/icons/arrow_right_small.svg';
 import { useRouter } from 'next/navigation';
 import { useCountdown } from '@/hooks/useCountdown';
+import { useState } from 'react';
+import MobileNavAlertModal from '../common/MobileNavAlertModal';
 
 const LandingChecklist = () => {
   const router = useRouter();
-  const timeLeft = useCountdown('2026-02-28T23:59:59');
+  const timeLeft = useCountdown('2026-03-31T23:59:59');
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   return (
     <div className="w-full bg-black px-4 pt-15 md:px-10 md:pt-28 lg:px-0 lg:py-40">
@@ -20,7 +23,7 @@ const LandingChecklist = () => {
 
           <div className="flex flex-col gap-4 md:gap-6">
             <p className="ds-subtext text-left font-semibold text-gray-300 md:ds-title lg:ds-title lg:text-left">
-              2026 지원사업 대비 모든 기능 무료 프로모션 (~2/28)
+              2026 지원사업 대비 모든 기능 무료 프로모션 (~3/31)
             </p>
 
             <div className="flex flex-row items-start justify-center gap-2 md:justify-start md:gap-3 lg:justify-start">
@@ -41,7 +44,13 @@ const LandingChecklist = () => {
             </div>
             <button
               className="ds-subtext flex h-[44px] w-full cursor-pointer items-center justify-center gap-[2px] rounded bg-white px-4 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200 md:ds-title md:h-[64px] md:w-[516px] md:rounded-lg md:px-8 lg:ds-title lg:h-[64px] lg:w-[516px] lg:px-8"
-              onClick={() => router.push('/business')}
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  setIsAlertOpen(true);
+                } else {
+                  router.push('/business');
+                }
+              }}
             >
               2026 지원사업 준비 시작하기
               <ArrowSmallIcon className="md:hidden" />
@@ -61,6 +70,7 @@ const LandingChecklist = () => {
           unoptimized={true}
         />
       </div>
+      <MobileNavAlertModal open={isAlertOpen} onClose={() => setIsAlertOpen(false)} />
     </div>
   );
 };

@@ -73,11 +73,31 @@ const LandingBlackSection = () => {
 
         <div className="mt-8 flex w-full flex-col items-center justify-center gap-[7.3px] md:mt-15 md:gap-[13px] lg:mt-[60px] lg:gap-6">
           <Image
+            src="/images/landing/landing_expert1_mobile.png"
+            alt="랜딩 전문가 이미지"
+            width={360}
+            height={120}
+            className="h-auto w-full md:hidden"
+            style={{ height: 'auto' }}
+            priority
+            unoptimized={true}
+          />
+          <Image
             src="/images/landing/landing_expert1.png"
             alt="랜딩 전문가 이미지"
             width={1176}
             height={200}
-            className="h-auto w-full max-w-[1176px] object-contain"
+            className="hidden h-auto w-full max-w-[1176px] object-contain md:block"
+            style={{ height: 'auto' }}
+            priority
+            unoptimized={true}
+          />
+          <Image
+            src="/images/landing/landing_expert2_mobile.png"
+            alt="랜딩 전문가 이미지"
+            width={360}
+            height={120}
+            className="h-auto w-full md:hidden"
             style={{ height: 'auto' }}
             priority
             unoptimized={true}
@@ -87,7 +107,17 @@ const LandingBlackSection = () => {
             alt="랜딩 전문가 이미지"
             width={1176}
             height={200}
-            className="h-auto w-full max-w-[1176px]"
+            className="hidden h-auto w-full max-w-[1176px] md:block"
+            style={{ height: 'auto' }}
+            priority
+            unoptimized={true}
+          />
+          <Image
+            src="/images/landing/landing_expert3_mobile.png"
+            alt="랜딩 전문가 이미지"
+            width={360}
+            height={120}
+            className="h-auto w-full md:hidden"
             style={{ height: 'auto' }}
             priority
             unoptimized={true}
@@ -97,7 +127,7 @@ const LandingBlackSection = () => {
             alt="랜딩 전문가 이미지"
             width={1176}
             height={200}
-            className="h-auto w-full max-w-[1176px]"
+            className="hidden h-auto w-full max-w-[1176px] md:block"
             style={{ height: 'auto' }}
             priority
             unoptimized={true}
