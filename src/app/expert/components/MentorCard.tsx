@@ -3,7 +3,6 @@ import Button from '@/app/_components/common/Button';
 import { MentorCardProps } from '@/types/expert/expert.props';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import WhitePlus from '@/assets/icons/white_plus.svg';
 
 type ExtraProps = {
   onApplied?: () => void;
@@ -25,6 +24,7 @@ const MentorCard = ({
 
   return (
     <div
+      onClick={handleCardClick}
       className="bg-gray-80 flex w-full cursor-pointer flex-row items-start justify-between gap-6 rounded-xl px-9 py-[42px] transition-opacity hover:opacity-80 max-h-[200px]"
     >
       <div className="flex flex-row gap-6">
@@ -67,11 +67,9 @@ const MentorCard = ({
       </div>
 
       <Button
-          text="전문가 연결"
-          icon={<WhitePlus />}
-          iconPosition="left"
+          text="전문가 상세보기"
           size="M"
-          className="rounded-lg gap-1 px-3 py-2 w-[156px] h-[39px]"
+          className="rounded-lg px-3 py-2 w-[156px] h-[39px]"
          onClick={handleCardClick}
         />
     </div>

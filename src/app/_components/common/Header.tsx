@@ -120,9 +120,9 @@ const Header = () => {
   return (
     <>
       <header
-        className={`h-[60px] w-full ${isHomePage ? 'fixed bg-black/30 md:shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]' : 'bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]'} z-[80]`}
+        className={`h-[56px] w-full md:h-[60px] ${isHomePage ? 'fixed bg-black/30 md:shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]' : 'bg-white shadow-[0_4px_6px_0_rgba(0,0,0,0.05)]'} z-[80]`}
       >
-        <div className="mx-auto flex h-[60px] items-center px-4 md:px-8">
+        <div className="mx-auto flex h-[56px] items-center px-4 md:h-[60px] md:px-8">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-1.5">
               <Logo />

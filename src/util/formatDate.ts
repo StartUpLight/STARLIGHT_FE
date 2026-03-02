@@ -41,5 +41,5 @@ export const formatCareerDate = (
 
   const start = formatDateInput(startDate);
   const end = endDate ? formatDateInput(endDate) : null;
-  return end ? `${start} ~ ${end}` : start;
+  return end ? `${start} ~ ${end}` : `${start} ~ 진행중`;
 };
