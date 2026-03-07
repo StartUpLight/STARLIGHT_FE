@@ -52,11 +52,11 @@ const MentorCardTags = ({ tags, name }: MentorCardTagsProps) => {
           </div>
         ))}
       </div>
-      <div className="flex w-full flex-wrap gap-1.5">
+      <div className="flex w-full flex-wrap gap-1.5 items-center">
         {tags.map((tag, i) => (
           <div
             key={`${name}-tag-${tag}-${i}`}
-            className={`bg-primary-50 items-center rounded-sm px-2 py-0.5 shrink-0 md:shrink ${
+            className={`bg-primary-50 items-center rounded-sm px-2 py-0.5 shrink-0 md:shrink overflow-hidden ${
               showOverflow && i >= firstLineCount ? 'hidden md:flex' : ''
             }`}
           >

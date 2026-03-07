@@ -49,10 +49,10 @@ const MentorCard = ({
               {oneLineIntroduction}
             </div>
           </div>
-          <div className="ds-subtext mt-3 font-medium text-gray-600 max-w-[780px] line-clamp-1 text-ellipsis">
+          <div className="text-[14px] md:ds-subtext mt-3 font-medium text-gray-500 md:text-gray-600 max-w-[780px] line-clamp-1 text-ellipsis">
             <span className="md:hidden">
               {careers[0]?.careerTitle}
-              {careers.length > 1 && ` +${careers.length - 1}`}
+              {careers.length > 1 && ` +${careers.length - 1}개`}
             </span>
             <span className="hidden md:inline">
               {careers.map((career) => career.careerTitle).join(' / ')}
