@@ -18,7 +18,7 @@ const ExpertDetailContent = ({ expert }: ExpertDetailContentProps) => {
             전문가
           </span>
         </h1>
-        <span className="text-[12px] hidden md:block text-gray-300">|</span>
+        <div className="h-3 w-px bg-gray-300 hidden md:block" />
         <p className="ds-subtext font-medium text-gray-700">
           {expert.oneLineIntroduction}
         </p>
