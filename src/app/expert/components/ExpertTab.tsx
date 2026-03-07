@@ -15,12 +15,12 @@ const ExpertTab = ({
   className = '',
 }: TabsProps) => {
   return (
-    <div className={`mt-9 flex gap-2 ${className}`}>
+    <div className={`w-full mt-4 md:mt-9 flex gap-2 overflow-x-auto flex-nowrap md:overflow-visible no-scrollbar ${className}`}>
       {tabs.map((tab) => (
         <button
           key={tab}
           onClick={() => onTabChange(tab)}
-          className={`ds-subtext cursor-pointer rounded-full px-5 py-2 font-medium ${
+          className={`ds-subtext cursor-pointer rounded-full px-5 py-2 font-medium flex-shrink-0 ${
             activeTab === tab
               ? 'bg-gray-900 text-white'
               : 'border border-gray-300 bg-white text-gray-900 hover:bg-gray-300'

@@ -41,15 +41,15 @@ const ExpertCard = () => {
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        className="mb-8"
+        className="md:mb-8 mb-4"
       />
       <div className="relative w-full">
         <div
-          className={`flex w-full flex-col gap-6 pb-6${!isAuthenticated ? ' max-h-[600px] overflow-hidden' : ''
+          className={`flex w-full flex-col gap-3 md:gap-4 lg:gap-6 pb-6${!isAuthenticated ? ' max-h-[600px] overflow-hidden' : ''
             }`}
         >
           {filtered.length === 0 ? (
-            <div className="ds-subtext mt-10 text-center text-gray-600">
+            <div className="ds-subtext mt-10 text-center flex items-center justify-center text-gray-600">
               등록된 전문가가 없습니다.
             </div>
           ) : (
@@ -60,11 +60,13 @@ const ExpertCard = () => {
           <>
             <div className="absolute inset-0 z-10 rounded-xl bg-white/30 backdrop-blur-[8px]" />
             <div className="absolute inset-0 z-20 flex flex-col items-center mt-12">
-              <h3 className="ds-heading font-bold text-gray-900">
+              <h3 className="ds-subtitle md:ds-heading font-bold text-gray-900">
                 지금 로그인하고 전문가를 만나보세요
               </h3>
-              <p className="ds-subtitle text-center font-medium text-gray-600 mt-2">
-                로그인을 통해 전문가의 상세 프로필과 활동 이력을 확인할 수 있어요.
+              <p className="ds-subtext md:ds-subtitle text-center font-medium text-gray-600 mt-2 md:whitespace-nowrap">
+                로그인을 통해 전문가의 상세 프로필과
+                <br className="md:hidden" />
+                활동 이력을 확인할 수 있어요.
               </p>
               <button
                 type="button"

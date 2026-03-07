@@ -8,7 +8,7 @@ interface ExpertDetailHeaderProps {
 const ExpertDetailHeader = ({ expert }: ExpertDetailHeaderProps) => {
   return (
     <>
-      <section className="relative h-40 w-full">
+      <section className="relative h-[100px] md:h-40 w-full">
         <Image
           src="/images/expert_detail.png"
           alt="전문가페이지 배너"
@@ -19,15 +19,15 @@ const ExpertDetailHeader = ({ expert }: ExpertDetailHeaderProps) => {
         />
       </section>
 
-      <div className="w-full px-[248px]">
+      <div className="w-full px-4 md:px-8 lg:px-[248px]">
         <div className="relative">
           <div className="absolute top-0 left-0 z-10 -translate-y-1/2">
-            <div className="relative h-[100px] w-[100px] overflow-hidden rounded-full bg-gray-200">
+            <div className="relative w-[72px] h-[72px] md:h-[100px] md:w-[100px] overflow-hidden rounded-full bg-gray-200">
               <Image
                 src={expert.profileImageUrl || '/images/sampleImage.png'}
                 alt="전문가들 사진"
                 fill
-                sizes="100px"
+                sizes="72px md:100px"
                 className="object-cover"
               />
             </div>
