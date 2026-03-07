@@ -10,21 +10,21 @@ interface ExpertDetailContentProps {
 
 const ExpertDetailContent = ({ expert }: ExpertDetailContentProps) => {
   return (
-    <main className="min-w-0 flex-1 pb-[118px]">
-      <div className="flex flex-wrap items-center gap-x-2">
-        <h1 className="ds-title font-semibold text-gray-900">
+    <main className="min-w-0 flex-1 pb-12 lg:pb-[118px]">
+      <div className="flex flex-col items-start gap-y-2 md:flex-row md:flex-wrap md:items-center md:gap-x-2">
+        <h1 className="md:ds-title ds-subtitle font-semibold text-gray-900">
           {expert.name}
-          <span className="ds-title ml-1 font-semibold text-gray-700">
+          <span className="md:ds-title ds-subtitle ml-1 font-semibold text-gray-700">
             전문가
           </span>
         </h1>
-        <span className="text-[12px] text-gray-300">|</span>
+        <span className="text-[12px] hidden md:block text-gray-300">|</span>
         <p className="ds-subtext font-medium text-gray-700">
           {expert.oneLineIntroduction}
         </p>
       </div>
 
-      <div className="mt-[10px] flex flex-wrap gap-[6px]">
+      <div className="md:mt-[10px] mt-3 flex flex-wrap gap-[6px]">
         {expert.tags?.map((tag) => (
           <span
             key={tag}
