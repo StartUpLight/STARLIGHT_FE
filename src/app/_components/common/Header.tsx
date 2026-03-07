@@ -347,7 +347,10 @@ const Header = () => {
           <button
             type="button"
             className={mobileNavLink}
-            onClick={() => setIsMobileAlertOpen(true)}
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              router.push('/expert');
+            }}
           >
             전문가
           </button>
