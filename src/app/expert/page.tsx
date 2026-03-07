@@ -14,7 +14,7 @@ const page = () => {
         />
 
         <div className="relative z-10 flex h-full items-center">
-          <div className="w-full flex flex-col items-center justify-center md:items-start md:justify-start md:pl-32">
+          <div className="w-full flex flex-col items-center justify-center md:items-start md:justify-start md:pl-14 lg:pl-32">
             <p className="md:text-[36px] text-[22px] font-bold text-white">
               신뢰할 수 있는 전문가의 리뷰로
             </p>
@@ -29,7 +29,7 @@ const page = () => {
         </div>
       </section>
 
-      <div className="px-4 md:px-[132px]">
+      <div className="px-4 md:px-8 lg:px-[132px] w-full">
         <ExpertCard />
       </div>
     </div>

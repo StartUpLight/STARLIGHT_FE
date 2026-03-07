@@ -15,7 +15,7 @@ const ExpertTab = ({
   className = '',
 }: TabsProps) => {
   return (
-    <div className={`w-full mt-4 md:mt-9 flex gap-2 overflow-x-auto flex-nowrap md:overflow-visible scrollbar-hide ${className}`}>
+    <div className={`w-full mt-4 md:mt-9 flex gap-2 overflow-x-auto flex-nowrap md:overflow-visible no-scrollbar ${className}`}>
       {tabs.map((tab) => (
         <button
           key={tab}

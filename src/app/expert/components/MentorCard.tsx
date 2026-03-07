@@ -65,7 +65,7 @@ const MentorCard = ({
       <Button
           text="전문가 상세보기"
           size="M"
-          className="rounded-lg px-3 py-2 w-[156px] h-[39px] hidden md:block"
+          className="rounded-lg px-3 py-2 w-[156px] h-[39px] hidden lg:block"
          onClick={handleCardClick}
         />
     </div>

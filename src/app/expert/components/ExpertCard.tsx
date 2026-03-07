@@ -45,7 +45,7 @@ const ExpertCard = () => {
       />
       <div className="relative w-full">
         <div
-          className={`flex w-full flex-col gap-6 pb-6${!isAuthenticated ? ' max-h-[600px] overflow-hidden' : ''
+          className={`flex w-full flex-col gap-3 md:gap-4 lg:gap-6 pb-6${!isAuthenticated ? ' max-h-[600px] overflow-hidden' : ''
             }`}
         >
           {filtered.length === 0 ? (
