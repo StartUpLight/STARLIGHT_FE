@@ -49,7 +49,7 @@ const ExpertCard = () => {
             }`}
         >
           {filtered.length === 0 ? (
-            <div className="ds-subtext mt-10 text-center flex itmes-center justify-center text-gray-600">
+            <div className="ds-subtext mt-10 text-center flex items-center justify-center text-gray-600">
               등록된 전문가가 없습니다.
             </div>
           ) : (
