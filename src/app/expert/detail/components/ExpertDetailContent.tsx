@@ -79,14 +79,17 @@ const ExpertDetailContent = ({ expert }: ExpertDetailContentProps) => {
           {expert.careers
             .sort((a, b) => b.orderIndex - a.orderIndex)
             .map((career) => (
-              <div key={career.id} className="flex flex-row gap-7">
-                <div className="ds-subtext min-w-[152px] font-medium text-gray-700">
+              <div
+                key={career.id}
+                className="grid w-full grid-cols-[180px_1fr] gap-x-7"
+              >
+                <div className="ds-subtext font-medium text-gray-700">
                   {formatCareerDate(
                     career.careerStartedAt,
                     career.careerEndedAt
                   )}
                 </div>
-                <div className="flex flex-1 flex-col gap-1">
+                <div className="min-w-0 flex flex-col gap-1">
                   <div className="ds-subtext font-semibold text-gray-700">
                     {career.careerTitle}
                   </div>
