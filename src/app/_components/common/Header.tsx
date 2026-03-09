@@ -398,6 +398,7 @@ const Header = () => {
       <MobileNavAlertModal
         open={isMobileAlertOpen}
         onClose={() => setIsMobileAlertOpen(false)}
+        showBackground
       />
     </>
   );

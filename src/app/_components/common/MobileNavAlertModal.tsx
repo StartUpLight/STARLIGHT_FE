@@ -6,31 +6,36 @@ import ErrorIcon from '@/assets/icons/error.svg';
 type MobileNavAlertModalProps = {
   open: boolean;
   onClose: () => void;
+  showBackground?: boolean;
 };
 
-const MobileNavAlertModal = ({ open, onClose }: MobileNavAlertModalProps) => {
+const MobileNavAlertModal = ({ open, onClose, showBackground = false }: MobileNavAlertModalProps) => {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[200] lg:[display:none]">
-      <Image
-        src="/images/bussiness_mobile.png"
-        alt="사업계획서 배경"
-        fill
-        className="object-cover md:hidden"
-        quality={100}
-        unoptimized
-        priority
-      />
-      <Image
-        src="/images/bussiness_tablet.png"
-        alt="사업계획서 배경"
-        fill
-        className="hidden object-cover md:block"
-        quality={100}
-        unoptimized
-        priority
-      />
+      {showBackground && (
+        <>
+          <Image
+            src="/images/bussiness_mobile.png"
+            alt="사업계획서 배경"
+            fill
+            className="object-cover md:hidden"
+            quality={100}
+            unoptimized
+            priority
+          />
+          <Image
+            src="/images/bussiness_tablet.png"
+            alt="사업계획서 배경"
+            fill
+            className="hidden object-cover md:block"
+            quality={100}
+            unoptimized
+            priority
+          />
+        </>
+      )}
       <div
         className="absolute inset-0 bg-black/20"
         onClick={onClose}
