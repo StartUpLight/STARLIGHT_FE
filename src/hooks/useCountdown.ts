@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 
 const calculateTimeLeft = (targetDate: string) => {
-  if (typeof window === 'undefined') {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-  }
-
   const target = new Date(targetDate).getTime();
   const now = Date.now();
   const diff = target - now;
@@ -21,10 +17,14 @@ const calculateTimeLeft = (targetDate: string) => {
   return { days: 0, hours: 0, minutes: 0, seconds: 0 };
 };
 
+const initialTimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
 export const useCountdown = (targetDate: string) => {
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetDate));
+  const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const updateTimer = () => {
       setTimeLeft(calculateTimeLeft(targetDate));
     };
@@ -34,6 +34,8 @@ export const useCountdown = (targetDate: string) => {
 
     return () => clearInterval(interval);
   }, [targetDate]);
+
+  if (!mounted) return initialTimeLeft;
 
   return timeLeft;
 };
