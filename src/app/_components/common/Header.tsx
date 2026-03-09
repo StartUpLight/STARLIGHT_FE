@@ -207,7 +207,6 @@ const Header = () => {
                     ? 'text-white'
                     : 'text-gray-900'
                   }`}
-                onClick={handleNavClick}
               >
                 전문가
               </Link>
