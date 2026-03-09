@@ -14,6 +14,7 @@ const Landing = () => {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [alertShowBackground, setAlertShowBackground] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { isAuthenticated, checkAuth } = useAuthStore();
 
@@ -38,6 +39,7 @@ const Landing = () => {
             className="bg-primary-500 ds-subtext hover:bg-primary-600 active:bg-primary-700 h-[44px] w-full cursor-pointer rounded-full px-6 font-medium text-white md:ds-text md:h-[50px] md:w-[220px] md:px-8"
             onClick={() => {
               if (window.innerWidth < 1024) {
+                setAlertShowBackground(true);
                 setIsAlertOpen(true);
               } else if (isAuthenticated) {
                 router.push('/business');
@@ -52,6 +54,7 @@ const Landing = () => {
             className="ds-subtext h-[44px] w-full cursor-pointer rounded-full bg-white px-6 font-semibold text-gray-900 hover:bg-gray-100 active:bg-gray-200 md:ds-text md:h-[50px] md:w-auto md:px-8"
             onClick={() => {
               if (window.innerWidth < 1024) {
+                setAlertShowBackground(false);
                 setIsAlertOpen(true);
               } else if (isAuthenticated) {
                 setIsModalOpen(true);
@@ -87,6 +90,7 @@ const Landing = () => {
       <MobileNavAlertModal
         open={isAlertOpen}
         onClose={() => setIsAlertOpen(false)}
+        showBackground={alertShowBackground}
       />
 
       <StickyBar show={showSticky} />
