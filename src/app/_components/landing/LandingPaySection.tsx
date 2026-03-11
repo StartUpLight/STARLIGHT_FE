@@ -140,6 +140,7 @@ const LandingPaySection = () => {
       <MobileNavAlertModal
         open={isAlertOpen}
         onClose={() => setIsAlertOpen(false)}
+        showBackground
       />
 
       <div className="mt-[30px] flex flex-col px-2 md:mt-12 lg:mt-12 lg:px-0">
