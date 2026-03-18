@@ -38,7 +38,7 @@ const LandingRelation = () => {
   ];
 
   return (
-    <div>
+    <div className='bg-white'>
       {/* Mobile */}
       <Image
         src="/images/landing/landing_mobile.png"
