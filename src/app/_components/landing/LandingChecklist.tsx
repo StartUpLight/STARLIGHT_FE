@@ -70,7 +70,7 @@ const LandingChecklist = () => {
           unoptimized={true}
         />
       </div>
-      <MobileNavAlertModal open={isAlertOpen} onClose={() => setIsAlertOpen(false)} />
+      <MobileNavAlertModal open={isAlertOpen} onClose={() => setIsAlertOpen(false)} showBackground />
     </div>
   );
 };

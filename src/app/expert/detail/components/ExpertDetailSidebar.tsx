@@ -99,7 +99,7 @@ const ExpertDetailSidebar = ({ expert }: ExpertDetailSidebarProps) => {
   };
 
   return (
-    <aside className="flex h-[300px] w-[324px] flex-col items-start rounded-[12px] border border-gray-200 p-6">
+    <aside className="hidden lg:flex h-[300px] w-[324px] flex-col items-start rounded-[12px] border border-gray-200 p-6">
       <h1 className="ds-subtitle font-semibold text-gray-900">
         이 전문가의 피드백이 필요하신가요?
       </h1>

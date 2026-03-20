@@ -36,8 +36,8 @@ function ExpertDetailContentWrapper() {
     <div className="flex flex-col bg-white">
       <ExpertDetailHeader expert={expert} />
 
-      <div className="w-full px-[248px]">
-        <div className="flex flex-row gap-6 pt-[76px]">
+      <div className="w-full px-4 md:px-8 lg:px-[248px]">
+        <div className="flex flex-row gap-6 pt-[52px] md:pt-[64px] lg:pt-[76px]">
           <ExpertDetailContent expert={expert} />
           <ExpertDetailSidebar expert={expert} />
         </div>

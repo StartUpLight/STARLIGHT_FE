@@ -13,7 +13,7 @@ export const uploadImage = async (file: File): Promise<string> => {
     // const encodedFileName = encodeURIComponent(fileName);
 
     const uploadUrlResponse = await axios.get(
-      `${apiUrl}/v1/images/upload-url`,
+      `${apiUrl}/v1/business-plans/storage/upload-url`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -43,7 +43,7 @@ export const uploadImage = async (file: File): Promise<string> => {
     params.append('objectUrl', objectUrl);
 
     const publicResponse = await axios.post(
-      `${apiUrl}/v1/images/upload-url/public`,
+      `${apiUrl}/v1/business-plans/storage/upload-url/public`,
       params.toString(),
       {
         headers: {

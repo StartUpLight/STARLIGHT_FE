@@ -20,7 +20,7 @@ const Header = () => {
   const [openLogin, setOpenLogin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileLoginOpen, setIsMobileLoginOpen] = useState(false);
-  const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
+  const [mobileAlertType, setMobileAlertType] = useState<'business' | 'price' | null>(null);
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
   const router = useRouter();
   const { user, fetchUser, clearUser } = useUserStore();
@@ -110,7 +110,7 @@ const Header = () => {
   const handleNavClick = (e: React.MouseEvent) => {
     if (window.innerWidth < 1024) {
       e.preventDefault();
-      setIsMobileAlertOpen(true);
+      setMobileAlertType('business');
     }
   };
 
@@ -171,7 +171,7 @@ const Header = () => {
                     onClick={(e) => {
                       if (window.innerWidth < 1024) {
                         e.preventDefault();
-                        setIsMobileAlertOpen(true);
+                        setMobileAlertType('business');
                       } else if (!isAuthenticated) {
                         e.preventDefault();
                         setOpenLogin(true);
@@ -184,7 +184,7 @@ const Header = () => {
                     type="button"
                     onClick={() => {
                       if (window.innerWidth < 1024) {
-                        setIsMobileAlertOpen(true);
+                        setMobileAlertType('price');
                       } else if (!isAuthenticated) {
                         setOpenLogin(true);
                       } else {
@@ -207,7 +207,6 @@ const Header = () => {
                     ? 'text-white'
                     : 'text-gray-900'
                   }`}
-                onClick={handleNavClick}
               >
                 전문가
               </Link>
@@ -219,7 +218,12 @@ const Header = () => {
                     ? 'text-white'
                     : 'text-gray-900'
                   }`}
-                onClick={handleNavClick}
+                onClick={(e) => {
+                  if (window.innerWidth < 1024) {
+                    e.preventDefault();
+                    setMobileAlertType('price');
+                  }
+                }}
               >
                 요금제
               </Link>
@@ -339,7 +343,7 @@ const Header = () => {
           <button
             type="button"
             className={mobileNavLink}
-            onClick={() => setIsMobileAlertOpen(true)}
+            onClick={() => setMobileAlertType('business')}
           >
             사업계획서
           </button>
@@ -347,7 +351,10 @@ const Header = () => {
           <button
             type="button"
             className={mobileNavLink}
-            onClick={() => setIsMobileAlertOpen(true)}
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              router.push('/expert');
+            }}
           >
             전문가
           </button>
@@ -355,7 +362,7 @@ const Header = () => {
           <button
             type="button"
             className={mobileNavLink}
-            onClick={() => setIsMobileAlertOpen(true)}
+            onClick={() => setMobileAlertType('price')}
           >
             요금제
           </button>
@@ -394,8 +401,9 @@ const Header = () => {
 
       {/* Mobile Nav Alert Modal */}
       <MobileNavAlertModal
-        open={isMobileAlertOpen}
-        onClose={() => setIsMobileAlertOpen(false)}
+        open={mobileAlertType !== null}
+        onClose={() => setMobileAlertType(null)}
+        showBackground={mobileAlertType === 'business'}
       />
     </>
   );

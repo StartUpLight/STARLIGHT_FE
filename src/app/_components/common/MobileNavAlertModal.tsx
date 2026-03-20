@@ -1,17 +1,41 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import ErrorIcon from '@/assets/icons/error.svg';
 
 type MobileNavAlertModalProps = {
   open: boolean;
   onClose: () => void;
+  showBackground?: boolean;
 };
 
-const MobileNavAlertModal = ({ open, onClose }: MobileNavAlertModalProps) => {
+const MobileNavAlertModal = ({ open, onClose, showBackground = false }: MobileNavAlertModalProps) => {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[200] lg:[display:none]">
+      {showBackground && (
+        <>
+          <Image
+            src="/images/bussiness_mobile.png"
+            alt="사업계획서 배경"
+            fill
+            className="object-cover md:hidden"
+            quality={100}
+            unoptimized
+            priority
+          />
+          <Image
+            src="/images/bussiness_tablet.png"
+            alt="사업계획서 배경"
+            fill
+            className="hidden object-cover md:block"
+            quality={100}
+            unoptimized
+            priority
+          />
+        </>
+      )}
       <div
         className="absolute inset-0 bg-black/20"
         onClick={onClose}
@@ -25,8 +49,8 @@ const MobileNavAlertModal = ({ open, onClose }: MobileNavAlertModalProps) => {
               PC환경에서 서비스를 이용해주세요
             </p>
             <div className="flex flex-col items-center text-[14px] font-medium leading-[1.5] text-gray-600">
-              <p>모바일 환경에서는 지원되지 않습니다.</p>
-              <p>안정적인 경험을 위해 데스크탑 환경을 권장해요!</p>
+              <p>해당 기능은 모바일을 지원하지 않아요.</p>
+              <p>데스크탑에서 접속해주세요.</p>
             </div>
           </div>
           <button

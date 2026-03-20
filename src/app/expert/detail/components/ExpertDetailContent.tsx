@@ -10,21 +10,21 @@ interface ExpertDetailContentProps {
 
 const ExpertDetailContent = ({ expert }: ExpertDetailContentProps) => {
   return (
-    <main className="min-w-0 flex-1 pb-[118px]">
-      <div className="flex flex-wrap items-center gap-x-2">
-        <h1 className="ds-title font-semibold text-gray-900">
+    <main className="min-w-0 flex-1 pb-12 lg:pb-[118px]">
+      <div className="flex flex-col items-start gap-y-2 md:flex-row md:flex-wrap md:items-center md:gap-x-2">
+        <h1 className="md:ds-title ds-subtitle font-semibold text-gray-900">
           {expert.name}
-          <span className="ds-title ml-1 font-semibold text-gray-700">
+          <span className="md:ds-title ds-subtitle ml-1 font-semibold text-gray-700">
             전문가
           </span>
         </h1>
-        <span className="text-[12px] text-gray-300">|</span>
+        <div className="h-3 w-px bg-gray-300 hidden md:block" />
         <p className="ds-subtext font-medium text-gray-700">
           {expert.oneLineIntroduction}
         </p>
       </div>
 
-      <div className="mt-[10px] flex flex-wrap gap-[6px]">
+      <div className="md:mt-[10px] mt-3 flex flex-wrap gap-[6px]">
         {expert.tags?.map((tag) => (
           <span
             key={tag}
@@ -79,14 +79,17 @@ const ExpertDetailContent = ({ expert }: ExpertDetailContentProps) => {
           {expert.careers
             .sort((a, b) => b.orderIndex - a.orderIndex)
             .map((career) => (
-              <div key={career.id} className="flex flex-row gap-7">
-                <div className="ds-subtext min-w-[152px] font-medium text-gray-700">
+              <div
+                key={career.id}
+                className="grid w-full grid-cols-[180px_1fr] gap-x-7"
+              >
+                <div className="ds-subtext font-medium text-gray-700">
                   {formatCareerDate(
                     career.careerStartedAt,
                     career.careerEndedAt
                   )}
                 </div>
-                <div className="flex flex-1 flex-col gap-1">
+                <div className="min-w-0 flex flex-col gap-1">
                   <div className="ds-subtext font-semibold text-gray-700">
                     {career.careerTitle}
                   </div>
