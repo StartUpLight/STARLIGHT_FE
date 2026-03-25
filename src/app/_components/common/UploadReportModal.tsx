@@ -5,6 +5,8 @@ import CloseIcon from '@/assets/icons/close.svg';
 import WarningIcon from '@/assets/icons/warning.svg';
 import { useRouter } from 'next/navigation';
 import { usePdfGrade } from '@/hooks/mutation/usePdfGrade';
+import { useBusinessStore } from '@/store/business.store';
+import { useEvaluationStore } from '@/store/report.store';
 
 type UploadReportModalProps = {
   open: boolean;
@@ -22,6 +24,8 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const { mutateAsync: gradePdf, isPending } = usePdfGrade();
+  const setPlanId = useBusinessStore((s) => s.setPlanId);
+  const resetEvaluation = useEvaluationStore((s) => s.resetEvaluation);
 
   const triggerFileDialog = () => fileInputRef.current?.click();
 
@@ -96,7 +100,7 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({
 
       const title = selectedFile.name.replace(/\.pdf$/i, '');
 
-      const result = gradePdf({
+      const resultPromise = gradePdf({
         title,
         file: selectedFile,
       });
@@ -104,7 +108,13 @@ const UploadReportModal: React.FC<UploadReportModalProps> = ({
       onClose();
       router.push('/report/loading');
 
-      await result;
+      const result = await resultPromise;
+
+      const nextPlanId = result?.data?.businessPlanId;
+      if (nextPlanId) {
+        setPlanId(nextPlanId);
+      }
+      resetEvaluation();
 
       resetState();
       router.push('/report');
