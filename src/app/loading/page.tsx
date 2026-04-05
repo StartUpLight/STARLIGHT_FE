@@ -4,6 +4,7 @@ import loadingAnimation from '@/assets/lotties/loading.json';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePostGrade } from '@/hooks/mutation/usePostGrade';
 import { useEffect, useRef, Suspense } from 'react';
+import Button from '../_components/common/Button';
 
 const LoadingInner = () => {
   const router = useRouter();
@@ -42,7 +43,7 @@ const LoadingInner = () => {
   }, [planIdParam, postGradeMutateAsync, router]);
 
   return (
-    <div className="flex justify-center bg-white">
+    <div className="flex flex-col items-center justify-center bg-white">
       <div className="mt-[220px] text-center">
         <div className="mx-auto mb-6 h-[60px] w-[60px]">
           <Lottie
@@ -57,12 +58,28 @@ const LoadingInner = () => {
         </h1>
         <div className="mb-11">
           <p className="ds-subtitle font-medium text-gray-600">
-            사업계획서를 채점 중이에요.
+            사업계획서를 바탕으로 AI 리포트를 생성 중이에요.
           </p>
-          <p className="ds-subtitle font-medium text-gray-600">
-            잠시만 기다려주세요!
+          <p className="ds-subtitle text-center font-medium text-gray-600">
+           채점이 완료되면 이메일로 알려드려요.
           </p>
         </div>
+      </div>
+      <div className='flex flex-row gap-4 w-full justify-center'>
+        <Button
+          text="홈으로 나가기"
+          size="L"
+          color="secondary"
+          className='w-[200px] px-8 border-[1.2px] border-primary-500 ds-text text-primary-500 hover:bg-primary-50 active:bg-primary-50'
+          onClick={() => router.push('/')}
+        />
+        <Button
+          text="마이페이지"
+          size="L"
+          color="primary"
+          className='w-[200px]'
+          onClick={() => router.push('/mypage')}
+        />
       </div>
     </div>
   );
