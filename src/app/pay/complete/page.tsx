@@ -16,6 +16,7 @@ import {
 } from '@/api/business';
 import { generatePdfFromSubsections } from '@/lib/generatePdf';
 import { ApplyFeedback } from '@/api/expert';
+import { uploadImage } from '@/lib/imageUpload';
 
 import PayProcessingView from './components/PayProcessingView';
 import PayFailView from './components/PayFailView';
@@ -121,10 +122,13 @@ function PayCompleteInner() {
           });
         }
 
+        const pdfUrl = await uploadImage(pdfFile);
+
         await ApplyFeedback({
           expertId,
           businessPlanId: planId,
           file: pdfFile,
+          pdfUrl,
         });
       } catch (e) {
         console.error('전문가 연결(메일 전송) 실패:', e);

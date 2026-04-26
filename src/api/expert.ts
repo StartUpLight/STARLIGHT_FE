@@ -21,10 +21,12 @@ export async function ApplyFeedback({
   businessPlanId,
   expertId,
   file,
+  pdfUrl,
 }: applyFeedBackProps): Promise<applyFeedBackResponse> {
   const form = new FormData();
   form.append('businessPlanId', String(businessPlanId));
   form.append('file', file);
+  form.append('pdfUrl', pdfUrl);
 
   const { data } = await api.post<applyFeedBackResponse>(
     `/v1/expert-applications/${expertId}/request`,

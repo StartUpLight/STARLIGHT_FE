@@ -18,6 +18,7 @@ export interface applyFeedBackProps {
   expertId: number;
   businessPlanId: number;
   file: File | Blob;
+  pdfUrl: string;
 }
 
 export interface applyFeedBackResponse {
