@@ -12,6 +12,7 @@ import CloseIcon from '@/assets/icons/close_white.svg';
 import { useAuthStore } from '@/store/auth.store';
 import { useUserStore } from '@/store/user.store';
 import Image from 'next/image';
+import NotificationBell from './NotificationBell';
 
 const Header = () => {
   const pathname = usePathname();
@@ -235,46 +236,49 @@ const Header = () => {
             {/* Desktop Auth */}
             <div className="[display:none] md:[display:flex] md:items-center">
               {isAuthenticated ? (
-                <div className="profile-dropdown relative">
-                  <div
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex cursor-pointer items-center justify-center rounded-full"
-                  >
-                    {user?.profileImageUrl ? (
-                      <Image
-                        src={user.profileImageUrl}
-                        alt={user.name}
-                        width={36}
-                        height={36}
-                        className="h-9 w-9 rounded-full object-cover"
-                        priority
-                      />
-                    ) : (
-                      <span className="ds-text flex h-9 w-9 items-center justify-center rounded-full bg-gray-400 font-medium">
-                        {user?.name?.charAt(0)}
-                      </span>
+                <>
+                  <NotificationBell isHomePage={isHomePage} />
+                  <div className="profile-dropdown relative">
+                    <div
+                      onClick={() => setIsProfileOpen(!isProfileOpen)}
+                      className="flex cursor-pointer items-center justify-center rounded-full"
+                    >
+                      {user?.profileImageUrl ? (
+                        <Image
+                          src={user.profileImageUrl}
+                          alt={user.name}
+                          width={36}
+                          height={36}
+                          className="h-9 w-9 rounded-full object-cover"
+                          priority
+                        />
+                      ) : (
+                        <span className="ds-text flex h-9 w-9 items-center justify-center rounded-full bg-gray-400 font-medium">
+                          {user?.name?.charAt(0)}
+                        </span>
+                      )}
+                    </div>
+
+                    {isProfileOpen && (
+                      <div className="absolute right-0 z-20 mt-2 w-[100px] overflow-hidden rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
+                        <Link
+                          href="/mypage"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="ds-subtext hover:bg-primary-50 block px-[12px] py-[8px] font-medium text-gray-900 transition-colors"
+                        >
+                          마이페이지
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="ds-subtext hover:bg-primary-50 w-full cursor-pointer px-[12px] py-[8px] text-left font-medium text-gray-900 transition-colors"
+                        >
+                          로그아웃
+                        </button>
+                      </div>
                     )}
                   </div>
-
-                  {isProfileOpen && (
-                    <div className="absolute right-0 z-20 mt-2 w-[100px] overflow-hidden rounded-[8px] bg-white shadow-[0_0_10px_0_rgba(0,0,0,0.10)]">
-                      <Link
-                        href="/mypage"
-                        onClick={() => setIsProfileOpen(false)}
-                        className="ds-subtext hover:bg-primary-50 block px-[12px] py-[8px] font-medium text-gray-900 transition-colors"
-                      >
-                        마이페이지
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="ds-subtext hover:bg-primary-50 w-full cursor-pointer px-[12px] py-[8px] text-left font-medium text-gray-900 transition-colors"
-                      >
-                        로그아웃
-                      </button>
-                    </div>
-                  )}
-                </div>
+                </>
               ) : (
                 <button
                   type="button"
