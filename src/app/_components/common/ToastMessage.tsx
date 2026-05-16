@@ -1,6 +1,7 @@
 'use client';
 import { useLayoutEffect, useState } from 'react';
 import WarningIcon from '@/assets/icons/warning.svg';
+import InfoIcon from '@/assets/icons/info.svg';
 import ToastCloseIcon from '@/assets/icons/toast_close.svg';
 
 type ToastMessageProps = {
@@ -9,6 +10,7 @@ type ToastMessageProps = {
     anchorSelector?: string;
     verticalOffset?: number;
     horizontalOffset?: number;
+    variant?: 'warning' | 'notification';
 };
 
 const ToastMessage = ({
@@ -17,6 +19,7 @@ const ToastMessage = ({
     anchorSelector = '[data-toast-anchor]',
     verticalOffset = 74,
     horizontalOffset = 22,
+    variant = 'warning',
 }: ToastMessageProps) => {
     const [position, setPosition] = useState<{ left: number; top: number } | null>(
         null
@@ -49,8 +52,10 @@ const ToastMessage = ({
         };
     }, [anchorSelector, verticalOffset, horizontalOffset, message]);
 
-    const baseClass =
-        'fixed z-[150] flex w-[748px] max-w-[90vw] items-center gap-2 rounded-[12px] bg-gray-900 px-[12px] py-[10px] text-center';
+    const isNotification = variant === 'notification';
+    const baseClass = isNotification
+        ? 'fixed z-[150] flex w-[360px] max-w-[90vw] items-start gap-3 rounded-[14px] border border-gray-200 bg-white px-4 py-3 text-left shadow-[0_12px_28px_rgba(15,23,42,0.14)]'
+        : 'fixed z-[150] flex w-[748px] max-w-[90vw] items-center gap-2 rounded-[12px] bg-gray-900 px-[12px] py-[10px] text-center';
 
     const inlineStyle = position
         ? { left: position.left, top: position.top }
@@ -58,13 +63,29 @@ const ToastMessage = ({
 
     return (
         <div className={baseClass} style={inlineStyle}>
-            <WarningIcon />
-            <p className="ds-text font-medium text-white">{message}</p>
+            {isNotification ? (
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-500">
+                    <InfoIcon />
+                </div>
+            ) : (
+                <WarningIcon />
+            )}
+            <p
+                className={
+                    isNotification
+                        ? 'ds-subtext flex-1 font-medium text-gray-900'
+                        : 'ds-text font-medium text-white'
+                }
+            >
+                {message}
+            </p>
             <button
                 type="button"
                 aria-label="토스트 닫기"
                 onClick={onClose}
-                className="ml-auto cursor-pointer flex items-center justify-center rounded-full px-[6px] py-[2px] transition hover:bg-white/10"
+                className={`ml-auto flex cursor-pointer items-center justify-center rounded-full px-[6px] py-[2px] transition ${
+                    isNotification ? 'hover:bg-gray-100' : 'hover:bg-white/10'
+                }`}
             >
                 <ToastCloseIcon />
             </button>

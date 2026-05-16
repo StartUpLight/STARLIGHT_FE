@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useBusinessStore } from '@/store/business.store';
 import { useReadNotification } from '@/hooks/mutation/useNotification';
 import { useNotifications } from '@/hooks/queries/useNotification';
+import { useNotificationSse } from '@/hooks/useNotificationSse';
 import { NotificationItem } from '@/types/notification/notification.type';
+import ToastMessage from './ToastMessage';
 
 function BellIcon({ className = '' }: { className?: string }) {
   return (
@@ -61,14 +63,52 @@ export default function NotificationBell({
   isHomePage: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestNotificationIdRef = useRef<number | null>(null);
   const router = useRouter();
   const setPlanId = useBusinessStore((state) => state.setPlanId);
   const { data: notifications = [], isLoading } = useNotifications(true);
   const { mutateAsync: markAsRead, isPending } = useReadNotification();
 
+  const clearToast = () => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = null;
+    }
+    setToastMessage(null);
+  };
+
+  const showToast = (message: string) => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+
+    setToastMessage(message);
+    toastTimerRef.current = setTimeout(() => {
+      setToastMessage(null);
+      toastTimerRef.current = null;
+    }, 4000);
+  };
+
+  useNotificationSse(true, {
+    onNotification: (message) => {
+      if (latestNotificationIdRef.current === message.notificationId) {
+        return;
+      }
+
+      latestNotificationIdRef.current = message.notificationId;
+      showToast(`${message.title} ${message.message}`);
+    },
+  });
+
   const unreadCount = useMemo(
     () => notifications.filter((notification) => !notification.read).length,
+    [notifications]
+  );
+  const visibleNotifications = useMemo(
+    () => notifications.filter((notification) => !notification.read),
     [notifications]
   );
 
@@ -85,6 +125,14 @@ export default function NotificationBell({
     window.addEventListener('click', handleClickOutside);
     return () => window.removeEventListener('click', handleClickOutside);
   }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleNotificationClick = async (notification: NotificationItem) => {
     if (!notification.read) {
@@ -111,6 +159,7 @@ export default function NotificationBell({
       <button
         type="button"
         aria-label="알림"
+        data-notification-toast-anchor
         onClick={() => setIsOpen((prev) => !prev)}
         className={`relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-black/5 ${
           isHomePage ? 'text-white' : 'text-gray-900'
@@ -140,29 +189,23 @@ export default function NotificationBell({
               <div className="ds-text px-4 py-6 text-gray-500">불러오는 중...</div>
             )}
 
-            {!isLoading && notifications.length === 0 && (
+            {!isLoading && visibleNotifications.length === 0 && (
               <div className="ds-text px-4 py-6 text-gray-500">
                 도착한 알림이 없습니다.
               </div>
             )}
 
             {!isLoading &&
-              notifications.map((notification) => (
+              visibleNotifications.map((notification) => (
                 <button
                   key={notification.id}
                   type="button"
                   onClick={() => handleNotificationClick(notification)}
                   disabled={isPending}
-                  className={`w-full cursor-pointer px-4 py-4 text-left transition-colors hover:bg-gray-50 ${
-                    notification.read ? 'bg-white' : 'bg-primary-50/40'
-                  }`}
+                  className="w-full cursor-pointer bg-primary-50/40 px-4 py-4 text-left transition-colors hover:bg-gray-50"
                 >
                   <div className="flex items-start gap-3">
-                    <span
-                      className={`mt-1 h-2.5 w-2.5 rounded-full ${
-                        notification.read ? 'bg-gray-300' : 'bg-primary-500'
-                      }`}
-                    />
+                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-primary-500" />
                     <div className="min-w-0 flex-1">
                       <div className="ds-subtext font-semibold text-gray-900">
                         {notification.title}
@@ -180,7 +223,17 @@ export default function NotificationBell({
           </div>
         </div>
       )}
+
+      {toastMessage && (
+        <ToastMessage
+          message={toastMessage}
+          onClose={clearToast}
+          variant="notification"
+          anchorSelector='[data-notification-toast-anchor]'
+          verticalOffset={-4}
+          horizontalOffset={-300}
+        />
+      )}
     </div>
   );
 }
-
