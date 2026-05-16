@@ -1,7 +1,7 @@
 'use client';
 
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 const NOTIFICATION_SUBSCRIBE_PATH = '/v1/notifications/subscribe';
@@ -22,6 +22,11 @@ export function useNotificationSse(
   }
 ) {
   const queryClient = useQueryClient();
+  const onNotificationRef = useRef(options?.onNotification);
+
+  useEffect(() => {
+    onNotificationRef.current = options?.onNotification;
+  }, [options?.onNotification]);
 
   useEffect(() => {
     if (!enabled || typeof window === 'undefined') {
@@ -33,8 +38,20 @@ export function useNotificationSse(
       return;
     }
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!baseUrl) {
+      console.error('알림 SSE 연결 실패: NEXT_PUBLIC_BASE_URL이 설정되지 않았습니다.');
+      return;
+    }
+
     const controller = new AbortController();
-    const subscribeUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${NOTIFICATION_SUBSCRIBE_PATH}`;
+    let subscribeUrl: string;
+    try {
+      subscribeUrl = new URL(NOTIFICATION_SUBSCRIBE_PATH, baseUrl).toString();
+    } catch (error) {
+      console.error('알림 SSE 연결 실패: 유효하지 않은 BASE URL입니다.', error);
+      return;
+    }
 
     void fetchEventSource(subscribeUrl, {
       method: 'GET',
@@ -60,7 +77,7 @@ export function useNotificationSse(
 
         try {
           const payload = JSON.parse(message.data) as NotificationSseMessage;
-          options?.onNotification?.(payload);
+          onNotificationRef.current?.(payload);
         } catch (error) {
           console.error('알림 SSE payload 파싱 실패:', error);
         }
@@ -75,5 +92,5 @@ export function useNotificationSse(
     return () => {
       controller.abort();
     };
-  }, [enabled, options, queryClient]);
+  }, [enabled, queryClient]);
 }

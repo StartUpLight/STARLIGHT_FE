@@ -66,7 +66,8 @@ export default function NotificationBell({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latestNotificationIdRef = useRef<number | null>(null);
+  const recentNotificationIdsRef = useRef<Set<number>>(new Set());
+  const recentNotificationOrderRef = useRef<number[]>([]);
   const router = useRouter();
   const setPlanId = useBusinessStore((state) => state.setPlanId);
   const { data: notifications = [], isLoading } = useNotifications(true);
@@ -94,11 +95,20 @@ export default function NotificationBell({
 
   useNotificationSse(true, {
     onNotification: (message) => {
-      if (latestNotificationIdRef.current === message.notificationId) {
+      if (recentNotificationIdsRef.current.has(message.notificationId)) {
         return;
       }
 
-      latestNotificationIdRef.current = message.notificationId;
+      recentNotificationIdsRef.current.add(message.notificationId);
+      recentNotificationOrderRef.current.push(message.notificationId);
+
+      if (recentNotificationOrderRef.current.length > 50) {
+        const oldestNotificationId = recentNotificationOrderRef.current.shift();
+        if (typeof oldestNotificationId === 'number') {
+          recentNotificationIdsRef.current.delete(oldestNotificationId);
+        }
+      }
+
       showToast(`${message.title} ${message.message}`);
     },
   });
@@ -131,6 +141,8 @@ export default function NotificationBell({
       if (toastTimerRef.current) {
         clearTimeout(toastTimerRef.current);
       }
+      recentNotificationIdsRef.current.clear();
+      recentNotificationOrderRef.current = [];
     };
   }, []);
 

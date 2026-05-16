@@ -62,7 +62,12 @@ const ToastMessage = ({
         : { left: '50%', bottom: '100px', transform: 'translateX(-50%)' };
 
     return (
-        <div className={baseClass} style={inlineStyle}>
+        <div
+            className={baseClass}
+            style={inlineStyle}
+            role="status"
+            aria-live="polite"
+        >
             {isNotification ? (
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-500">
                     <InfoIcon />
